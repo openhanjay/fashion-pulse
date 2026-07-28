@@ -147,7 +147,7 @@ function averageRankings(snapshots) {
         });
       });
       result[cat][filterKey] = [...merged.values()]
-        .map((v) => ({ ...v.latest, avgRank: v.sumRank / v.count }))
+        .map((v) => { const { delta, ...rest } = v.latest; return { ...rest, avgRank: v.sumRank / v.count }; })
         .sort((a, b) => a.avgRank - b.avgRank)
         .slice(0, 100)
         .map((item, idx) => ({ ...item, rank: idx + 1 }));
@@ -176,7 +176,7 @@ function averageKeywordRankings(snapshots) {
       });
     });
     result[filterKey] = [...merged.values()]
-      .map((v) => ({ ...v.latest, avgRank: v.sumRank / v.count }))
+      .map((v) => { const { delta, ...rest } = v.latest; return { ...rest, avgRank: v.sumRank / v.count }; })
       .sort((a, b) => a.avgRank - b.avgRank)
       .slice(0, 100)
       .map((item, idx) => ({ ...item, rank: idx + 1 }));
