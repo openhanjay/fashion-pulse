@@ -156,9 +156,36 @@ function averageRankings(snapshots) {
   return result;
 }
 
+/* 검색어 랭킹 스냅샷들을 검색어별 평균 순위로 합침 (카테고리 구분 없음, all/rising 2종) */
+function averageKeywordRankings(snapshots) {
+  const result = {};
+  ["all", "rising"].forEach((filterKey) => {
+    const merged = new Map();
+    snapshots.forEach((snap) => {
+      const list = snap?.keywords?.[filterKey] || [];
+      list.forEach((item) => {
+        const key = item.url || item.keyword;
+        const existing = merged.get(key);
+        if (existing) {
+          existing.sumRank += item.rank;
+          existing.count += 1;
+          existing.latest = item;
+        } else {
+          merged.set(key, { sumRank: item.rank, count: 1, latest: item });
+        }
+      });
+    });
+    result[filterKey] = [...merged.values()]
+      .map((v) => ({ ...v.latest, avgRank: v.sumRank / v.count }))
+      .sort((a, b) => a.avgRank - b.avgRank)
+      .slice(0, 100)
+      .map((item, idx) => ({ ...item, rank: idx + 1 }));
+  });
+  return result;
+}
+
 const REALTIME_KEYWORDS_MUSINSA = ["린넨 원피스","버킷햇","오버핏 셔츠","와이드 데님","크롭 니트","스트랩 샌들","크로스백","카고팬츠","시스루 가디건","비치웨어"];
 const REALTIME_KEYWORDS_CM29 = ["린넨 블레이저","와이드 슬랙스","크롭 가디건","버킷백","스퀘어토 플랫","오피스룩","베스트 세트","미니멀 자켓","서머 니트","레더 로퍼"];
-const MARKETER_KEYWORDS_MUSINSA = ["오버핏 니트","원피스 코디","여름 린넨팬츠","버킷햇","크로스백","카고팬츠","스트릿패션","캠퍼스룩","미니멀룩","스포티룩"];
 const MARKETER_KEYWORDS_CM29 = ["미니멀 셋업","오피스룩 코디","여름 슬랙스","박시 블레이저","니트 베스트","와이드 슈트팬츠","젠더리스룩","시티보이룩","클린룩","러기지백"];
 
 const DATA_START = new Date(2026, 0, 1);
@@ -183,7 +210,6 @@ function buildTrendSeries(keywords, seedBase) {
   return map;
 }
 
-const MUSINSA_TREND_SERIES = buildTrendSeries(MARKETER_KEYWORDS_MUSINSA, 0);
 const CM29_TREND_SERIES = buildTrendSeries(MARKETER_KEYWORDS_CM29, 90000);
 
 function buildChartData(selectedKeys, start, end, seriesMap) {
@@ -426,6 +452,55 @@ function DeltaBadge({ delta }) {
   return (<span className="flex items-center gap-0.5 text-[11px] font-semibold" style={{ color: C.mute }}><Minus size={11} /> 0</span>);
 }
 
+function CompactDelta({ delta }) {
+  if (delta === undefined) return null;
+  if (delta === "NEW") return (<span className="text-[10px] font-bold shrink-0" style={{ color: C.signal }}>NEW</span>);
+  if (delta > 0) return (<span className="flex items-center gap-0.5 text-[10px] font-bold shrink-0" style={{ color: "#1E8E5A" }}><TrendingUp size={9} />{delta}</span>);
+  if (delta < 0) return (<span className="flex items-center gap-0.5 text-[10px] font-bold shrink-0" style={{ color: C.signal }}><TrendingDown size={9} />{Math.abs(delta)}</span>);
+  return (<span className="text-[10px] font-semibold shrink-0" style={{ color: C.mute }}>-</span>);
+}
+
+const KEYWORD_FILTERS = [{ key: "all", label: "전체" }, { key: "rising", label: "급상승" }];
+const KEYWORD_TOP_N_DISPLAY = 50;
+
+function KeywordRankingPanel({ keywords, dataSource, selectedDateLabel }) {
+  return (
+    <div className="rounded-2xl p-5 h-full flex flex-col" style={{ background: C.white, border: `1px solid ${C.line}` }}>
+      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          <Sparkles size={16} color={C.indigo} />
+          <h2 className="text-base font-bold" style={{ color: C.ink }}>무신사 검색어 랭킹</h2>
+          {dataSource !== "live" && (<span className="text-[10.5px] font-semibold px-1.5 py-0.5 rounded" style={{ background: C.paper, color: C.mute }}>샘플 데이터</span>)}
+        </div>
+        {!!selectedDateLabel && (<span className="text-xs font-medium whitespace-nowrap" style={{ color: C.mute }}>{selectedDateLabel}</span>)}
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-4 flex-1 min-h-0">
+        {KEYWORD_FILTERS.map((f, fi) => {
+          const list = (keywords?.[f.key] || []).slice(0, KEYWORD_TOP_N_DISPLAY);
+          return (
+            <div key={f.key} className={fi > 0 ? "sm:pl-5" : ""} style={fi > 0 ? { borderLeft: `1px solid ${C.line}` } : undefined}>
+              <span className="text-xs font-bold" style={{ color: C.mute }}>{f.label}</span>
+              {list.length === 0 ? (
+                <div className="flex items-center justify-center rounded-xl text-xs font-medium mt-2" style={{ height: 120, background: C.paper, color: C.mute }}>검색어 데이터가 없어요.</div>
+              ) : (
+                <div className="columns-2 lg:columns-3 gap-x-3 mt-1.5">
+                  {list.map((item) => (
+                    <a key={item.url || item.keyword} href={item.url || undefined} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 py-1 text-xs" style={{ borderBottom: `1px solid ${C.line}`, breakInside: "avoid" }}>
+                      <span className="w-4 shrink-0 font-bold tabular-nums text-right" style={{ color: C.mute }}>{item.rank}</span>
+                      <span className="flex-1 truncate font-semibold" style={{ color: C.ink }}>{item.keyword}</span>
+                      <CompactDelta delta={item.delta} />
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function ProductCard({ item, iconSeed }) {
   const hue = Math.floor(seeded(iconSeed) * 300);
   const hasImage = Boolean(item.image);
@@ -626,6 +701,8 @@ function FashionMarketerDashboard() {
   const [musinsaIndex, setMusinsaIndex] = useState(null); // { "YYYY-MM-DD": ["08-00", "17-00"] } | null(로딩 전)
   const [musinsaSelectedTime, setMusinsaSelectedTime] = useState(null);
 
+  const musinsaKeywords = useMemo(() => musinsaRankings?.keywords || { all: [], rising: [] }, [musinsaRankings]);
+
   const musinsaDates = useMemo(() => (musinsaIndex ? Object.keys(musinsaIndex).sort() : []), [musinsaIndex]);
   const selectedDateKey = useMemo(() => formatDateKey(selectedDate), [selectedDate]);
   const rawTimesForSelectedDate = musinsaIndex?.[selectedDateKey] || [];
@@ -649,7 +726,10 @@ function FashionMarketerDashboard() {
       const priorDateKey = priorDates[priorDates.length - 1];
       const priorTimes = priorDateKey ? musinsaIndex[priorDateKey] || [] : [];
       const pairs = [...priorTimes.map((t) => [priorDateKey, t]), ...rawTimes.map((t) => [dateKey, t])];
-      request = Promise.all(pairs.map(([d, t]) => fetchOne(d, t))).then((snapshots) => averageRankings(snapshots));
+      request = Promise.all(pairs.map(([d, t]) => fetchOne(d, t))).then((snapshots) => ({
+        ...averageRankings(snapshots),
+        keywords: averageKeywordRankings(snapshots),
+      }));
     } else {
       request = fetchOne(dateKey, timeLabel.replace(":", "-"));
     }
@@ -699,7 +779,7 @@ function FashionMarketerDashboard() {
           {view === "musinsa" && (
             <>
               <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-5 items-stretch">
-                <KeywordTrendPanel key="musinsa-keyword" keywords={MARKETER_KEYWORDS_MUSINSA} series={MUSINSA_TREND_SERIES} />
+                <KeywordRankingPanel keywords={musinsaKeywords} dataSource={musinsaDataSource} selectedDateLabel={panelDateLabel} />
                 <MiniCalendar selected={selectedDate} onSelect={setSelectedDate} availableDates={musinsaDates} />
               </div>
               <RankingPanel

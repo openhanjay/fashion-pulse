@@ -57,6 +57,12 @@ const SECTION_IDS = {
   rising: "201",
 };
 
+// 검색어 랭킹 필터 <-> 무신사 sectionId (카테고리 구분 없는 전체 TOP 200. 급상승은 fluctuation 필드 자체가 없음)
+const KEYWORD_SECTION_IDS = {
+  all: "1067",
+  rising: "2449",
+};
+
 const TOP_N = 150;
 const REQUEST_DELAY_MS = 700;
 const DATA_DIR = path.join(__dirname, "data");
@@ -136,6 +142,32 @@ async function fetchRanking(sectionId, categoryCode) {
     .slice(0, TOP_N);
 }
 
+// 검색어 랭킹은 한 번 요청에 최대 200개까지 다 오고 페이지네이션이 없음(link.next 없음)
+function mapKeywordItem(item) {
+  const f = item.fluctuation;
+  let delta;
+  if (f) {
+    if (f.type === "NEW") delta = "NEW";
+    else if (f.type === "UP") delta = Number(f.amount) || 0;
+    else if (f.type === "DOWN") delta = -(Number(f.amount) || 0);
+    else delta = 0;
+  }
+  return {
+    rank: Number(item.rank) || 9999,
+    keyword: item.title?.text || "",
+    url: item.onClick?.url || "",
+    ...(delta !== undefined ? { delta } : {}),
+  };
+}
+
+async function fetchKeywordRanking(sectionId) {
+  const res = await fetch(`${BASE_URL}/${sectionId}?storeCode=musinsa`, { headers: HEADERS });
+  if (!res.ok) throw new Error(`HTTP ${res.status} (keyword sectionId=${sectionId})`);
+  const payload = await res.json();
+  const modules = (payload?.data?.modules || []).filter((m) => m.type === "RANKING_SEARCH");
+  return modules.map(mapKeywordItem).sort((a, b) => a.rank - b.rank);
+}
+
 function readIndex() {
   if (!fs.existsSync(INDEX_FILE)) return {};
   try {
@@ -212,6 +244,13 @@ async function main() {
   }
 
   attachDeltas(result, priorSnapshot);
+
+  result.keywords = {};
+  for (const [filterKey, sectionId] of Object.entries(KEYWORD_SECTION_IDS)) {
+    console.log(`수집 중: 검색어 / ${filterKey} ...`);
+    result.keywords[filterKey] = await fetchKeywordRanking(sectionId);
+    await sleep(REQUEST_DELAY_MS);
+  }
 
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
