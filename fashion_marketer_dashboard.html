@@ -200,7 +200,6 @@ function attachAverageDelta(today, prior, catKeys, filterKeys) {
   return today;
 }
 
-const REALTIME_KEYWORDS_MUSINSA = ["린넨 원피스","버킷햇","오버핏 셔츠","와이드 데님","크롭 니트","스트랩 샌들","크로스백","카고팬츠","시스루 가디건","비치웨어"];
 const REALTIME_KEYWORDS_CM29 = ["린넨 블레이저","와이드 슬랙스","크롭 가디건","버킷백","스퀘어토 플랫","오피스룩","베스트 세트","미니멀 자켓","서머 니트","레더 로퍼"];
 const MARKETER_KEYWORDS_CM29 = ["미니멀 셋업","오피스룩 코디","여름 슬랙스","박시 블레이저","니트 베스트","와이드 슈트팬츠","젠더리스룩","시티보이룩","클린룩","러기지백"];
 
@@ -522,7 +521,7 @@ function CompactDelta({ delta }) {
 }
 
 const KEYWORD_FILTERS = [{ key: "all", label: "전체" }, { key: "rising", label: "급상승" }];
-const KEYWORD_TOP_N_DISPLAY = 50;
+const KEYWORD_TOP_N_DISPLAY = 80;
 const KEYWORD_TREND_TOP_N = 7;
 
 /* 날짜(dateKey)의 그 날 전체 수집 시각을 평균 내서 그 날의 "전체" 검색어 랭킹을 하나 만든다 */
@@ -555,6 +554,7 @@ async function loadKeywordWeekTrend(musinsaIndex, selectedDateKey) {
 
 function KeywordRankingPanel({ keywords, dataSource, selectedDateLabel, musinsaIndex, selectedDateKey }) {
   const [mode, setMode] = useState("list");
+  const [filter, setFilter] = useState("all");
   const [trend, setTrend] = useState({ status: "idle" });
 
   useEffect(() => {
@@ -581,28 +581,31 @@ function KeywordRankingPanel({ keywords, dataSource, selectedDateLabel, musinsaI
         </div>
       </div>
       {mode === "list" ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-4 flex-1 min-h-0">
-          {KEYWORD_FILTERS.map((f, fi) => {
-            const list = (keywords?.[f.key] || []).slice(0, KEYWORD_TOP_N_DISPLAY);
+        <div className="flex-1 min-h-0 flex flex-col">
+          <div className="flex items-stretch p-0.5 rounded-lg mb-3 self-start" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+            {KEYWORD_FILTERS.map((f, i) => {
+              const isActive = f.key === filter;
+              const prevActive = i > 0 && KEYWORD_FILTERS[i - 1].key === filter;
+              return (<button key={f.key} onClick={() => setFilter(f.key)} className="px-4 py-1.5 text-xs font-bold transition-all" style={{ background: isActive ? C.ink : "transparent", color: isActive ? C.white : C.mute, borderRadius: 6, borderLeft: i > 0 && !isActive && !prevActive ? `1px solid ${C.line}` : "1px solid transparent" }}>{f.label}</button>);
+            })}
+          </div>
+          {(() => {
+            const list = (keywords?.[filter] || []).slice(0, KEYWORD_TOP_N_DISPLAY);
+            if (list.length === 0) {
+              return (<div className="flex items-center justify-center rounded-xl text-xs font-medium flex-1" style={{ background: C.paper, color: C.mute, minHeight: 160 }}>검색어 데이터가 없어요.</div>);
+            }
             return (
-              <div key={f.key} className={fi > 0 ? "sm:pl-5" : ""} style={fi > 0 ? { borderLeft: `1px solid ${C.line}` } : undefined}>
-                <span className="text-xs font-bold" style={{ color: C.mute }}>{f.label}</span>
-                {list.length === 0 ? (
-                  <div className="flex items-center justify-center rounded-xl text-xs font-medium mt-2" style={{ height: 120, background: C.paper, color: C.mute }}>검색어 데이터가 없어요.</div>
-                ) : (
-                  <div className="columns-2 lg:columns-3 gap-x-3 mt-1.5">
-                    {list.map((item) => (
-                      <a key={item.url || item.keyword} href={item.url || undefined} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 py-1 text-xs" style={{ borderBottom: `1px solid ${C.line}`, breakInside: "avoid" }}>
-                        <span className="w-4 shrink-0 font-bold tabular-nums text-right" style={{ color: C.mute }}>{item.rank}</span>
-                        <span className="flex-1 truncate font-semibold" style={{ color: C.ink }}>{item.keyword}</span>
-                        <CompactDelta delta={item.delta} />
-                      </a>
-                    ))}
-                  </div>
-                )}
+              <div className="columns-2 sm:columns-3 lg:columns-4 gap-x-4">
+                {list.map((item) => (
+                  <a key={item.url || item.keyword} href={item.url || undefined} target="_blank" rel="noreferrer" className="flex items-center gap-2 py-1.5 text-xs" style={{ borderBottom: `1px solid ${C.line}`, breakInside: "avoid" }}>
+                    <span className="w-5 shrink-0 font-bold tabular-nums text-right" style={{ color: C.mute }}>{item.rank}</span>
+                    <span className="flex-1 truncate font-semibold" style={{ color: C.ink }}>{item.keyword}</span>
+                    <CompactDelta delta={item.delta} />
+                  </a>
+                ))}
               </div>
             );
-          })}
+          })()}
         </div>
       ) : (
         <div className="flex-1 min-h-0 flex flex-col">
@@ -902,7 +905,7 @@ function FashionMarketerDashboard() {
             </div>
           </div>
         </header>
-        {view !== "instagram" && (<Ticker keywords={view === "cm29" ? REALTIME_KEYWORDS_CM29 : REALTIME_KEYWORDS_MUSINSA} />)}
+        {view === "cm29" && (<Ticker keywords={REALTIME_KEYWORDS_CM29} />)}
         <main className="px-6 py-5 flex flex-col gap-5">
           {view === "musinsa" && (
             <>
