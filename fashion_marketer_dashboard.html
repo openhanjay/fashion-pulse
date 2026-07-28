@@ -294,26 +294,32 @@ function MiniLineChart({ data, lines }) {
 
 /* 순위 추이 전용 차트: 데이터가 하루(점 1개)뿐이어도 보이도록 각 점에 원 마커를 찍고,
    범례 대신 각 선 끝(가장 최근 지점)에 검색어 이름을 직접 그래프 위에 적어준다. */
-function RankTrendChart({ data, lines }) {
+function RankTrendChart({ data, lines, topN }) {
+  const N = topN || 7;
   const width = 700, height = 240;
-  const padL = 14, padR = 116, padT = 14, padB = 26;
+  const padL = 26, padR = 116, padT = 14, padB = 26;
   const innerW = width - padL - padR;
   const innerH = height - padT - padB;
-  const values = [];
-  data.forEach((d) => lines.forEach((l) => { if (typeof d[l.key] === "number") values.push(d[l.key]); }));
-  const minV = values.length ? Math.min(...values) : -1;
-  const maxV = values.length ? Math.max(...values) : 0;
+  const minV = -N, maxV = -1;
   const range = maxV - minV || 1;
   const n = data.length;
   const xFor = (i) => padL + (n > 1 ? (i / (n - 1)) * innerW : innerW / 2);
   const yFor = (v) => padT + innerH - ((v - minV) / range) * innerH;
-  const gridYs = [0, 0.25, 0.5, 0.75, 1].map((t) => padT + innerH * (1 - t));
+  const ranks = Array.from({ length: N }, (_, i) => i + 1);
   const labelEvery = Math.max(1, Math.ceil(n / 7));
   const shortLabel = (s) => (s.length > 7 ? `${s.slice(0, 6)}…` : s);
 
   return (
     <svg viewBox={`0 0 ${width} ${height}`} width="100%" height="100%" preserveAspectRatio="none">
-      {gridYs.map((y, i) => (<line key={i} x1={padL} x2={width - padR} y1={y} y2={y} stroke={C.line} strokeDasharray="3 5" />))}
+      {ranks.map((rank) => {
+        const y = yFor(-rank);
+        return (
+          <g key={rank}>
+            <line x1={padL} x2={width - padR} y1={y} y2={y} stroke={C.line} strokeDasharray="3 5" />
+            <text x={padL - 6} y={y + 3} fontSize="10" fill={C.mute} textAnchor="end">{rank}</text>
+          </g>
+        );
+      })}
       {data.map((d, i) => (i % labelEvery === 0 ? (<text key={i} x={xFor(i)} y={height - 6} fontSize="10" fill={C.mute} textAnchor="middle">{d.day}</text>) : null))}
       {lines.map((l) => {
         const points = data.map((d, i) => ({ x: xFor(i), y: typeof d[l.key] === "number" ? yFor(d[l.key]) : null }));
@@ -597,7 +603,7 @@ function KeywordRankingPanel({ keywords, dataSource, selectedDateLabel, musinsaI
             <>
               <span className="text-xs font-medium mb-1" style={{ color: C.mute }}>전체 검색어 TOP {KEYWORD_TREND_TOP_N} 순위 추이 (최근 {trend.dates.length}개 수집일{trend.dates.length < 7 ? ", 아직 7일치 미만" : ""})</span>
               <div className="flex-1 min-h-[220px]">
-                <RankTrendChart data={trend.data} lines={trend.lines} />
+                <RankTrendChart data={trend.data} lines={trend.lines} topN={KEYWORD_TREND_TOP_N} />
               </div>
             </>
           )}
