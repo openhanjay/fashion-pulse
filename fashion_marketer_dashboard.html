@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FASHION PULSE - 마케터 대시보드</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  * { font-family: 'Inter', sans-serif; }
+  .font-display { font-family: 'Space Grotesk', sans-serif; }
+  .tabular-nums { font-variant-numeric: tabular-nums; font-family: 'JetBrains Mono', monospace; }
+  body { margin: 0; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useMemo, useEffect } = React;
+
+/* =========================================================================
+   COLOR / TYPE TOKENS
+   ========================================================================= */
+const C = {
+  paper: "#F6F5F1",
+  paperDark: "#EFEDE7",
+  ink: "#17181C",
+  line: "#E3E1DA",
+  mute: "#8B8A85",
+  signal: "#FF3B5C",
+  signalSoft: "#FFE9ED",
+  indigo: "#4338CA",
+  indigoSoft: "#EBE9FC",
+  white: "#FFFFFF",
+};
+
+const LINE_PALETTE = [
+  "#4338CA","#FF3B5C","#0F9D8C","#D97B0D","#7A45C9",
+  "#0E7AC4","#B8862F","#C0378A","#3E8E3E","#555555",
+];
+
+/* ---------------------------- 간단 아이콘 세트 (lucide 대체) ---------------------------- */
+function ChevronLeft({size=16,color="currentColor"}){return (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>);}
+function ChevronRight({size=16,color="currentColor"}){return (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>);}
+function Minus({size=16,color="currentColor"}){return (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>);}
+function TrendingUp({size=16,color="currentColor"}){return (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 17 9 11 13 15 21 6"/><polyline points="14 6 21 6 21 13"/></svg>);}
+function TrendingDown({size=16,color="currentColor"}){return (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 7 9 13 13 9 21 18"/><polyline points="14 18 21 18 21 11"/></svg>);}
+function Flame({size=16,color="currentColor"}){return (<svg width={size} height={size} viewBox="0 0 24 24" fill={color} stroke="none"><path d="M12 2c1 4-3 5-3 9a3 3 0 0 0 6 0c0-1-.5-2-1-3 2 1 3 3 3 5a5 5 0 0 1-10 0c0-4 3-6 5-11z"/></svg>);}
+function Sparkles({size=16,color="currentColor"}){return (<svg width={size} height={size} viewBox="0 0 24 24" fill={color} stroke="none"><path d="M12 2l1.5 5L19 9l-5.5 2L12 16l-1.5-5L5 9l5.5-2z"/><circle cx="19" cy="17" r="1.4"/><circle cx="5" cy="6" r="1"/></svg>);}
+function Camera({size=16,color="currentColor"}){return (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.4"/></svg>);}
+function ShoppingBag({size=16,color="currentColor"}){return (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8h12l1 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>);}
+function Tag({size=16,color="currentColor"}){return (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.6 12.6L12 21.2 2.8 12 2 3l9-.8 8.6 9.4a2 2 0 0 1 0 1z"/><circle cx="7.5" cy="7.5" r="1.1" fill={color} stroke="none"/></svg>);}
+function CalendarIcon({size=16,color="currentColor"}){return (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="16" y1="3" x2="16" y2="7"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="3" y1="10" x2="21" y2="10"/></svg>);}
+
+/* ---------------------------- 유틸: 시드 난수 ---------------------------- */
+function seeded(seed) {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+
+/* ============================== 더미 데이터 ============================== */
+const CATEGORIES = ["전체", "상의", "아우터", "바지", "원피스", "가방", "모자"];
+
+const BRANDS_MUSINSA = ["커버낫","디스이즈네버댓","마디에크르디","앤더슨벨","인사일런스","와릴","파르티멘토","비바스튜디오","로우로우","내셔널지오그래픽","디스커버리","칼하트 WIP","스투시","폴로 랄프로렌","그루브라임"];
+const BRANDS_CM29 = ["그로브","마인","시에스타","오이오이","라퍼지스토어","비이커","안다르","코스","자주","널디","마르디메크르디","인사일런스","아떼르베이직","구호","매트인더씨티"];
+
+const PRODUCT_POOL = {
+  전체: ["오버핏 반팔 티셔츠","플리스 집업 자켓","와이드 데님 팬츠","린넨 셔츠 원피스","크로스백 미니","자수 로고 볼캡"],
+  상의: ["오버핏 반팔 티셔츠","스트라이프 니트 카라티","헤비웨이트 무지 반팔티","빈티지 워싱 셔츠","크루넥 스웨트셔츠","린넨 블렌드 셔츠"],
+  아우터: ["플리스 집업 자켓","오버사이즈 블루종","나일론 코치자켓","무스탕 자켓","트러커 데님자켓","바람막이 아노락"],
+  바지: ["와이드 데님 팬츠","밴딩 조거팬츠","세미와이드 슬랙스","카고 팬츠","코듀로이 팬츠","린넨 와이드 팬츠"],
+  원피스: ["린넨 셔츠 원피스","니트 롱 원피스","플리츠 미디 원피스","스트랩 슬립 원피스","체크 셔츠 원피스","코튼 미니 원피스"],
+  가방: ["크로스백 미니","캔버스 에코백","버킷 파우치백","레더 숄더백","나일론 백팩","웨빙 벨트백"],
+  모자: ["자수 로고 볼캡","코듀로이 버킷햇","울 니트 비니","스트랩백 캡","뉴에라 볼캡","리넨 버킷햇"],
+};
+
+function generateRanking(category, catIdx, brandsList, seedBase) {
+  const pool = PRODUCT_POOL[category];
+  return Array.from({ length: 100 }, (_, i) => {
+    const seed = seedBase + catIdx * 977 + i * 13 + 1;
+    const brand = brandsList[Math.floor(seeded(seed) * brandsList.length)];
+    const name = pool[(i + catIdx) % pool.length];
+    const price = Math.round(((19000 + seeded(seed + 1) * 170000) / 1000)) * 1000;
+    const roll = seeded(seed + 2);
+    let delta;
+    if (i < 5 && roll > 0.72) delta = "NEW";
+    else delta = Math.round((seeded(seed + 3) - 0.45) * 26);
+    return { rank: i + 1, brand, name, price, delta };
+  });
+}
+
+function buildPlatformRankings(brandsList, seedBase) {
+  return Object.fromEntries(CATEGORIES.map((c, idx) => [c, generateRanking(c, idx, brandsList, seedBase)]));
+}
+
+/* 목업 랭킹(단일 리스트 + delta)을 실데이터와 동일한 { all, rising, new } 구조로 변환 */
+function toFilteredRankings(rawRankings) {
+  return Object.fromEntries(CATEGORIES.map((c) => {
+    const list = rawRankings[c];
+    return [c, {
+      all: list,
+      rising: list.filter((item) => typeof item.delta === "number" && item.delta > 0),
+      new: list.filter((item) => item.delta === "NEW"),
+    }];
+  }));
+}
+
+const MUSINSA_MOCK_RANKINGS = toFilteredRankings(buildPlatformRankings(BRANDS_MUSINSA, 0));
+const CM29_RANKINGS = toFilteredRankings(buildPlatformRankings(BRANDS_CM29, 50000));
+
+/* Date -> "YYYY-MM-DD" (수집 인덱스/파일명 키와 맞춤) */
+function formatDateKey(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+function parseDateKey(key) {
+  const [y, m, d] = key.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
+/* 하루 여러 번 수집한 스냅샷들을 상품별 평균 순위로 합쳐서 하나의 { all, rising, new } 랭킹으로 재구성 */
+function averageRankings(snapshots) {
+  const result = {};
+  CATEGORIES.forEach((cat) => {
+    result[cat] = {};
+    ["all", "rising", "new"].forEach((filterKey) => {
+      const merged = new Map();
+      snapshots.forEach((snap) => {
+        const list = snap?.[cat]?.[filterKey] || [];
+        list.forEach((item) => {
+          const key = item.url || `${item.brand}__${item.name}`;
+          const existing = merged.get(key);
+          if (existing) {
+            existing.sumRank += item.rank;
+            existing.count += 1;
+            existing.latest = item;
+          } else {
+            merged.set(key, { sumRank: item.rank, count: 1, latest: item });
+          }
+        });
+      });
+      result[cat][filterKey] = [...merged.values()]
+        .map((v) => ({ ...v.latest, avgRank: v.sumRank / v.count }))
+        .sort((a, b) => a.avgRank - b.avgRank)
+        .slice(0, 100)
+        .map((item, idx) => ({ ...item, rank: idx + 1 }));
+    });
+  });
+  return result;
+}
+
+const REALTIME_KEYWORDS_MUSINSA = ["린넨 원피스","버킷햇","오버핏 셔츠","와이드 데님","크롭 니트","스트랩 샌들","크로스백","카고팬츠","시스루 가디건","비치웨어"];
+const REALTIME_KEYWORDS_CM29 = ["린넨 블레이저","와이드 슬랙스","크롭 가디건","버킷백","스퀘어토 플랫","오피스룩","베스트 세트","미니멀 자켓","서머 니트","레더 로퍼"];
+const MARKETER_KEYWORDS_MUSINSA = ["오버핏 니트","원피스 코디","여름 린넨팬츠","버킷햇","크로스백","카고팬츠","스트릿패션","캠퍼스룩","미니멀룩","스포티룩"];
+const MARKETER_KEYWORDS_CM29 = ["미니멀 셋업","오피스룩 코디","여름 슬랙스","박시 블레이저","니트 베스트","와이드 슈트팬츠","젠더리스룩","시티보이룩","클린룩","러기지백"];
+
+const DATA_START = new Date(2026, 0, 1);
+const DATA_END = new Date(2026, 6, 20);
+const MS_PER_DAY = 86400000;
+const TOTAL_DAYS = Math.round((DATA_END - DATA_START) / MS_PER_DAY) + 1;
+
+function dayIndex(date) { return Math.round((date - DATA_START) / MS_PER_DAY); }
+
+function buildTrendSeries(keywords, seedBase) {
+  const map = {};
+  keywords.forEach((kw, ki) => {
+    let v = 400 + seeded(seedBase + ki * 51 + 3) * 1400;
+    const arr = [];
+    for (let d = 0; d < TOTAL_DAYS; d++) {
+      const shift = (seeded(seedBase + ki * 91 + d * 7 + 1) - 0.5) * 220;
+      v = Math.max(80, v + shift);
+      arr.push(Math.round(v));
+    }
+    map[kw] = arr;
+  });
+  return map;
+}
+
+const MUSINSA_TREND_SERIES = buildTrendSeries(MARKETER_KEYWORDS_MUSINSA, 0);
+const CM29_TREND_SERIES = buildTrendSeries(MARKETER_KEYWORDS_CM29, 90000);
+
+function buildChartData(selectedKeys, start, end, seriesMap) {
+  const days = [];
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) days.push(new Date(d));
+  return days.map((d) => {
+    const idx = dayIndex(d);
+    const row = { day: `${d.getMonth() + 1}/${d.getDate()}` };
+    selectedKeys.forEach((kw) => { row[kw] = seriesMap[kw][idx]; });
+    return row;
+  });
+}
+
+const TREND_YEARS = [2026];
+const TREND_MONTHS = [1, 2, 3, 4, 5, 6, 7];
+const WEEK_LABELS = ["첫째주", "둘째주", "셋째주", "넷째주", "다섯째주"];
+
+function daysAvailableInMonth(year, month) {
+  const daysInMonth = new Date(year, month, 0).getDate();
+  if (year === DATA_END.getFullYear() && month === DATA_END.getMonth() + 1) {
+    return Math.min(daysInMonth, DATA_END.getDate());
+  }
+  return daysInMonth;
+}
+
+function getWeeksForMonth(year, month) {
+  const totalDays = daysAvailableInMonth(year, month);
+  const weeks = [];
+  let start = 1, wi = 0;
+  while (start <= totalDays) {
+    const end = Math.min(start + 6, totalDays);
+    weeks.push({ key: `w${wi + 1}`, label: WEEK_LABELS[wi] || `${wi + 1}주차`, startDay: start, endDay: end });
+    start = end + 1; wi++;
+  }
+  return weeks;
+}
+
+const IG_BRANDS = [
+  { name: "VIVASTUDIO", handle: "@vivastudio_official", initials: "VS", color: "#17181C" },
+  { name: "COVERNAT", handle: "@covernat_official", initials: "CN", color: "#3E5C76" },
+  { name: "THISISNEVERTHAT", handle: "@thisisneverthat", initials: "TN", color: "#8A5A2E" },
+  { name: "ADER ERROR", handle: "@ader.error", initials: "AE", color: "#6B3FA0" },
+];
+
+const TIMELINE_EVENTS = [
+  { brand: IG_BRANDS[0], date: "2026.07.19", seasonOff: { active: true, period: "7.20 ~ 7.31" }, drop: "26 F/W 프리뷰 8월 초 공개 예정", issue: "시즌오프 최대 50% 세일 티저 게시 · 좋아요 전일 대비 +32%" },
+  { brand: IG_BRANDS[1], date: "2026.07.19", seasonOff: { active: false, period: null }, drop: "여름 리넨 캡슐 컬렉션 7.25 정오 출시", issue: "신제품 룩북 릴스 업로드 · 댓글에 '재입고 문의' 다수" },
+  { brand: IG_BRANDS[2], date: "2026.07.18", seasonOff: { active: false, period: null }, drop: "협업 라인 발표 미정", issue: "브랜드 창립 기념 아카이브 사진 게시, 팬 반응 우호적" },
+  { brand: IG_BRANDS[3], date: "2026.07.17", seasonOff: { active: true, period: "7.15 ~ 7.22" }, drop: "그래픽 티셔츠 신규 컬러 7.28 예정", issue: "세일 마지막 주 카운트다운 스토리 반복 게시" },
+  { brand: IG_BRANDS[0], date: "2026.07.16", seasonOff: { active: true, period: "7.20 ~ 7.31" }, drop: "26 F/W 프리뷰 8월 초 공개 예정", issue: "인플루언서 협업 착용샷 3건 동시 게시" },
+  { brand: IG_BRANDS[1], date: "2026.07.15", seasonOff: { active: false, period: null }, drop: "여름 리넨 캡슐 컬렉션 7.25 정오 출시", issue: "제작 비하인드 영상 업로드, 조회수 급상승" },
+];
+
+/* ============================== 커스텀 미니 라인차트 (recharts 대체) ============================== */
+function MiniLineChart({ data, lines }) {
+  const width = 700, height = 240;
+  const padL = 40, padR = 10, padT = 10, padB = 26;
+  const innerW = width - padL - padR;
+  const innerH = height - padT - padB;
+  const values = [];
+  data.forEach((d) => lines.forEach((l) => { if (typeof d[l.key] === "number") values.push(d[l.key]); }));
+  const minV = values.length ? Math.min(...values) : 0;
+  const maxV = values.length ? Math.max(...values) : 1;
+  const range = maxV - minV || 1;
+  const n = data.length;
+  const xFor = (i) => padL + (n > 1 ? (i / (n - 1)) * innerW : innerW / 2);
+  const yFor = (v) => padT + innerH - ((v - minV) / range) * innerH;
+  const gridYs = [0, 0.25, 0.5, 0.75, 1].map((t) => padT + innerH * (1 - t));
+  const labelEvery = Math.max(1, Math.ceil(n / 7));
+
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} width="100%" height="100%" preserveAspectRatio="none">
+      {gridYs.map((y, i) => (<line key={i} x1={padL} x2={width - padR} y1={y} y2={y} stroke={C.line} strokeDasharray="3 5" />))}
+      {data.map((d, i) => (i % labelEvery === 0 ? (<text key={i} x={xFor(i)} y={height - 6} fontSize="10" fill={C.mute} textAnchor="middle">{d.day}</text>) : null))}
+      {lines.map((l) => {
+        const pts = data.map((d, i) => `${xFor(i)},${yFor(d[l.key] ?? minV)}`).join(" ");
+        return <polyline key={l.key} points={pts} fill="none" stroke={l.color} strokeWidth="2.2" strokeLinejoin="round" strokeLinecap="round" />;
+      })}
+    </svg>
+  );
+}
+
+/* ============================== 서브 컴포넌트 ============================== */
+function Ticker({ keywords }) {
+  const items = [...keywords, ...keywords];
+  return (
+    <div className="w-full overflow-hidden border-y" style={{ borderColor: C.line, background: C.ink }}>
+      <div className="flex items-center py-2.5 whitespace-nowrap ticker-track">
+        {items.map((kw, i) => {
+          const rank = (i % keywords.length) + 1;
+          return (
+            <div key={i} className="flex items-center gap-2 px-6">
+              <span className="text-xs font-bold tabular-nums" style={{ color: rank <= 3 ? C.signal : "#9A9AA0" }}>{String(rank).padStart(2, "0")}</span>
+              <span className="text-sm font-medium" style={{ color: C.white }}>{kw}</span>
+              {rank <= 3 && <Flame size={13} color={C.signal} />}
+            </div>
+          );
+        })}
+      </div>
+      <style>{`
+        .ticker-track { width: max-content; animation: ticker-scroll 32s linear infinite; }
+        .ticker-track:hover { animation-play-state: paused; }
+        @keyframes ticker-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+      `}</style>
+    </div>
+  );
+}
+
+function MiniCalendar({ selected, onSelect, availableDates }) {
+  const [cursor, setCursor] = useState(new Date(2026, 6, 1));
+  const year = cursor.getFullYear();
+  const month = cursor.getMonth();
+  const firstWeekday = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const cells = [];
+  for (let i = 0; i < firstWeekday; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  const isLive = Array.isArray(availableDates);
+  const today = isLive ? new Date() : new Date(2026, 6, 20);
+  const hasData = (d) => (isLive ? availableDates.includes(formatDateKey(new Date(year, month, d))) : new Date(year, month, d) <= today);
+
+  return (
+    <div className="rounded-2xl p-4 h-full flex flex-col" style={{ background: C.white, border: `1px solid ${C.line}` }}>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-1.5">
+          <CalendarIcon size={15} color={C.ink} />
+          <span className="text-sm font-bold" style={{ color: C.ink }}>데이터 조회</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <button onClick={() => setCursor(new Date(year, month - 1, 1))} className="p-1 rounded-md" style={{ color: C.mute }}><ChevronLeft size={15} /></button>
+          <span className="text-xs font-semibold w-16 text-center" style={{ color: C.ink }}>{year}.{String(month + 1).padStart(2, "0")}</span>
+          <button onClick={() => setCursor(new Date(year, month + 1, 1))} className="p-1 rounded-md" style={{ color: C.mute }}><ChevronRight size={15} /></button>
+        </div>
+      </div>
+      <div className="grid grid-cols-7 gap-y-1 text-center mb-1">
+        {["일","월","화","수","목","금","토"].map((w) => (<span key={w} className="text-[11px] font-semibold" style={{ color: C.mute }}>{w}</span>))}
+      </div>
+      <div className="grid grid-cols-7 gap-y-1 flex-1">
+        {cells.map((d, i) => {
+          if (!d) return <div key={i} />;
+          const dt = new Date(year, month, d);
+          const isSelected = selected.getFullYear() === year && selected.getMonth() === month && selected.getDate() === d;
+          const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === d;
+          const active = hasData(d);
+          return (
+            <button key={i} disabled={!active} onClick={() => onSelect(dt)} className="relative mx-auto flex items-center justify-center rounded-lg text-xs font-medium"
+              style={{ width: 28, height: 28, color: !active ? "#C9C7C0" : isSelected ? C.white : C.ink, background: isSelected ? C.ink : "transparent", border: isToday && !isSelected ? `1px solid ${C.signal}` : "1px solid transparent", cursor: active ? "pointer" : "not-allowed" }}>
+              {d}
+              {active && !isSelected && (<span className="absolute bottom-0.5 rounded-full" style={{ width: 3, height: 3, background: C.signal }} />)}
+            </button>
+          );
+        })}
+      </div>
+      <div className="mt-3 pt-3 text-xs flex items-center justify-between" style={{ borderTop: `1px solid ${C.line}`, color: C.mute }}>
+        <span>선택된 날짜</span>
+        <span className="font-bold" style={{ color: C.ink }}>{selected.getFullYear()}.{String(selected.getMonth() + 1).padStart(2, "0")}.{String(selected.getDate()).padStart(2, "0")}</span>
+      </div>
+    </div>
+  );
+}
+
+function KeywordTrendPanel({ keywords, series }) {
+  const [active, setActive] = useState(new Set([keywords[0], keywords[1], keywords[3]]));
+  const [mode, setMode] = useState("recent");
+  const [year, setYear] = useState(2026);
+  const [month, setMonth] = useState(7);
+  const weeks = useMemo(() => getWeeksForMonth(year, month), [year, month]);
+  const [weekKey, setWeekKey] = useState(weeks[weeks.length - 1]?.key);
+
+  const toggle = (kw) => {
+    setActive((prev) => {
+      const next = new Set(prev);
+      if (next.has(kw)) { if (next.size > 1) next.delete(kw); } else next.add(kw);
+      return next;
+    });
+  };
+
+  const handleMonthChange = (nextMonth) => {
+    setMonth(nextMonth);
+    const nextWeeks = getWeeksForMonth(year, nextMonth);
+    setWeekKey(nextWeeks[nextWeeks.length - 1]?.key);
+    setMode("week");
+  };
+
+  const { data, rangeLabel } = useMemo(() => {
+    if (mode === "recent") {
+      const start = new Date(DATA_END);
+      start.setDate(start.getDate() - 13);
+      return { data: buildChartData([...active], start, DATA_END, series), rangeLabel: `최근 14일 (${start.getMonth() + 1}/${start.getDate()} ~ ${DATA_END.getMonth() + 1}/${DATA_END.getDate()})` };
+    }
+    const w = weeks.find((w) => w.key === weekKey) || weeks[weeks.length - 1];
+    if (!w) return { data: [], rangeLabel: "데이터 없음" };
+    const start = new Date(year, month - 1, w.startDay);
+    const end = new Date(year, month - 1, w.endDay);
+    return { data: buildChartData([...active], start, end, series), rangeLabel: `${year}.${String(month).padStart(2, "0")} ${w.label} (${month}/${w.startDay} ~ ${month}/${w.endDay})` };
+  }, [active, mode, weeks, weekKey, year, month, series]);
+
+  const lines = keywords.map((kw, ki) => (active.has(kw) ? { key: kw, color: LINE_PALETTE[ki] } : null)).filter(Boolean);
+
+  return (
+    <div className="rounded-2xl p-5 h-full flex flex-col" style={{ background: C.white, border: `1px solid ${C.line}` }}>
+      <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          <Sparkles size={16} color={C.indigo} />
+          <h2 className="text-base font-bold" style={{ color: C.ink }}>키워드 검색량 추이</h2>
+        </div>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <select value={year} onChange={(e) => { setYear(Number(e.target.value)); setMode("week"); }} className="text-xs font-bold px-2.5 py-1.5 rounded-full cursor-pointer" style={{ background: mode === "week" ? C.paper : C.white, color: C.ink, border: `1px solid ${C.line}` }}>
+            {TREND_YEARS.map((y) => (<option key={y} value={y}>{y}년</option>))}
+          </select>
+          <select value={month} onChange={(e) => handleMonthChange(Number(e.target.value))} className="text-xs font-bold px-2.5 py-1.5 rounded-full cursor-pointer" style={{ background: mode === "week" ? C.paper : C.white, color: C.ink, border: `1px solid ${C.line}` }}>
+            {TREND_MONTHS.map((m) => (<option key={m} value={m}>{m}월</option>))}
+          </select>
+          <select value={weekKey} onChange={(e) => { setWeekKey(e.target.value); setMode("week"); }} className="text-xs font-bold px-2.5 py-1.5 rounded-full cursor-pointer" style={{ background: mode === "week" ? C.paper : C.white, color: C.ink, border: `1px solid ${C.line}` }}>
+            {weeks.map((w) => (<option key={w.key} value={w.key}>{w.label}</option>))}
+          </select>
+          <button onClick={() => setMode("recent")} className="text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap" style={{ background: mode === "recent" ? C.ink : C.paper, color: mode === "recent" ? C.white : C.mute, border: `1px solid ${mode === "recent" ? C.ink : C.line}` }}>최근 14일</button>
+        </div>
+      </div>
+      <span className="text-xs font-medium" style={{ color: C.mute }}>마케터 지정 키워드 · {rangeLabel}</span>
+      <div className="flex flex-wrap gap-1.5 my-3">
+        {keywords.map((kw, ki) => {
+          const isActive = active.has(kw);
+          return (
+            <button key={kw} onClick={() => toggle(kw)} className="px-2.5 py-1 rounded-full text-xs font-semibold transition-opacity" style={{ background: isActive ? `${LINE_PALETTE[ki]}1A` : C.paper, color: isActive ? LINE_PALETTE[ki] : C.mute, border: `1px solid ${isActive ? LINE_PALETTE[ki] + "55" : C.line}` }}>{kw}</button>
+          );
+        })}
+      </div>
+      <div className="flex-1 min-h-[220px]">
+        <MiniLineChart data={data} lines={lines} />
+      </div>
+    </div>
+  );
+}
+
+function DeltaBadge({ delta }) {
+  if (delta === "NEW") return (<span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: C.signal, color: C.white }}>NEW</span>);
+  if (delta > 0) return (<span className="flex items-center gap-0.5 text-[11px] font-bold" style={{ color: "#1E8E5A" }}><TrendingUp size={11} /> {delta}</span>);
+  if (delta < 0) return (<span className="flex items-center gap-0.5 text-[11px] font-bold" style={{ color: C.signal }}><TrendingDown size={11} /> {Math.abs(delta)}</span>);
+  return (<span className="flex items-center gap-0.5 text-[11px] font-semibold" style={{ color: C.mute }}><Minus size={11} /> 0</span>);
+}
+
+function ProductCard({ item, iconSeed }) {
+  const hue = Math.floor(seeded(iconSeed) * 300);
+  const hasImage = Boolean(item.image);
+  const inner = (
+    <>
+      <div className="flex items-start justify-between p-2.5 pb-0">
+        <span className="flex items-center justify-center rounded-lg text-xs font-black tabular-nums" style={{ width: 26, height: 26, background: item.rank <= 3 ? C.ink : C.paper, color: item.rank <= 3 ? C.white : C.ink }}>{item.rank}</span>
+        {item.badge ? (
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded truncate max-w-[90px]" style={{ background: C.signal, color: C.white }}>{item.badge}</span>
+        ) : item.delta !== undefined ? (
+          <DeltaBadge delta={item.delta} />
+        ) : null}
+      </div>
+      <div className="mx-2.5 mt-2 mb-2 rounded-lg overflow-hidden flex items-center justify-center aspect-square" style={{ background: hasImage ? C.paper : `hsl(${hue}, 35%, 93%)` }}>
+        {hasImage ? (
+          <img src={item.image} alt={item.name} loading="lazy" className="w-full h-full object-contain" />
+        ) : (
+          <ShoppingBag size={26} color={`hsl(${hue}, 30%, 45%)`} />
+        )}
+      </div>
+      <div className="px-2.5 pb-2.5">
+        <p className="text-[11px] font-bold truncate" style={{ color: C.mute }}>{item.brand}</p>
+        <p className="text-[12.5px] font-semibold leading-snug truncate" style={{ color: C.ink }}>{item.name}</p>
+        <div className="flex items-center gap-1 mt-0.5">
+          {!!item.discountRatio && (<span className="text-[12px] font-bold tabular-nums" style={{ color: C.signal }}>{item.discountRatio}%</span>)}
+          <p className="text-[12px] font-bold tabular-nums" style={{ color: C.ink }}>{item.price.toLocaleString()}원</p>
+        </div>
+      </div>
+    </>
+  );
+  const cardClass = "rounded-xl overflow-hidden flex flex-col";
+  const cardStyle = { background: C.white, border: `1px solid ${C.line}` };
+  if (item.url) {
+    return (<a href={item.url} target="_blank" rel="noreferrer" className={cardClass} style={cardStyle}>{inner}</a>);
+  }
+  return (<div className={cardClass} style={cardStyle}>{inner}</div>);
+}
+
+const RANK_FILTERS = [{ key: "all", label: "전체" }, { key: "rising", label: "급상승" }, { key: "new", label: "NEW" }];
+
+function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availableTimes, selectedTime, onSelectTime }) {
+  const [cat, setCat] = useState(CATEGORIES[0]);
+  const [filter, setFilter] = useState("all");
+  const [visibleCount, setVisibleCount] = useState(100);
+
+  const filteredList = useMemo(() => rankings?.[cat]?.[filter] || [], [rankings, cat, filter]);
+
+  return (
+    <div className="rounded-2xl p-5" style={{ background: C.white, border: `1px solid ${C.line}` }}>
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+        <div className="flex items-center gap-2">
+          <Tag size={16} color={C.signal} />
+          <h2 className="text-base font-bold" style={{ color: C.ink }}>{title}</h2>
+          {dataSource === "mock" && (<span className="text-[10.5px] font-semibold px-1.5 py-0.5 rounded" style={{ background: C.paper, color: C.mute }}>샘플 데이터</span>)}
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex items-stretch p-0.5 rounded-lg" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+            {RANK_FILTERS.map((f, i) => {
+              const isActive = f.key === filter;
+              const prevActive = i > 0 && RANK_FILTERS[i - 1].key === filter;
+              return (<button key={f.key} onClick={() => { setFilter(f.key); setVisibleCount(12); }} className="px-3 py-1 text-xs font-bold transition-all" style={{ background: isActive ? C.ink : "transparent", color: isActive ? C.white : C.mute, borderRadius: 6, borderLeft: i > 0 && !isActive && !prevActive ? `1px solid ${C.line}` : "1px solid transparent" }}>{f.label}</button>);
+            })}
+          </div>
+          <span className="text-xs font-medium whitespace-nowrap" style={{ color: C.mute }}>{filteredList.length}개 중 {Math.min(visibleCount, filteredList.length)}개 표시</span>
+        </div>
+      </div>
+      {!!availableTimes?.length && (
+        <div className="flex items-center gap-1.5 mb-3 overflow-x-auto pb-1">
+          <span className="text-xs font-bold whitespace-nowrap shrink-0" style={{ color: C.mute }}>{selectedDateLabel}</span>
+          {availableTimes.map((t) => {
+            const isActive = t === selectedTime;
+            const label = t === "평균" ? "평균" : t;
+            return (
+              <button key={t} onClick={() => onSelectTime(t)} className="px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-colors" style={{ background: isActive ? C.ink : C.paper, color: isActive ? C.white : C.mute, border: `1px solid ${isActive ? C.ink : C.line}` }}>{label}</button>
+            );
+          })}
+        </div>
+      )}
+      <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1">
+        {CATEGORIES.map((c) => {
+          const isActive = c === cat;
+          return (<button key={c} onClick={() => { setCat(c); setVisibleCount(12); }} className="px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors" style={{ background: isActive ? C.ink : C.paper, color: isActive ? C.white : C.mute }}>{c}</button>);
+        })}
+      </div>
+      {filteredList.length === 0 ? (
+        <div className="flex items-center justify-center rounded-xl text-sm font-medium" style={{ height: 120, background: C.paper, color: C.mute }}>조건에 맞는 상품이 없어요. 다른 필터를 선택해보세요.</div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+          {filteredList.slice(0, visibleCount).map((item) => (<ProductCard key={item.rank} item={item} iconSeed={item.rank * 7 + cat.length} />))}
+        </div>
+      )}
+      {visibleCount < filteredList.length && (
+        <div className="flex justify-center mt-4">
+          <button onClick={() => setVisibleCount((v) => Math.min(filteredList.length, v + 12))} className="px-5 py-2 rounded-full text-sm font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>더보기 ({Math.min(visibleCount, filteredList.length)}/{filteredList.length})</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function InstagramTimeline() {
+  return (
+    <div className="rounded-2xl p-5" style={{ background: C.white, border: `1px solid ${C.line}` }}>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Camera size={16} color={C.indigo} />
+          <h2 className="text-base font-bold" style={{ color: C.ink }}>경쟁사 인스타그램 모니터링</h2>
+        </div>
+        <span className="text-xs font-medium" style={{ color: C.mute }}>4개 브랜드 · 자동 수집</span>
+      </div>
+      <div className="relative pl-5">
+        <div className="absolute left-[7px] top-1 bottom-1 w-px" style={{ background: C.line }} />
+        <div className="flex flex-col gap-4">
+          {TIMELINE_EVENTS.map((ev, i) => (
+            <div key={i} className="relative">
+              <span className="absolute -left-5 top-1.5 rounded-full" style={{ width: 9, height: 9, background: ev.brand.color, border: `2px solid ${C.white}` }} />
+              <div className="rounded-xl p-3" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center justify-center rounded-full text-[10px] font-black" style={{ width: 24, height: 24, background: ev.brand.color, color: C.white }}>{ev.brand.initials}</span>
+                    <div>
+                      <p className="text-xs font-bold leading-none" style={{ color: C.ink }}>{ev.brand.name}</p>
+                      <p className="text-[10.5px]" style={{ color: C.mute }}>{ev.brand.handle}</p>
+                    </div>
+                  </div>
+                  <span className="text-[10.5px] font-semibold tabular-nums" style={{ color: C.mute }}>{ev.date}</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {ev.seasonOff.active && (<span className="text-[10.5px] font-bold px-2 py-0.5 rounded-full" style={{ background: C.signalSoft, color: C.signal }}>시즌오프 · {ev.seasonOff.period}</span>)}
+                  <span className="text-[10.5px] font-bold px-2 py-0.5 rounded-full" style={{ background: C.indigoSoft, color: C.indigo }}>Drop · {ev.drop}</span>
+                </div>
+                <p className="text-[12.5px] leading-snug" style={{ color: C.ink }}>{ev.issue}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const NAV_ITEMS = [{ key: "musinsa", label: "무신사", icon: Tag }, { key: "cm29", label: "29CM", icon: ShoppingBag }, { key: "instagram", label: "인스타그램", icon: Camera }];
+const PAGE_META = {
+  musinsa: { title: "무신사", subtitle: "실시간 랭킹 트렌드 & 키워드 검색량" },
+  cm29: { title: "29CM", subtitle: "실시간 랭킹 트렌드 & 키워드 검색량" },
+  instagram: { title: "인스타그램", subtitle: "경쟁사 브랜드 마케팅 모니터링" },
+};
+
+function Sidebar({ active, onChange }) {
+  return (
+    <>
+      <aside className="hidden lg:flex flex-col w-60 shrink-0 sticky top-0 h-screen py-5 px-3" style={{ background: C.white, borderRight: `1px solid ${C.line}` }}>
+        <div className="flex items-center gap-2.5 px-2 mb-7">
+          <div className="flex items-center justify-center rounded-xl shrink-0" style={{ width: 36, height: 36, background: C.ink }}>
+            <span className="font-display text-white text-base font-bold">F</span>
+          </div>
+          <div>
+            <p className="font-display text-sm font-bold leading-none" style={{ color: C.ink }}>FASHION PULSE</p>
+            <p className="text-[10.5px] font-medium mt-1" style={{ color: C.mute }}>마케터 대시보드</p>
+          </div>
+        </div>
+        <p className="px-3 mb-2 text-[10.5px] font-bold tracking-wider" style={{ color: C.mute }}>PLATFORM</p>
+        <div className="flex flex-col gap-1">
+          {NAV_ITEMS.map((item) => {
+            const isActive = item.key === active;
+            const Icon = item.icon;
+            return (
+              <button key={item.key} onClick={() => onChange(item.key)} className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left transition-colors" style={{ background: isActive ? C.indigoSoft : "transparent" }}>
+                <Icon size={16} color={isActive ? C.indigo : C.mute} />
+                <span className="text-sm font-semibold" style={{ color: isActive ? C.indigo : C.ink }}>{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="mt-auto px-3 pt-4 text-[10.5px] leading-relaxed" style={{ color: C.mute, borderTop: `1px solid ${C.line}` }}>1단계 UI 프로토타입<br/>표시된 데이터는 목업(더미)입니다.</div>
+      </aside>
+      <nav className="flex lg:hidden gap-1.5 px-4 py-3 overflow-x-auto" style={{ background: C.white, borderBottom: `1px solid ${C.line}` }}>
+        {NAV_ITEMS.map((item) => {
+          const isActive = item.key === active;
+          const Icon = item.icon;
+          return (
+            <button key={item.key} onClick={() => onChange(item.key)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full whitespace-nowrap shrink-0" style={{ background: isActive ? C.ink : C.paper }}>
+              <Icon size={14} color={isActive ? C.white : C.mute} />
+              <span className="text-xs font-bold" style={{ color: isActive ? C.white : C.mute }}>{item.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+    </>
+  );
+}
+
+function FashionMarketerDashboard() {
+  const [selectedDate, setSelectedDate] = useState(new Date(2026, 6, 20));
+  const [view, setView] = useState("musinsa");
+  const [musinsaRankings, setMusinsaRankings] = useState(MUSINSA_MOCK_RANKINGS);
+  const [musinsaDataSource, setMusinsaDataSource] = useState("mock");
+  const [musinsaIndex, setMusinsaIndex] = useState(null); // { "YYYY-MM-DD": ["08-00", "17-00"] } | null(로딩 전)
+  const [musinsaSelectedTime, setMusinsaSelectedTime] = useState(null);
+
+  const musinsaDates = useMemo(() => (musinsaIndex ? Object.keys(musinsaIndex).sort() : []), [musinsaIndex]);
+  const selectedDateKey = useMemo(() => formatDateKey(selectedDate), [selectedDate]);
+  const rawTimesForSelectedDate = musinsaIndex?.[selectedDateKey] || [];
+  const availableTimesForSelectedDate = rawTimesForSelectedDate.length ? ["평균", ...rawTimesForSelectedDate.map((t) => t.replace("-", ":"))] : [];
+
+  const loadMusinsaSnapshot = (dateKey, rawTimes, timeLabel) => {
+    const fetchOne = (rawTime) => fetch(`data/musinsa_${dateKey}_${rawTime}.json`).then((res) => { if (!res.ok) throw new Error("no snapshot file"); return res.json(); });
+    const request = timeLabel === "평균"
+      ? Promise.all(rawTimes.map(fetchOne)).then((snapshots) => averageRankings(snapshots))
+      : fetchOne(timeLabel.replace(":", "-"));
+    request
+      .then((data) => { setMusinsaRankings(data); setMusinsaDataSource("live"); setMusinsaSelectedTime(timeLabel); })
+      .catch(() => {});
+  };
+
+  useEffect(() => {
+    fetch("data/musinsa_index.json")
+      .then((res) => { if (!res.ok) throw new Error("no index file"); return res.json(); })
+      .then((index) => {
+        const dates = Object.keys(index || {});
+        if (dates.length === 0) throw new Error("empty index");
+        setMusinsaIndex(index);
+        setSelectedDate(parseDateKey(dates.sort()[dates.length - 1]));
+      })
+      .catch(() => { setMusinsaIndex({}); setMusinsaRankings(MUSINSA_MOCK_RANKINGS); setMusinsaDataSource("mock"); });
+  }, []);
+
+  useEffect(() => {
+    if (!musinsaIndex) return;
+    const rawTimes = musinsaIndex[selectedDateKey];
+    if (rawTimes && rawTimes.length) loadMusinsaSnapshot(selectedDateKey, rawTimes, "평균");
+  }, [selectedDateKey, musinsaIndex]);
+
+  const meta = PAGE_META[view];
+
+  return (
+    <div className="min-h-screen w-full flex" style={{ background: C.paper }}>
+      <Sidebar active={view} onChange={setView} />
+      <div className="flex-1 min-w-0 flex flex-col">
+        <header className="px-6 pt-6 pb-4">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <h1 className="font-display text-xl font-bold leading-none" style={{ color: C.ink }}>{meta.title}</h1>
+              <p className="text-xs font-medium mt-1.5" style={{ color: C.mute }}>{meta.subtitle}</p>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: C.white, color: C.ink, border: `1px solid ${C.line}` }}>
+              <span className="rounded-full" style={{ width: 6, height: 6, background: "#1E8E5A" }} />
+              2026.07.20 (월) 기준 데이터
+            </div>
+          </div>
+        </header>
+        {view !== "instagram" && (<Ticker keywords={view === "cm29" ? REALTIME_KEYWORDS_CM29 : REALTIME_KEYWORDS_MUSINSA} />)}
+        <main className="px-6 py-5 flex flex-col gap-5">
+          {view === "musinsa" && (
+            <>
+              <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-5 items-stretch">
+                <KeywordTrendPanel key="musinsa-keyword" keywords={MARKETER_KEYWORDS_MUSINSA} series={MUSINSA_TREND_SERIES} />
+                <MiniCalendar selected={selectedDate} onSelect={setSelectedDate} availableDates={musinsaDates} />
+              </div>
+              <RankingPanel
+                rankings={musinsaRankings}
+                title="무신사 랭킹 TOP 100"
+                dataSource={musinsaDataSource}
+                selectedDateLabel={selectedDateKey}
+                availableTimes={availableTimesForSelectedDate}
+                selectedTime={musinsaSelectedTime}
+                onSelectTime={(t) => loadMusinsaSnapshot(selectedDateKey, musinsaIndex?.[selectedDateKey] || [], t)}
+              />
+            </>
+          )}
+          {view === "cm29" && (
+            <>
+              <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-5 items-stretch">
+                <KeywordTrendPanel key="cm29-keyword" keywords={MARKETER_KEYWORDS_CM29} series={CM29_TREND_SERIES} />
+                <MiniCalendar selected={selectedDate} onSelect={setSelectedDate} />
+              </div>
+              <RankingPanel rankings={CM29_RANKINGS} title="29CM 랭킹 TOP 100" dataSource="mock" />
+            </>
+          )}
+          {view === "instagram" && <InstagramTimeline />}
+        </main>
+        <footer className="text-center text-[11px] py-4" style={{ color: C.mute }}>ⓘ 무신사 랭킹은 {musinsaDataSource === "live" ? `${selectedDateKey} ${musinsaSelectedTime} 수집분(실시간 데이터)` : "수집 파일을 찾지 못해 표시 중인 샘플(목업) 데이터"}입니다. 29CM 및 키워드/인스타그램 지표는 목업(더미) 데이터입니다.</footer>
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<FashionMarketerDashboard />);
+</script>
+</body>
+</html>
