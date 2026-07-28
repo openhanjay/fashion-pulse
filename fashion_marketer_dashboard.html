@@ -80,9 +80,11 @@ const PRODUCT_POOL = {
   모자: ["자수 로고 볼캡","코듀로이 버킷햇","울 니트 비니","스트랩백 캡","뉴에라 볼캡","리넨 버킷햇"],
 };
 
+const MOCK_TOP_N = 150;
+
 function generateRanking(category, catIdx, brandsList, seedBase) {
   const pool = PRODUCT_POOL[category];
-  return Array.from({ length: 100 }, (_, i) => {
+  return Array.from({ length: MOCK_TOP_N }, (_, i) => {
     const seed = seedBase + catIdx * 977 + i * 13 + 1;
     const brand = brandsList[Math.floor(seeded(seed) * brandsList.length)];
     const name = pool[(i + catIdx) % pool.length];
@@ -431,10 +433,10 @@ function ProductCard({ item, iconSeed }) {
     <>
       <div className="flex items-start justify-between p-2.5 pb-0">
         <span className="flex items-center justify-center rounded-lg text-xs font-black tabular-nums" style={{ width: 26, height: 26, background: item.rank <= 3 ? C.ink : C.paper, color: item.rank <= 3 ? C.white : C.ink }}>{item.rank}</span>
-        {item.badge ? (
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded truncate max-w-[90px]" style={{ background: C.signal, color: C.white }}>{item.badge}</span>
-        ) : item.delta !== undefined ? (
+        {item.delta !== undefined ? (
           <DeltaBadge delta={item.delta} />
+        ) : item.badge ? (
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded truncate max-w-[90px]" style={{ background: C.signal, color: C.white }}>{item.badge}</span>
         ) : null}
       </div>
       <div className="mx-2.5 mt-2 mb-2 rounded-lg overflow-hidden flex items-center justify-center aspect-square" style={{ background: hasImage ? C.paper : `hsl(${hue}, 35%, 93%)` }}>

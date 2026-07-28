@@ -1,18 +1,22 @@
 /*
- * 무신사 랭킹(전체/급상승/NEW x 6개 카테고리)을 수집해서 날짜+시간별 파일로 저장하는 스크립트.
+ * 무신사 랭킹(전체/급상승/NEW x 7개 카테고리, TOP_N위까지)을 수집해서 날짜+시간별 파일로 저장하는 스크립트.
  * 하루에 여러 번(예: 08:00, 17:00) 실행하는 것을 전제로 한다.
  *
  * 사용법:
  *   node scrape_musinsa.js
  *
  * 실행할 때마다:
- *   data/musinsa_YYYY-MM-DD_HH-mm.json   (그 시점 수집한 랭킹 데이터)
+ *   data/musinsa_YYYY-MM-DD_HH-mm.json   (그 시점 수집한 랭킹 데이터, 전일 대비 순위 변동 포함)
  *   data/musinsa_index.json              (날짜 -> 수집 시간 목록 매핑, 자동 누적/갱신)
  * 을 만들거나 갱신한다. 기존 파일은 덮어쓰지 않으므로 하루에 여러 번, 여러 날에 걸쳐 실행하면
  * 기록이 계속 쌓인다.
  *
  * musinsa_index.json 형태 예시:
  *   { "2026-07-28": ["08-05", "17-12"], "2026-07-29": ["08-02"] }
+ *
+ * 순위 변동(item.delta)은 "가장 최근의 이전 날짜"에 수집된 데이터(그 날짜의 마지막 수집분) 대비
+ * 오늘 순위가 몇 계단 올랐는지/내렸는지를 계산한다. 이전 날짜에 없던 상품이 새로 랭킹에 들어오면
+ * "NEW"로 표시한다. 이전 날짜 데이터가 전혀 없으면(첫 수집 등) delta는 계산하지 않는다.
  *
  * fashion_marketer_dashboard.html과 같은 폴더에서 로컬 서버(node serve.js)로 열면,
  * "데이터 조회" 달력에서 날짜를 고르고, 그 날짜의 수집 시간대(평균/각 시간)를 골라 볼 수 있다.
@@ -25,6 +29,7 @@ const path = require("path");
 // 주의: /api/home/web/v5/pans/ranking (페이지 최초 로드용) 는 sectionId=201(급상승)에서
 // categoryCode를 무시하고 항상 "전체" 결과만 반환한다(실제 확인됨). 카테고리별 급상승을 제대로
 // 받으려면 무신사 프론트가 탭 전환 시 실제로 쓰는 /pans/ranking/sections/{sectionId} 엔드포인트를 써야 한다.
+// 이 엔드포인트는 응답의 link.next를 따라가면 100위 이후(101~, 204~ ...)도 계속 받을 수 있다(확인됨).
 const BASE_URL = "https://client.musinsa.com/api/home/web/v5/pans/ranking/sections";
 
 const HEADERS = {
@@ -52,6 +57,7 @@ const SECTION_IDS = {
   rising: "201",
 };
 
+const TOP_N = 150;
 const REQUEST_DELAY_MS = 700;
 const DATA_DIR = path.join(__dirname, "data");
 const INDEX_FILE = path.join(DATA_DIR, "musinsa_index.json");
@@ -80,7 +86,7 @@ function nowTimeString(now) {
   return `${pad2(k.getUTCHours())}-${pad2(k.getUTCMinutes())}`;
 }
 
-async function fetchRanking(sectionId, categoryCode) {
+function buildInitialUrl(sectionId, categoryCode) {
   const params = new URLSearchParams({
     storeCode: "musinsa",
     contentsId: "",
@@ -90,47 +96,58 @@ async function fetchRanking(sectionId, categoryCode) {
     period: "REALTIME",
     soldOut: "true",
   });
-  const res = await fetch(`${BASE_URL}/${sectionId}?${params.toString()}`, { headers: HEADERS });
-  if (!res.ok) throw new Error(`HTTP ${res.status} (sectionId=${sectionId}, categoryCode=${categoryCode})`);
-  return res.json();
+  return `${BASE_URL}/${sectionId}?${params.toString()}`;
 }
 
-function extractProducts(payload) {
-  const modules = payload?.data?.modules || [];
-  const products = [];
-  for (const module of modules) {
-    if (module.type !== "MULTICOLUMN") continue;
-    for (const item of module.items || []) {
-      if (item.type !== "PRODUCT_COLUMN") continue;
-      const info = item.info || {};
-      const image = item.image || {};
-      const labels = image.labels || [];
-      products.push({
-        rank: image.rank ?? null,
-        brand: info.brandName || "",
-        name: info.productName || "",
-        price: info.finalPrice || 0,
-        discountRatio: info.discountRatio || 0,
-        image: image.url || "",
-        url: item.onClick?.url || "",
-        badge: labels[0]?.text || null,
-      });
-    }
+function mapItem(item) {
+  const info = item.info || {};
+  const image = item.image || {};
+  const labels = image.labels || [];
+  return {
+    rank: image.rank ?? null,
+    brand: info.brandName || "",
+    name: info.productName || "",
+    price: info.finalPrice || 0,
+    discountRatio: info.discountRatio || 0,
+    image: image.url || "",
+    url: item.onClick?.url || "",
+    badge: labels[0]?.text || null,
+  };
+}
+
+// TOP_N에 도달하거나 다음 페이지가 없을 때까지 link.next를 따라가며 이어서 수집한다.
+async function fetchRanking(sectionId, categoryCode) {
+  let url = buildInitialUrl(sectionId, categoryCode);
+  let rawItems = [];
+  while (url && rawItems.length < TOP_N) {
+    const res = await fetch(url, { headers: HEADERS });
+    if (!res.ok) throw new Error(`HTTP ${res.status} (sectionId=${sectionId}, categoryCode=${categoryCode})`);
+    const payload = await res.json();
+    const modules = (payload?.data?.modules || []).filter((m) => m.type === "MULTICOLUMN");
+    const pageItems = modules.flatMap((m) => (m.items || []).filter((i) => i.type === "PRODUCT_COLUMN"));
+    if (pageItems.length === 0) break;
+    rawItems = rawItems.concat(pageItems);
+    url = payload?.link?.next || null;
+    if (url && rawItems.length < TOP_N) await sleep(REQUEST_DELAY_MS);
   }
-  products.sort((a, b) => (a.rank ?? 9999) - (b.rank ?? 9999));
-  return products.slice(0, 100);
+  return rawItems
+    .map(mapItem)
+    .sort((a, b) => (a.rank ?? 9999) - (b.rank ?? 9999))
+    .slice(0, TOP_N);
+}
+
+function readIndex() {
+  if (!fs.existsSync(INDEX_FILE)) return {};
+  try {
+    const parsed = JSON.parse(fs.readFileSync(INDEX_FILE, "utf-8"));
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
 }
 
 function updateIndex(dateStr, timeStr) {
-  let index = {};
-  if (fs.existsSync(INDEX_FILE)) {
-    try {
-      const parsed = JSON.parse(fs.readFileSync(INDEX_FILE, "utf-8"));
-      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) index = parsed;
-    } catch {
-      index = {};
-    }
-  }
+  const index = readIndex();
   if (!Array.isArray(index[dateStr])) index[dateStr] = [];
   if (!index[dateStr].includes(timeStr)) index[dateStr].push(timeStr);
   index[dateStr].sort();
@@ -138,28 +155,71 @@ function updateIndex(dateStr, timeStr) {
   return index;
 }
 
+// 오늘보다 이전 날짜 중 가장 최근 날짜를 찾는다 (문자열 정렬 = 날짜 정렬, YYYY-MM-DD 고정 폭이라 가능)
+function findLatestPriorDate(index, todayStr) {
+  const priorDates = Object.keys(index).filter((d) => d < todayStr).sort();
+  return priorDates.length ? priorDates[priorDates.length - 1] : null;
+}
+
+function loadDateLatestSnapshot(dateStr, index) {
+  const times = index[dateStr];
+  if (!times || !times.length) return null;
+  const latestTime = times[times.length - 1];
+  const file = path.join(DATA_DIR, `musinsa_${dateStr}_${latestTime}.json`);
+  if (!fs.existsSync(file)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf-8"));
+  } catch {
+    return null;
+  }
+}
+
+// 이전 날짜 스냅샷과 상품 URL 기준으로 매칭해서 순위 변동(delta)을 매긴다.
+// 이전에 없던 상품은 "NEW", 이전 날짜 데이터 자체가 없으면 delta를 매기지 않는다.
+function attachDeltas(today, prior) {
+  if (!prior) return today;
+  Object.keys(today).forEach((cat) => {
+    Object.keys(today[cat]).forEach((filterKey) => {
+      const priorList = prior?.[cat]?.[filterKey] || [];
+      const priorRankByUrl = new Map(priorList.filter((it) => it.url).map((it) => [it.url, it.rank]));
+      today[cat][filterKey] = today[cat][filterKey].map((item) => {
+        if (!item.url || !priorRankByUrl.has(item.url)) return { ...item, delta: "NEW" };
+        return { ...item, delta: priorRankByUrl.get(item.url) - item.rank };
+      });
+    });
+  });
+  return today;
+}
+
 async function main() {
+  const now = new Date();
+  const dateStr = todayDateString(now);
+  const timeStr = nowTimeString(now);
+
+  const indexBefore = readIndex();
+  const priorDate = findLatestPriorDate(indexBefore, dateStr);
+  const priorSnapshot = priorDate ? loadDateLatestSnapshot(priorDate, indexBefore) : null;
+  console.log(priorDate ? `전일 대비 비교 기준: ${priorDate}` : "이전 날짜 데이터 없음 (순위 변동 표시 없이 저장)");
+
   const result = {};
   for (const [category, categoryCode] of Object.entries(CATEGORY_CODES)) {
     result[category] = {};
     for (const [filterKey, sectionId] of Object.entries(SECTION_IDS)) {
       console.log(`수집 중: ${category} / ${filterKey} ...`);
-      const payload = await fetchRanking(sectionId, categoryCode);
-      result[category][filterKey] = extractProducts(payload);
+      result[category][filterKey] = await fetchRanking(sectionId, categoryCode);
       await sleep(REQUEST_DELAY_MS);
     }
   }
 
+  attachDeltas(result, priorSnapshot);
+
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
-  const now = new Date();
-  const dateStr = todayDateString(now);
-  const timeStr = nowTimeString(now);
   const outFile = path.join(DATA_DIR, `musinsa_${dateStr}_${timeStr}.json`);
   fs.writeFileSync(outFile, JSON.stringify(result, null, 2), "utf-8");
   const index = updateIndex(dateStr, timeStr);
 
-  console.log(`완료: data/musinsa_${dateStr}_${timeStr}.json 저장됨`);
+  console.log(`완료: data/musinsa_${dateStr}_${timeStr}.json 저장됨 (TOP ${TOP_N})`);
   console.log(`${dateStr} 누적 수집 시각: ${index[dateStr].join(", ")}`);
 }
 
