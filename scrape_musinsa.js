@@ -228,6 +228,16 @@ function attachDeltas(today, prior) {
   return today;
 }
 
+// 상품 attachDeltas와 동일한 규칙(직전 수집 대비, 없던 건 NEW)을 검색어 한 리스트에 적용한다.
+function attachKeywordDeltas(todayList, priorList) {
+  if (!priorList) return todayList;
+  const priorRankByUrl = new Map(priorList.filter((it) => it.url).map((it) => [it.url, it.rank]));
+  return todayList.map((item) => {
+    if (!item.url || !priorRankByUrl.has(item.url)) return { ...item, delta: "NEW" };
+    return { ...item, delta: priorRankByUrl.get(item.url) - item.rank };
+  });
+}
+
 async function main() {
   const now = new Date();
   const dateStr = todayDateString(now);
@@ -256,6 +266,8 @@ async function main() {
     result.keywords[filterKey] = await fetchKeywordRanking(sectionId);
     await sleep(REQUEST_DELAY_MS);
   }
+  // 급상승 검색어는 무신사가 자체 등락 정보를 안 줘서(all은 fluctuation 필드로 옴), 직전 수집 대비로 우리가 직접 계산해 붙인다.
+  result.keywords.rising = attachKeywordDeltas(result.keywords.rising, priorSnapshot?.keywords?.rising);
 
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
