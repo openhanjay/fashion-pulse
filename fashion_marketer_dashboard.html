@@ -630,12 +630,29 @@ function FashionMarketerDashboard() {
   const selectedDateKey = useMemo(() => formatDateKey(selectedDate), [selectedDate]);
   const rawTimesForSelectedDate = musinsaIndex?.[selectedDateKey] || [];
   const availableTimesForSelectedDate = rawTimesForSelectedDate.length ? ["평균", ...rawTimesForSelectedDate.map((t) => t.replace("-", ":"))] : [];
+  const priorDateKeyForSelected = useMemo(() => {
+    if (!musinsaIndex) return null;
+    const priors = Object.keys(musinsaIndex).filter((d) => d < selectedDateKey).sort();
+    return priors.length ? priors[priors.length - 1] : null;
+  }, [musinsaIndex, selectedDateKey]);
+  const panelDateLabel = musinsaSelectedTime === "평균" && priorDateKeyForSelected
+    ? `${priorDateKeyForSelected} ~ ${selectedDateKey}`
+    : selectedDateKey;
 
   const loadMusinsaSnapshot = (dateKey, rawTimes, timeLabel) => {
-    const fetchOne = (rawTime) => fetch(`data/musinsa_${dateKey}_${rawTime}.json`).then((res) => { if (!res.ok) throw new Error("no snapshot file"); return res.json(); });
-    const request = timeLabel === "평균"
-      ? Promise.all(rawTimes.map(fetchOne)).then((snapshots) => averageRankings(snapshots))
-      : fetchOne(timeLabel.replace(":", "-"));
+    const fetchOne = (dKey, rawTime) => fetch(`data/musinsa_${dKey}_${rawTime}.json`).then((res) => { if (!res.ok) throw new Error("no snapshot file"); return res.json(); });
+    let request;
+    if (timeLabel === "평균") {
+      // 평균은 선택한 날짜 하루치만이 아니라, 그 직전의 가장 최근 수집일까지 같이 묶어서 계산한다
+      // (하루 2회 정도로는 표본이 너무 적어서 전날 것과 합쳐야 의미있는 평균이 나옴).
+      const priorDates = Object.keys(musinsaIndex || {}).filter((d) => d < dateKey).sort();
+      const priorDateKey = priorDates[priorDates.length - 1];
+      const priorTimes = priorDateKey ? musinsaIndex[priorDateKey] || [] : [];
+      const pairs = [...priorTimes.map((t) => [priorDateKey, t]), ...rawTimes.map((t) => [dateKey, t])];
+      request = Promise.all(pairs.map(([d, t]) => fetchOne(d, t))).then((snapshots) => averageRankings(snapshots));
+    } else {
+      request = fetchOne(dateKey, timeLabel.replace(":", "-"));
+    }
     request
       .then((data) => { setMusinsaRankings(data); setMusinsaDataSource("live"); setMusinsaSelectedTime(timeLabel); })
       .catch(() => {});
@@ -689,7 +706,7 @@ function FashionMarketerDashboard() {
                 rankings={musinsaRankings}
                 title="무신사 랭킹 TOP 100"
                 dataSource={musinsaDataSource}
-                selectedDateLabel={selectedDateKey}
+                selectedDateLabel={panelDateLabel}
                 availableTimes={availableTimesForSelectedDate}
                 selectedTime={musinsaSelectedTime}
                 onSelectTime={(t) => loadMusinsaSnapshot(selectedDateKey, musinsaIndex?.[selectedDateKey] || [], t)}
@@ -707,7 +724,7 @@ function FashionMarketerDashboard() {
           )}
           {view === "instagram" && <InstagramTimeline />}
         </main>
-        <footer className="text-center text-[11px] py-4" style={{ color: C.mute }}>ⓘ 무신사 랭킹은 {musinsaDataSource === "live" ? `${selectedDateKey} ${musinsaSelectedTime} 수집분(실시간 데이터)` : "수집 파일을 찾지 못해 표시 중인 샘플(목업) 데이터"}입니다. 29CM 및 키워드/인스타그램 지표는 목업(더미) 데이터입니다.</footer>
+        <footer className="text-center text-[11px] py-4" style={{ color: C.mute }}>ⓘ 무신사 랭킹은 {musinsaDataSource === "live" ? `${panelDateLabel} ${musinsaSelectedTime} 수집분(실시간 데이터)` : "수집 파일을 찾지 못해 표시 중인 샘플(목업) 데이터"}입니다. 29CM 및 키워드/인스타그램 지표는 목업(더미) 데이터입니다.</footer>
       </div>
     </div>
   );
