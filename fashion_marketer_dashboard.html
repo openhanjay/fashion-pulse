@@ -184,6 +184,22 @@ function averageKeywordRankings(snapshots) {
   return result;
 }
 
+/* 오늘의 평균 랭킹(today)에, 전일 평균 랭킹(prior) 대비 순위가 몇 계단 올랐는지/내렸는지를 매긴다.
+   전일 평균에 없던 상품은 "NEW". today/prior는 { [catKey]: { [filterKey]: [items] } } 형태(카테고리든 "keywords" 같은 가상 키든 동일하게 동작). */
+function attachAverageDelta(today, prior, catKeys, filterKeys) {
+  catKeys.forEach((cat) => {
+    filterKeys.forEach((filterKey) => {
+      const priorList = prior?.[cat]?.[filterKey] || [];
+      const priorRankByUrl = new Map(priorList.filter((it) => it.url).map((it) => [it.url, it.rank]));
+      today[cat][filterKey] = (today[cat][filterKey] || []).map((item) => {
+        if (!item.url || !priorRankByUrl.has(item.url)) return { ...item, delta: "NEW" };
+        return { ...item, delta: priorRankByUrl.get(item.url) - item.rank };
+      });
+    });
+  });
+  return today;
+}
+
 const REALTIME_KEYWORDS_MUSINSA = ["린넨 원피스","버킷햇","오버핏 셔츠","와이드 데님","크롭 니트","스트랩 샌들","크로스백","카고팬츠","시스루 가디건","비치웨어"];
 const REALTIME_KEYWORDS_CM29 = ["린넨 블레이저","와이드 슬랙스","크롭 가디건","버킷백","스퀘어토 플랫","오피스룩","베스트 세트","미니멀 자켓","서머 니트","레더 로퍼"];
 const MARKETER_KEYWORDS_CM29 = ["미니멀 셋업","오피스룩 코디","여름 슬랙스","박시 블레이저","니트 베스트","와이드 슈트팬츠","젠더리스룩","시티보이룩","클린룩","러기지백"];
@@ -819,29 +835,29 @@ function FashionMarketerDashboard() {
   const selectedDateKey = useMemo(() => formatDateKey(selectedDate), [selectedDate]);
   const rawTimesForSelectedDate = musinsaIndex?.[selectedDateKey] || [];
   const availableTimesForSelectedDate = rawTimesForSelectedDate.length ? ["평균", ...rawTimesForSelectedDate.map((t) => t.replace("-", ":"))] : [];
-  const priorDateKeyForSelected = useMemo(() => {
-    if (!musinsaIndex) return null;
-    const priors = Object.keys(musinsaIndex).filter((d) => d < selectedDateKey).sort();
-    return priors.length ? priors[priors.length - 1] : null;
-  }, [musinsaIndex, selectedDateKey]);
-  const panelDateLabel = musinsaSelectedTime === "평균" && priorDateKeyForSelected
-    ? `${priorDateKeyForSelected} ~ ${selectedDateKey}`
-    : selectedDateKey;
+  const panelDateLabel = selectedDateKey;
 
   const loadMusinsaSnapshot = (dateKey, rawTimes, timeLabel) => {
     const fetchOne = (dKey, rawTime) => fetch(`data/musinsa_${dKey}_${rawTime}.json`).then((res) => { if (!res.ok) throw new Error("no snapshot file"); return res.json(); });
     let request;
     if (timeLabel === "평균") {
-      // 평균은 선택한 날짜 하루치만이 아니라, 그 직전의 가장 최근 수집일까지 같이 묶어서 계산한다
-      // (하루 2회 정도로는 표본이 너무 적어서 전날 것과 합쳐야 의미있는 평균이 나옴).
-      const priorDates = Object.keys(musinsaIndex || {}).filter((d) => d < dateKey).sort();
-      const priorDateKey = priorDates[priorDates.length - 1];
-      const priorTimes = priorDateKey ? musinsaIndex[priorDateKey] || [] : [];
-      const pairs = [...priorTimes.map((t) => [priorDateKey, t]), ...rawTimes.map((t) => [dateKey, t])];
-      request = Promise.all(pairs.map(([d, t]) => fetchOne(d, t))).then((snapshots) => ({
-        ...averageRankings(snapshots),
-        keywords: averageKeywordRankings(snapshots),
-      }));
+      // 평균은 선택한 날짜 하루치 수집분만으로 계산하고, 순위 변동(delta)은 전일 평균 대비로 매긴다
+      // (두 날짜 데이터를 하나로 뒤섞지 않고, "전일 평균" vs "당일 평균"을 각각 구해서 비교함).
+      request = Promise.all(rawTimes.map((t) => fetchOne(dateKey, t))).then((todaySnapshots) => {
+        const todayCategoryAvg = averageRankings(todaySnapshots);
+        const todayKeywordAvg = averageKeywordRankings(todaySnapshots);
+        const priorDates = Object.keys(musinsaIndex || {}).filter((d) => d < dateKey).sort();
+        const priorDateKey = priorDates[priorDates.length - 1];
+        if (!priorDateKey) return { ...todayCategoryAvg, keywords: todayKeywordAvg };
+        const priorTimes = musinsaIndex[priorDateKey] || [];
+        return Promise.all(priorTimes.map((t) => fetchOne(priorDateKey, t))).then((priorSnapshots) => {
+          const priorCategoryAvg = averageRankings(priorSnapshots);
+          const priorKeywordAvg = averageKeywordRankings(priorSnapshots);
+          attachAverageDelta(todayCategoryAvg, priorCategoryAvg, CATEGORIES, ["all", "rising", "new"]);
+          const keywordsWithDelta = attachAverageDelta({ keywords: todayKeywordAvg }, { keywords: priorKeywordAvg }, ["keywords"], ["all", "rising"]).keywords;
+          return { ...todayCategoryAvg, keywords: keywordsWithDelta };
+        });
+      });
     } else {
       request = fetchOne(dateKey, timeLabel.replace(":", "-"));
     }
