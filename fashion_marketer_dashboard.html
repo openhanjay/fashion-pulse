@@ -607,9 +607,13 @@ function KeywordRankingPanel({ keywords, dataSource, selectedDateLabel, musinsaI
                     </a>
                   ))}
                 </div>
-                {visibleCount < fullList.length && (
+                {fullList.length > 20 && (
                   <div className="flex justify-center mt-3">
-                    <button onClick={() => setVisibleCount((v) => Math.min(fullList.length, v + 20))} className="px-5 py-2 rounded-full text-sm font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>펼치기 ({Math.min(visibleCount, fullList.length)}/{fullList.length})</button>
+                    {visibleCount < fullList.length ? (
+                      <button onClick={() => setVisibleCount((v) => Math.min(fullList.length, v + 20))} className="px-5 py-2 rounded-full text-sm font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>펼치기 ({visibleCount}/{fullList.length})</button>
+                    ) : (
+                      <button onClick={() => setVisibleCount(20)} className="px-5 py-2 rounded-full text-sm font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>접기</button>
+                    )}
                   </div>
                 )}
               </>
