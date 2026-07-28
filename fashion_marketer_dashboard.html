@@ -555,6 +555,7 @@ async function loadKeywordWeekTrend(musinsaIndex, selectedDateKey) {
 function KeywordRankingPanel({ keywords, dataSource, selectedDateLabel, musinsaIndex, selectedDateKey }) {
   const [mode, setMode] = useState("list");
   const [filter, setFilter] = useState("all");
+  const [visibleCount, setVisibleCount] = useState(20);
   const [trend, setTrend] = useState({ status: "idle" });
 
   useEffect(() => {
@@ -586,24 +587,32 @@ function KeywordRankingPanel({ keywords, dataSource, selectedDateLabel, musinsaI
             {KEYWORD_FILTERS.map((f, i) => {
               const isActive = f.key === filter;
               const prevActive = i > 0 && KEYWORD_FILTERS[i - 1].key === filter;
-              return (<button key={f.key} onClick={() => setFilter(f.key)} className="px-4 py-1.5 text-xs font-bold transition-all" style={{ background: isActive ? C.ink : "transparent", color: isActive ? C.white : C.mute, borderRadius: 6, borderLeft: i > 0 && !isActive && !prevActive ? `1px solid ${C.line}` : "1px solid transparent" }}>{f.label}</button>);
+              return (<button key={f.key} onClick={() => { setFilter(f.key); setVisibleCount(20); }} className="px-4 py-1.5 text-xs font-bold transition-all" style={{ background: isActive ? C.ink : "transparent", color: isActive ? C.white : C.mute, borderRadius: 6, borderLeft: i > 0 && !isActive && !prevActive ? `1px solid ${C.line}` : "1px solid transparent" }}>{f.label}</button>);
             })}
           </div>
           {(() => {
-            const list = (keywords?.[filter] || []).slice(0, KEYWORD_TOP_N_DISPLAY);
+            const fullList = (keywords?.[filter] || []).slice(0, KEYWORD_TOP_N_DISPLAY);
+            const list = fullList.slice(0, visibleCount);
             if (list.length === 0) {
               return (<div className="flex items-center justify-center rounded-xl text-xs font-medium flex-1" style={{ background: C.paper, color: C.mute, minHeight: 160 }}>검색어 데이터가 없어요.</div>);
             }
             return (
-              <div className="columns-2 sm:columns-3 lg:columns-4 gap-x-4">
-                {list.map((item) => (
-                  <a key={item.url || item.keyword} href={item.url || undefined} target="_blank" rel="noreferrer" className="flex items-center gap-2 py-1.5 text-xs" style={{ borderBottom: `1px solid ${C.line}`, breakInside: "avoid" }}>
-                    <span className="w-5 shrink-0 font-bold tabular-nums text-right" style={{ color: C.mute }}>{item.rank}</span>
-                    <span className="flex-1 truncate font-semibold" style={{ color: C.ink }}>{item.keyword}</span>
-                    <CompactDelta delta={item.delta} />
-                  </a>
-                ))}
-              </div>
+              <>
+                <div className="columns-2 sm:columns-3 lg:columns-4 gap-x-4">
+                  {list.map((item) => (
+                    <a key={item.url || item.keyword} href={item.url || undefined} target="_blank" rel="noreferrer" className="flex items-center gap-2 py-1.5 text-xs" style={{ borderBottom: `1px solid ${C.line}`, breakInside: "avoid" }}>
+                      <span className="w-5 shrink-0 font-bold tabular-nums text-right" style={{ color: C.mute }}>{item.rank}</span>
+                      <span className="flex-1 truncate font-semibold" style={{ color: C.ink }}>{item.keyword}</span>
+                      <CompactDelta delta={item.delta} />
+                    </a>
+                  ))}
+                </div>
+                {visibleCount < fullList.length && (
+                  <div className="flex justify-center mt-3">
+                    <button onClick={() => setVisibleCount((v) => Math.min(fullList.length, v + 20))} className="px-5 py-2 rounded-full text-sm font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>펼치기 ({Math.min(visibleCount, fullList.length)}/{fullList.length})</button>
+                  </div>
+                )}
+              </>
             );
           })()}
         </div>
