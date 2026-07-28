@@ -6,7 +6,7 @@
  *   node scrape_musinsa.js
  *
  * 실행할 때마다:
- *   data/musinsa_YYYY-MM-DD_HH-mm.json   (그 시점 수집한 랭킹 데이터, 전일 대비 순위 변동 포함)
+ *   data/musinsa_YYYY-MM-DD_HH-mm.json   (그 시점 수집한 랭킹 데이터, 직전 수집 대비 순위 변동 포함)
  *   data/musinsa_index.json              (날짜 -> 수집 시간 목록 매핑, 자동 누적/갱신)
  * 을 만들거나 갱신한다. 기존 파일은 덮어쓰지 않으므로 하루에 여러 번, 여러 날에 걸쳐 실행하면
  * 기록이 계속 쌓인다.
@@ -14,9 +14,10 @@
  * musinsa_index.json 형태 예시:
  *   { "2026-07-28": ["08-05", "17-12"], "2026-07-29": ["08-02"] }
  *
- * 순위 변동(item.delta)은 "가장 최근의 이전 날짜"에 수집된 데이터(그 날짜의 마지막 수집분) 대비
- * 오늘 순위가 몇 계단 올랐는지/내렸는지를 계산한다. 이전 날짜에 없던 상품이 새로 랭킹에 들어오면
- * "NEW"로 표시한다. 이전 날짜 데이터가 전혀 없으면(첫 수집 등) delta는 계산하지 않는다.
+ * 순위 변동(item.delta)은 "바로 직전 수집분" 대비 몇 계단 올랐는지/내렸는지를 계산한다.
+ * 같은 날 이미 수집한 게 있으면 그 날의 가장 최근 시각(예: 17-12는 08-05 대비)과,
+ * 오늘 첫 수집이면 가장 최근 이전 날짜의 마지막 수집분과 비교한다. 그 기준에 없던 상품이
+ * 새로 랭킹에 들어오면 "NEW"로 표시하고, 비교할 이전 수집 자체가 전혀 없으면(최초 수집) delta는 계산하지 않는다.
  *
  * fashion_marketer_dashboard.html과 같은 폴더에서 로컬 서버(node serve.js)로 열면,
  * "데이터 조회" 달력에서 날짜를 고르고, 그 날짜의 수집 시간대(평균/각 시간)를 골라 볼 수 있다.
@@ -187,17 +188,21 @@ function updateIndex(dateStr, timeStr) {
   return index;
 }
 
-// 오늘보다 이전 날짜 중 가장 최근 날짜를 찾는다 (문자열 정렬 = 날짜 정렬, YYYY-MM-DD 고정 폭이라 가능)
-function findLatestPriorDate(index, todayStr) {
-  const priorDates = Object.keys(index).filter((d) => d < todayStr).sort();
-  return priorDates.length ? priorDates[priorDates.length - 1] : null;
+// 지금 막 수집한 것 바로 이전의 스냅샷을 찾는다: 오늘 이미 수집한 게 있으면 그중 가장 최근 시각(같은 날 내
+// 시간대별 변동), 오늘 첫 수집이면 가장 최근 이전 날짜의 마지막 수집분(날짜 간 변동)을 기준으로 삼는다.
+function findLatestPriorSnapshot(index, dateStr, timeStr) {
+  const sameDayEarlier = (index[dateStr] || []).filter((t) => t < timeStr).sort();
+  if (sameDayEarlier.length) return { date: dateStr, time: sameDayEarlier[sameDayEarlier.length - 1] };
+  const priorDates = Object.keys(index).filter((d) => d < dateStr).sort();
+  const priorDate = priorDates[priorDates.length - 1];
+  if (!priorDate) return null;
+  const priorTimes = index[priorDate] || [];
+  if (!priorTimes.length) return null;
+  return { date: priorDate, time: priorTimes[priorTimes.length - 1] };
 }
 
-function loadDateLatestSnapshot(dateStr, index) {
-  const times = index[dateStr];
-  if (!times || !times.length) return null;
-  const latestTime = times[times.length - 1];
-  const file = path.join(DATA_DIR, `musinsa_${dateStr}_${latestTime}.json`);
+function loadSnapshotFile(dateStr, timeStr) {
+  const file = path.join(DATA_DIR, `musinsa_${dateStr}_${timeStr}.json`);
   if (!fs.existsSync(file)) return null;
   try {
     return JSON.parse(fs.readFileSync(file, "utf-8"));
@@ -229,9 +234,9 @@ async function main() {
   const timeStr = nowTimeString(now);
 
   const indexBefore = readIndex();
-  const priorDate = findLatestPriorDate(indexBefore, dateStr);
-  const priorSnapshot = priorDate ? loadDateLatestSnapshot(priorDate, indexBefore) : null;
-  console.log(priorDate ? `전일 대비 비교 기준: ${priorDate}` : "이전 날짜 데이터 없음 (순위 변동 표시 없이 저장)");
+  const priorSnap = findLatestPriorSnapshot(indexBefore, dateStr, timeStr);
+  const priorSnapshot = priorSnap ? loadSnapshotFile(priorSnap.date, priorSnap.time) : null;
+  console.log(priorSnap ? `비교 기준(직전 수집): ${priorSnap.date} ${priorSnap.time}` : "이전 수집 데이터 없음 (순위 변동 표시 없이 저장)");
 
   const result = {};
   for (const [category, categoryCode] of Object.entries(CATEGORY_CODES)) {
