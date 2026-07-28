@@ -64,12 +64,20 @@ function pad2(n) {
   return String(n).padStart(2, "0");
 }
 
+// 실행 서버의 로컬 타임존과 무관하게 항상 한국 시간(KST, UTC+9) 기준으로 날짜/시각을 계산한다.
+// (GitHub Actions 등 UTC 서버에서 돌려도 KST 기준 파일명이 나오도록 하기 위함)
+function toKst(date) {
+  return new Date(date.getTime() + 9 * 60 * 60 * 1000);
+}
+
 function todayDateString(now) {
-  return `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
+  const k = toKst(now);
+  return `${k.getUTCFullYear()}-${pad2(k.getUTCMonth() + 1)}-${pad2(k.getUTCDate())}`;
 }
 
 function nowTimeString(now) {
-  return `${pad2(now.getHours())}-${pad2(now.getMinutes())}`;
+  const k = toKst(now);
+  return `${pad2(k.getUTCHours())}-${pad2(k.getUTCMinutes())}`;
 }
 
 async function fetchRanking(sectionId, categoryCode) {
