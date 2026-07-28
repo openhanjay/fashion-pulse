@@ -1,4 +1,4 @@
-name: Scrape Musinsa ranking
+name: Scrape rankings
 
 on:
   schedule:
@@ -19,8 +19,11 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Run scraper
+      - name: Run musinsa scraper
         run: node scrape_musinsa.js
+
+      - name: Run 29CM scraper
+        run: node scrape_cm29.js
 
       - name: Commit and push new data
         run: |
@@ -28,7 +31,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/
           if ! git diff --cached --quiet; then
-            git commit -m "chore: musinsa ranking snapshot"
+            git commit -m "chore: ranking snapshot"
             git push
           else
             echo "no data changes"

@@ -68,7 +68,6 @@ function seeded(seed) {
 const CATEGORIES = ["전체", "상의", "아우터", "바지", "원피스", "가방", "모자"];
 
 const BRANDS_MUSINSA = ["커버낫","디스이즈네버댓","마디에크르디","앤더슨벨","인사일런스","와릴","파르티멘토","비바스튜디오","로우로우","내셔널지오그래픽","디스커버리","칼하트 WIP","스투시","폴로 랄프로렌","그루브라임"];
-const BRANDS_CM29 = ["그로브","마인","시에스타","오이오이","라퍼지스토어","비이커","안다르","코스","자주","널디","마르디메크르디","인사일런스","아떼르베이직","구호","매트인더씨티"];
 
 const PRODUCT_POOL = {
   전체: ["오버핏 반팔 티셔츠","플리스 집업 자켓","와이드 데님 팬츠","린넨 셔츠 원피스","크로스백 미니","자수 로고 볼캡"],
@@ -114,7 +113,6 @@ function toFilteredRankings(rawRankings) {
 }
 
 const MUSINSA_MOCK_RANKINGS = toFilteredRankings(buildPlatformRankings(BRANDS_MUSINSA, 0));
-const CM29_RANKINGS = toFilteredRankings(buildPlatformRankings(BRANDS_CM29, 50000));
 
 /* Date -> "YYYY-MM-DD" (수집 인덱스/파일명 키와 맞춤) */
 function formatDateKey(d) {
@@ -198,6 +196,47 @@ function attachAverageDelta(today, prior, catKeys, filterKeys) {
     });
   });
   return today;
+}
+
+/* 29CM 스냅샷들(대분류 > 서브카테고리 > 기간 3단계 구조)을 상품별 평균 순위로 합침.
+   카테고리 구조를 하드코딩하지 않고 스냅샷에 실제로 들어있는 키들을 그대로 순회한다. */
+function averageCm29Rankings(snapshots) {
+  const result = {};
+  const largeCats = new Set();
+  snapshots.forEach((s) => Object.keys(s || {}).forEach((k) => largeCats.add(k)));
+  largeCats.forEach((largeCat) => {
+    result[largeCat] = {};
+    const subCats = new Set();
+    snapshots.forEach((s) => Object.keys(s?.[largeCat] || {}).forEach((k) => subCats.add(k)));
+    subCats.forEach((subCat) => {
+      result[largeCat][subCat] = {};
+      const periods = new Set();
+      snapshots.forEach((s) => Object.keys(s?.[largeCat]?.[subCat] || {}).forEach((k) => periods.add(k)));
+      periods.forEach((period) => {
+        const merged = new Map();
+        snapshots.forEach((snap) => {
+          const list = snap?.[largeCat]?.[subCat]?.[period] || [];
+          list.forEach((item) => {
+            const key = item.url || `${item.brand}__${item.name}`;
+            const existing = merged.get(key);
+            if (existing) {
+              existing.sumRank += item.rank;
+              existing.count += 1;
+              existing.latest = item;
+            } else {
+              merged.set(key, { sumRank: item.rank, count: 1, latest: item });
+            }
+          });
+        });
+        result[largeCat][subCat][period] = [...merged.values()]
+          .map((v) => { const { delta, ...rest } = v.latest; return { ...rest, avgRank: v.sumRank / v.count }; })
+          .sort((a, b) => a.avgRank - b.avgRank)
+          .slice(0, 100)
+          .map((item, idx) => ({ ...item, rank: idx + 1 }));
+      });
+    });
+  });
+  return result;
 }
 
 const REALTIME_KEYWORDS_CM29 = ["린넨 블레이저","와이드 슬랙스","크롭 가디건","버킷백","스퀘어토 플랫","오피스룩","베스트 세트","미니멀 자켓","서머 니트","레더 로퍼"];
@@ -745,6 +784,82 @@ function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availabl
   );
 }
 
+const CM29_LARGE_CATEGORIES = ["여성의류", "남성의류"];
+const CM29_PERIOD_FILTERS = [{ key: "실시간", label: "실시간" }, { key: "일간", label: "일간" }, { key: "주간", label: "주간" }, { key: "월간", label: "월간" }];
+
+function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, availableTimes, selectedTime, onSelectTime }) {
+  const [largeCat, setLargeCat] = useState(CM29_LARGE_CATEGORIES[0]);
+  const [subCat, setSubCat] = useState("전체");
+  const [period, setPeriod] = useState("실시간");
+  const [visibleCount, setVisibleCount] = useState(100);
+
+  const subCats = useMemo(() => Object.keys(rankings?.[largeCat] || {}), [rankings, largeCat]);
+
+  useEffect(() => {
+    if (subCats.length && !subCats.includes(subCat)) setSubCat(subCats[0]);
+  }, [largeCat, subCats]);
+
+  const filteredList = useMemo(() => rankings?.[largeCat]?.[subCat]?.[period] || [], [rankings, largeCat, subCat, period]);
+
+  return (
+    <div className="rounded-2xl p-5" style={{ background: C.white, border: `1px solid ${C.line}` }}>
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+        <div className="flex items-center gap-2">
+          <Tag size={16} color={C.signal} />
+          <h2 className="text-base font-bold" style={{ color: C.ink }}>{title}</h2>
+          {dataSource !== "live" && (<span className="text-[10.5px] font-semibold px-1.5 py-0.5 rounded" style={{ background: C.paper, color: C.mute }}>샘플 데이터</span>)}
+        </div>
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-stretch p-0.5 rounded-lg" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+            {CM29_LARGE_CATEGORIES.map((lc, i) => {
+              const isActive = lc === largeCat;
+              const prevActive = i > 0 && CM29_LARGE_CATEGORIES[i - 1] === largeCat;
+              return (<button key={lc} onClick={() => { setLargeCat(lc); setVisibleCount(12); }} className="px-3 py-1 text-xs font-bold transition-all" style={{ background: isActive ? C.ink : "transparent", color: isActive ? C.white : C.mute, borderRadius: 6, borderLeft: i > 0 && !isActive && !prevActive ? `1px solid ${C.line}` : "1px solid transparent" }}>{lc}</button>);
+            })}
+          </div>
+          <div className="flex items-stretch p-0.5 rounded-lg" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+            {CM29_PERIOD_FILTERS.map((f, i) => {
+              const isActive = f.key === period;
+              const prevActive = i > 0 && CM29_PERIOD_FILTERS[i - 1].key === period;
+              return (<button key={f.key} onClick={() => { setPeriod(f.key); setVisibleCount(12); }} className="px-3 py-1 text-xs font-bold transition-all" style={{ background: isActive ? C.ink : "transparent", color: isActive ? C.white : C.mute, borderRadius: 6, borderLeft: i > 0 && !isActive && !prevActive ? `1px solid ${C.line}` : "1px solid transparent" }}>{f.label}</button>);
+            })}
+          </div>
+          <span className="text-xs font-medium whitespace-nowrap" style={{ color: C.mute }}>{filteredList.length}개 중 {Math.min(visibleCount, filteredList.length)}개 표시</span>
+        </div>
+      </div>
+      {!!availableTimes?.length && (
+        <div className="flex items-center gap-1.5 mb-3 overflow-x-auto pb-1">
+          <span className="text-xs font-bold whitespace-nowrap shrink-0" style={{ color: C.mute }}>{selectedDateLabel}</span>
+          {availableTimes.map((t) => {
+            const isActive = t === selectedTime;
+            return (
+              <button key={t} onClick={() => onSelectTime(t)} className="px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-colors" style={{ background: isActive ? C.ink : C.paper, color: isActive ? C.white : C.mute, border: `1px solid ${isActive ? C.ink : C.line}` }}>{t}</button>
+            );
+          })}
+        </div>
+      )}
+      <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1">
+        {subCats.map((sc) => {
+          const isActive = sc === subCat;
+          return (<button key={sc} onClick={() => { setSubCat(sc); setVisibleCount(12); }} className="px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors" style={{ background: isActive ? C.ink : C.paper, color: isActive ? C.white : C.mute }}>{sc}</button>);
+        })}
+      </div>
+      {filteredList.length === 0 ? (
+        <div className="flex items-center justify-center rounded-xl text-sm font-medium" style={{ height: 120, background: C.paper, color: C.mute }}>조건에 맞는 상품이 없어요. 다른 필터를 선택해보세요.</div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+          {filteredList.slice(0, visibleCount).map((item) => (<ProductCard key={item.rank} item={item} iconSeed={item.rank * 7 + subCat.length} />))}
+        </div>
+      )}
+      {visibleCount < filteredList.length && (
+        <div className="flex justify-center mt-4">
+          <button onClick={() => setVisibleCount((v) => Math.min(filteredList.length, v + 12))} className="px-5 py-2 rounded-full text-sm font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>더보기 ({Math.min(visibleCount, filteredList.length)}/{filteredList.length})</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function InstagramTimeline() {
   return (
     <div className="rounded-2xl p-5" style={{ background: C.white, border: `1px solid ${C.line}` }}>
@@ -900,6 +1015,61 @@ function FashionMarketerDashboard() {
     if (rawTimes && rawTimes.length) loadMusinsaSnapshot(selectedDateKey, rawTimes, "평균");
   }, [selectedDateKey, musinsaIndex]);
 
+  const [cm29Rankings, setCm29Rankings] = useState({});
+  const [cm29DataSource, setCm29DataSource] = useState("mock");
+  const [cm29Index, setCm29Index] = useState(null);
+  const [cm29SelectedTime, setCm29SelectedTime] = useState(null);
+
+  const cm29Dates = useMemo(() => (cm29Index ? Object.keys(cm29Index).sort() : []), [cm29Index]);
+  const rawTimesForSelectedDateCm29 = cm29Index?.[selectedDateKey] || [];
+  const availableTimesForSelectedDateCm29 = rawTimesForSelectedDateCm29.length ? ["평균", ...rawTimesForSelectedDateCm29.map((t) => t.replace("-", ":"))] : [];
+
+  const loadCm29Snapshot = (dateKey, rawTimes, timeLabel) => {
+    const fetchOne = (dKey, rawTime) => fetch(`data/cm29_${dKey}_${rawTime}.json`).then((res) => { if (!res.ok) throw new Error("no snapshot file"); return res.json(); });
+    let request;
+    if (timeLabel === "평균") {
+      request = Promise.all(rawTimes.map((t) => fetchOne(dateKey, t))).then((todaySnapshots) => {
+        const todayAvg = averageCm29Rankings(todaySnapshots);
+        const priorDates = Object.keys(cm29Index || {}).filter((d) => d < dateKey).sort();
+        const priorDateKey = priorDates[priorDates.length - 1];
+        if (!priorDateKey) return todayAvg;
+        const priorTimes = cm29Index[priorDateKey] || [];
+        return Promise.all(priorTimes.map((t) => fetchOne(priorDateKey, t))).then((priorSnapshots) => {
+          const priorAvg = averageCm29Rankings(priorSnapshots);
+          Object.keys(todayAvg).forEach((largeCat) => {
+            const subCats = Object.keys(todayAvg[largeCat]);
+            const periodsSet = new Set();
+            subCats.forEach((sc) => Object.keys(todayAvg[largeCat][sc] || {}).forEach((p) => periodsSet.add(p)));
+            attachAverageDelta(todayAvg[largeCat], priorAvg[largeCat] || {}, subCats, [...periodsSet]);
+          });
+          return todayAvg;
+        });
+      });
+    } else {
+      request = fetchOne(dateKey, timeLabel.replace(":", "-"));
+    }
+    request
+      .then((data) => { setCm29Rankings(data); setCm29DataSource("live"); setCm29SelectedTime(timeLabel); })
+      .catch(() => {});
+  };
+
+  useEffect(() => {
+    fetch("data/cm29_index.json")
+      .then((res) => { if (!res.ok) throw new Error("no index file"); return res.json(); })
+      .then((index) => {
+        const dates = Object.keys(index || {});
+        if (dates.length === 0) throw new Error("empty index");
+        setCm29Index(index);
+      })
+      .catch(() => { setCm29Index({}); });
+  }, []);
+
+  useEffect(() => {
+    if (!cm29Index) return;
+    const rawTimes = cm29Index[selectedDateKey];
+    if (rawTimes && rawTimes.length) loadCm29Snapshot(selectedDateKey, rawTimes, "평균");
+  }, [selectedDateKey, cm29Index]);
+
   const meta = PAGE_META[view];
 
   return (
@@ -941,9 +1111,17 @@ function FashionMarketerDashboard() {
             <>
               <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-5 items-stretch">
                 <KeywordTrendPanel key="cm29-keyword" keywords={MARKETER_KEYWORDS_CM29} series={CM29_TREND_SERIES} />
-                <MiniCalendar selected={selectedDate} onSelect={setSelectedDate} />
+                <MiniCalendar selected={selectedDate} onSelect={setSelectedDate} availableDates={cm29Dates} />
               </div>
-              <RankingPanel rankings={CM29_RANKINGS} title="29CM 랭킹 TOP 100" dataSource="mock" />
+              <Cm29RankingPanel
+                rankings={cm29Rankings}
+                title="29CM 랭킹 TOP 100"
+                dataSource={cm29DataSource}
+                selectedDateLabel={selectedDateKey}
+                availableTimes={availableTimesForSelectedDateCm29}
+                selectedTime={cm29SelectedTime}
+                onSelectTime={(t) => loadCm29Snapshot(selectedDateKey, cm29Index?.[selectedDateKey] || [], t)}
+              />
             </>
           )}
           {view === "instagram" && <InstagramTimeline />}
