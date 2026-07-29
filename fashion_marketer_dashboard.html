@@ -792,7 +792,7 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
    이전/다음 버튼으로 수집 시점을 하나씩 넘겨보는 방식으로 만든다. 등락 표시는 바로 직전 수집 시점과
    비교해서 이 화면에서 직접 계산한다(같은 키워드가 있으면 순위 차이, 없으면 NEW). */
 
-const CM29_KEYWORD_TREND_TOP_N = 10; // 인기 검색어 리스트 자체가 TOP 10까지라 사실상 전체
+const CM29_KEYWORD_TREND_TOP_N = 5; // 최근 1주일 추이(그래프/표)는 TOP 5까지만 표시
 
 /* 그 날 수집된 모든 시점의 인기 검색어(TOP10, URL 없이 문자열만) 순위를 평균 내서 하루치 랭킹으로 합침 */
 function averageCm29PopularKeywords(snapshots) {
@@ -901,18 +901,23 @@ function Cm29PopularKeywordsPanel({ cm29Index, selectedDateKey }) {
           {snapshotData.status === "loading" && (<div className="flex items-center justify-center h-full text-xs font-medium" style={{ color: C.mute }}>불러오는 중...</div>)}
           {snapshotData.status === "empty" && (<div className="flex items-center justify-center h-full text-xs font-medium" style={{ color: C.mute }}>이 시점엔 인기 검색어 데이터가 없어요.</div>)}
           {snapshotData.status === "ready" && (
-            <div className="flex flex-col">
-              {snapshotData.list.map((kw, i) => {
-                const prevIdx = snapshotData.prevList ? snapshotData.prevList.indexOf(kw) : -1;
-                const delta = !snapshotData.prevList ? undefined : prevIdx === -1 ? "NEW" : prevIdx - i;
-                return (
-                  <div key={kw} className="flex items-center gap-2 py-1.5 text-sm" style={{ borderBottom: `1px solid ${C.line}` }}>
-                    <span className="w-5 shrink-0 font-bold tabular-nums" style={{ color: C.mute }}>{i + 1}</span>
-                    <span className="flex-1 truncate font-semibold" style={{ color: C.ink }}>{kw}</span>
-                    <CompactDelta delta={delta} />
-                  </div>
-                );
-              })}
+            <div className="flex flex-col gap-2">
+              {[snapshotData.list.slice(0, 5), snapshotData.list.slice(5, 10)].map((rowList, ri) => (
+                <div key={ri} className="grid grid-cols-5 gap-2">
+                  {rowList.map((kw, ci) => {
+                    const i = ri * 5 + ci;
+                    const prevIdx = snapshotData.prevList ? snapshotData.prevList.indexOf(kw) : -1;
+                    const delta = !snapshotData.prevList ? undefined : prevIdx === -1 ? "NEW" : prevIdx - i;
+                    return (
+                      <div key={kw} className="flex flex-col items-center gap-1 py-2 px-1 rounded-xl text-center" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+                        <span className="text-xs font-bold tabular-nums" style={{ color: C.mute }}>{i + 1}</span>
+                        <span className="text-sm font-semibold truncate w-full" style={{ color: C.ink }}>{kw}</span>
+                        <CompactDelta delta={delta} />
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -929,7 +934,7 @@ function Cm29PopularKeywordsPanel({ cm29Index, selectedDateKey }) {
           )}
           {trend.status === "ready" && (
             <>
-              <span className="text-xs font-medium mb-2" style={{ color: C.mute }}>인기 검색어 순위 추이 (최근 {trend.dates.length}개 수집일{trend.dates.length < 7 ? ", 아직 7일치 미만" : ""})</span>
+              <span className="text-xs font-medium mb-2" style={{ color: C.mute }}>인기 검색어 TOP {CM29_KEYWORD_TREND_TOP_N} 순위 추이 (최근 {trend.dates.length}개 수집일{trend.dates.length < 7 ? ", 아직 7일치 미만" : ""})</span>
               <div className="flex items-stretch p-0.5 rounded-lg mb-2 self-start" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
                 <button onClick={() => setTrendView("graph")} className="px-3 py-1 text-xs font-bold transition-all" style={{ background: trendView === "graph" ? C.ink : "transparent", color: trendView === "graph" ? C.white : C.mute, borderRadius: 6 }}>그래프</button>
                 <button onClick={() => setTrendView("table")} className="px-3 py-1 text-xs font-bold transition-all" style={{ background: trendView === "table" ? C.ink : "transparent", color: trendView === "table" ? C.white : C.mute, borderRadius: 6 }}>표</button>
