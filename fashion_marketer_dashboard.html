@@ -395,18 +395,18 @@ function MiniCalendar({ selected, onSelect, availableDates }) {
 }
 
 function DeltaBadge({ delta }) {
-  if (delta === "NEW") return (<span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: C.signal, color: C.white }}>NEW</span>);
-  if (delta > 0) return (<span className="flex items-center gap-0.5 text-[11px] font-bold" style={{ color: "#1E8E5A" }}><TrendingUp size={11} /> {delta}</span>);
-  if (delta < 0) return (<span className="flex items-center gap-0.5 text-[11px] font-bold" style={{ color: C.signal }}><TrendingDown size={11} /> {Math.abs(delta)}</span>);
-  return (<span className="flex items-center gap-0.5 text-[11px] font-semibold" style={{ color: C.mute }}><Minus size={11} /> 0</span>);
+  if (delta === "NEW") return (<span className="text-[12px] font-bold px-1.5 py-0.5 rounded" style={{ background: C.signal, color: C.white }}>NEW</span>);
+  if (delta > 0) return (<span className="flex items-center gap-0.5 text-[13px] font-bold" style={{ color: "#1E8E5A" }}><TrendingUp size={13} /> {delta}</span>);
+  if (delta < 0) return (<span className="flex items-center gap-0.5 text-[13px] font-bold" style={{ color: C.signal }}><TrendingDown size={13} /> {Math.abs(delta)}</span>);
+  return (<span className="flex items-center gap-0.5 text-[13px] font-semibold" style={{ color: C.mute }}><Minus size={13} /> 0</span>);
 }
 
 function CompactDelta({ delta }) {
   if (delta === undefined) return null;
-  if (delta === "NEW") return (<span className="text-[10px] font-bold shrink-0" style={{ color: C.signal }}>NEW</span>);
-  if (delta > 0) return (<span className="flex items-center gap-0.5 text-[10px] font-bold shrink-0" style={{ color: "#1E8E5A" }}><TrendingUp size={9} />{delta}</span>);
-  if (delta < 0) return (<span className="flex items-center gap-0.5 text-[10px] font-bold shrink-0" style={{ color: C.signal }}><TrendingDown size={9} />{Math.abs(delta)}</span>);
-  return (<span className="text-[10px] font-semibold shrink-0" style={{ color: C.mute }}>-</span>);
+  if (delta === "NEW") return (<span className="text-[12px] font-bold shrink-0" style={{ color: C.signal }}>NEW</span>);
+  if (delta > 0) return (<span className="flex items-center gap-0.5 text-[12px] font-bold shrink-0" style={{ color: "#1E8E5A" }}><TrendingUp size={11} />{delta}</span>);
+  if (delta < 0) return (<span className="flex items-center gap-0.5 text-[12px] font-bold shrink-0" style={{ color: C.signal }}><TrendingDown size={11} />{Math.abs(delta)}</span>);
+  return (<span className="text-[12px] font-semibold shrink-0" style={{ color: C.mute }}>-</span>);
 }
 
 const KEYWORD_FILTERS = [{ key: "all", label: "전체" }, { key: "rising", label: "급상승" }];
