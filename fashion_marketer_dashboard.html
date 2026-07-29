@@ -257,38 +257,39 @@ const LINE_PALETTE = [
   "#0E7AC4","#B8862F","#C0378A","#3E8E3E","#555555",
 ];
 
-/* 검색어 순위 추이 그래프. rows는 개수가 고정이 아니고(그 주에 한 번이라도 TOP7이었던 만큼),
-   선 위에 라벨을 직접 얹으면 겹쳐서 지저분해지니 라벨은 그래프 아래 범례로 따로 뺀다.
-   중간에 순위 밖으로 빠진 구간은 이어 그리지 않고 끊어서, 순위가 없던 기간이라는 걸 그대로 보여준다. */
+/* 검색어 순위 추이 그래프. rows는 개수가 고정이 아니고(그 주에 한 번이라도 TOP7이었던 만큼 유동적).
+   순위 밖으로 빠진 날은 선을 끊는 대신 그래프 아래쪽 "순위밖" 구간에 점을 찍어서 계속 이어 그린다
+   (그날도 동그라미가 남아있도록). 각 선 끝(가장 최근 지점)에 검색어 이름을 바로 옆에 적어준다. */
 function KeywordTrendGraph({ dates, rows }) {
-  const width = 700, height = 240;
-  const padL = 26, padR = 14, padT = 14, padB = 26;
+  const width = 700, height = 260;
+  const padL = 26, padR = 92, padT = 14, padB = 26;
   const innerW = width - padL - padR;
-  const innerH = height - padT - padB;
   const RANK_MAX = 7;
+  const rankZoneH = (height - padT - padB) * 0.76;
+  const outBaseY = padT + rankZoneH + 22;
+  const outStep = 11;
   const n = dates.length;
   const xFor = (i) => padL + (n > 1 ? (i / (n - 1)) * innerW : innerW / 2);
-  const yFor = (rank) => padT + ((rank - 1) / (RANK_MAX - 1)) * innerH;
+  const yForRank = (rank) => padT + ((rank - 1) / (RANK_MAX - 1)) * rankZoneH;
+  const shortLabel = (s) => (s.length > 8 ? `${s.slice(0, 7)}…` : s);
 
-  const segmentsFor = (ranksByDay) => {
-    const segments = [];
-    let current = [];
-    ranksByDay.forEach((rank, i) => {
-      if (typeof rank === "number") {
-        current.push({ x: xFor(i), y: yFor(rank) });
-      } else if (current.length) {
-        segments.push(current);
-        current = [];
-      }
+  let outSlot = 0;
+  const rowsWithPoints = rows.map((row) => {
+    const firstSeen = row.ranksByDay.findIndex((r) => typeof r === "number");
+    const outOnLastDay = firstSeen !== -1 && typeof row.ranksByDay[row.ranksByDay.length - 1] !== "number";
+    const myOutY = outOnLastDay ? outBaseY + outSlot++ * outStep : outBaseY;
+    const points = row.ranksByDay.map((rank, i) => {
+      if (firstSeen === -1 || i < firstSeen) return null;
+      if (typeof rank === "number") return { x: xFor(i), y: yForRank(rank), ranked: true };
+      return { x: xFor(i), y: myOutY, ranked: false };
     });
-    if (current.length) segments.push(current);
-    return segments;
-  };
+    return { ...row, points };
+  });
 
   return (
     <svg viewBox={`0 0 ${width} ${height}`} width="100%" height="100%" preserveAspectRatio="none">
       {Array.from({ length: RANK_MAX }, (_, i) => i + 1).map((rank) => {
-        const y = yFor(rank);
+        const y = yForRank(rank);
         return (
           <g key={rank}>
             <line x1={padL} x2={width - padR} y1={y} y2={y} stroke={C.line} strokeDasharray="3 5" />
@@ -296,18 +297,18 @@ function KeywordTrendGraph({ dates, rows }) {
           </g>
         );
       })}
+      <line x1={padL} x2={width - padR} y1={outBaseY} y2={outBaseY} stroke={C.line} strokeDasharray="2 4" />
+      <text x={padL - 6} y={outBaseY + 3} fontSize="9" fill={C.mute} textAnchor="end">순위밖</text>
       {dates.map((d, i) => (<text key={d} x={xFor(i)} y={height - 6} fontSize="10" fill={C.mute} textAnchor="middle">{d.slice(5)}</text>))}
-      {rows.map((row, ri) => {
+      {rowsWithPoints.map((row, ri) => {
         const color = LINE_PALETTE[ri % LINE_PALETTE.length];
-        const segments = segmentsFor(row.ranksByDay);
+        const present = row.points.map((p, i) => (p ? { ...p, i } : null)).filter(Boolean);
+        const last = present[present.length - 1];
         return (
           <g key={row.key}>
-            {segments.map((seg, si) => (
-              <React.Fragment key={si}>
-                {seg.length > 1 && (<polyline points={seg.map((p) => `${p.x},${p.y}`).join(" ")} fill="none" stroke={color} strokeWidth="2.2" strokeLinejoin="round" strokeLinecap="round" />)}
-                {seg.map((p, pi) => (<circle key={pi} cx={p.x} cy={p.y} r="3.2" fill={color} />))}
-              </React.Fragment>
-            ))}
+            {present.length > 1 && (<polyline points={present.map((p) => `${p.x},${p.y}`).join(" ")} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" opacity="0.85" />)}
+            {present.map((p, pi) => (<circle key={pi} cx={p.x} cy={p.y} r={p.ranked ? 3.2 : 3} fill={p.ranked ? color : C.white} stroke={color} strokeWidth={p.ranked ? 0 : 1.5} />))}
+            {!!last && (<text x={last.x + 7} y={last.y + 3.5} fontSize="10.5" fontWeight="700" fill={color}>{shortLabel(row.keyword)}</text>)}
           </g>
         );
       })}
@@ -466,6 +467,7 @@ function KeywordRankingPanel({ keywords, dataSource, selectedDateLabel, musinsaI
   const [filter, setFilter] = useState("all");
   const [visibleCount, setVisibleCount] = useState(20);
   const [trend, setTrend] = useState({ status: "idle" });
+  const [trendView, setTrendView] = useState("graph");
 
   useEffect(() => {
     if (mode !== "trend" || !musinsaIndex || !selectedDateKey) return;
@@ -542,17 +544,37 @@ function KeywordRankingPanel({ keywords, dataSource, selectedDateLabel, musinsaI
           )}
           {trend.status === "ready" && (
             <>
-              <span className="text-xs font-medium mb-1" style={{ color: C.mute }}>전체 검색어 TOP {KEYWORD_TREND_TOP_N} 순위 추이 (최근 {trend.dates.length}개 수집일{trend.dates.length < 7 ? ", 아직 7일치 미만" : ""})</span>
-              <div className="flex-1 min-h-[180px]">
-                <KeywordTrendGraph dates={trend.dates} rows={trend.rows} />
+              <span className="text-xs font-medium mb-2" style={{ color: C.mute }}>전체 검색어 TOP {KEYWORD_TREND_TOP_N} 순위 추이 (최근 {trend.dates.length}개 수집일{trend.dates.length < 7 ? ", 아직 7일치 미만" : ""})</span>
+              <div className="flex items-stretch p-0.5 rounded-lg mb-2 self-start" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+                <button onClick={() => setTrendView("graph")} className="px-3 py-1 text-xs font-bold transition-all" style={{ background: trendView === "graph" ? C.ink : "transparent", color: trendView === "graph" ? C.white : C.mute, borderRadius: 6 }}>그래프</button>
+                <button onClick={() => setTrendView("table")} className="px-3 py-1 text-xs font-bold transition-all" style={{ background: trendView === "table" ? C.ink : "transparent", color: trendView === "table" ? C.white : C.mute, borderRadius: 6 }}>표</button>
               </div>
-              <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
-                {trend.rows.map((row, ri) => (
-                  <span key={row.key} className="flex items-center gap-1 text-[11px] font-semibold" style={{ color: C.ink }}>
-                    <span className="rounded-full shrink-0" style={{ width: 8, height: 8, background: LINE_PALETTE[ri % LINE_PALETTE.length] }} />{row.keyword}
-                  </span>
-                ))}
-              </div>
+              {trendView === "graph" ? (
+                <div className="flex-1 min-h-[200px]">
+                  <KeywordTrendGraph dates={trend.dates} rows={trend.rows} />
+                </div>
+              ) : (
+                <div className="flex-1 min-h-0 overflow-auto">
+                  <table className="w-full text-xs border-collapse">
+                    <thead>
+                      <tr>
+                        <th className="text-left font-bold pb-2 pr-3 sticky left-0" style={{ color: C.mute, background: C.white }}>검색어</th>
+                        {trend.dates.map((d) => (<th key={d} className="text-center font-semibold pb-2 px-2 whitespace-nowrap" style={{ color: C.mute }}>{d.slice(5)}</th>))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {trend.rows.map((row) => (
+                        <tr key={row.key}>
+                          <td className="py-1.5 pr-3 font-semibold whitespace-nowrap sticky left-0" style={{ color: C.ink, background: C.white, borderTop: `1px solid ${C.line}` }}>{row.keyword}</td>
+                          {row.ranksByDay.map((rank, i) => (
+                            <td key={i} className="text-center py-1.5 px-2 tabular-nums font-bold" style={{ color: rank ? C.ink : "#D8D6D0", borderTop: `1px solid ${C.line}` }}>{rank ?? "-"}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </>
           )}
         </div>
