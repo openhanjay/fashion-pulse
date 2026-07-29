@@ -871,13 +871,15 @@ function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availabl
     setOpenBrand((cur) => (cur === b ? null : cur));
   };
 
+  // CATEGORIES 순서(전체 -> 상의 -> 아우터 -> ...)대로 묶어서 보여준다. 각 카테고리 안에서는 이미
+  // rankings[c].all이 순위순으로 정렬돼 있으니 그대로 push하면 카테고리별로 순위순 그룹이 유지된다.
   const openBrandItems = useMemo(() => {
     if (!openBrand) return [];
     const items = [];
     CATEGORIES.forEach((c) => {
       (rankings?.[c]?.all || []).forEach((item) => { if (item.brand === openBrand) items.push({ ...item, category: c }); });
     });
-    return items.sort((a, b) => a.rank - b.rank);
+    return items;
   }, [rankings, openBrand]);
 
   return (
