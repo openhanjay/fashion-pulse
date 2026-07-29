@@ -857,6 +857,35 @@ function BrandWatchModal({ brand, items, onClose }) {
   );
 }
 
+/* 사이드바 AI 분석 항목을 클릭했을 때 그 항목을 이루는 실제 상품들을 그룹(구간/브랜드/키워드/컬러 등)별로
+   나눠서 보여주는 팝업. */
+function InsightDrilldownModal({ title, groups, onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(23,24,28,0.55)" }} onClick={onClose}>
+      <div className="rounded-2xl w-full max-w-3xl max-h-[85vh] overflow-y-auto p-5" style={{ background: C.white }} onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-base font-bold" style={{ color: C.ink }}>{title}</h3>
+          <button onClick={onClose} className="text-sm font-bold px-2 py-1 rounded-full" style={{ color: C.mute }}>×</button>
+        </div>
+        {!groups || !groups.length ? (
+          <div className="flex items-center justify-center rounded-xl text-sm font-medium" style={{ height: 120, background: C.paper, color: C.mute }}>표시할 상품이 없어요.</div>
+        ) : (
+          <div className="flex flex-col gap-5">
+            {groups.map((g, gi) => (
+              <div key={gi}>
+                <p className="text-xs font-bold mb-2" style={{ color: C.mute }}>{g.label} ({g.items.length}개)</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {g.items.map((item, i) => (<ProductCard key={item.url || `${gi}-${item.rank}-${i}`} item={item} iconSeed={(item.rank || i) * 7 + gi} />))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 const RANK_FILTERS = [{ key: "all", label: "전체" }, { key: "rising", label: "급상승" }, { key: "new", label: "NEW" }];
 
 /* 실제 LLM 호출 없이, 현재 보고 있는 랭킹 리스트(무신사/29CM 공통 상품 형태)를 데이터로 직접 집계해서
@@ -914,88 +943,122 @@ function colorOf(word) {
   return COLOR_ALIASES[word] || COLOR_ALIASES[word.toLowerCase()];
 }
 
-function bucketCounts(values, bands) {
-  return bands.map((b) => ({ label: b.label, count: values.filter(b.test).length }));
+function bucketItems(items, getValue, bands) {
+  return bands
+    .map((b) => ({ label: b.label, items: items.filter((it) => { const v = getValue(it); return typeof v === "number" && b.test(v); }) }))
+    .filter((b) => b.items.length > 0);
 }
 
+/* 이름/URL이 같은 항목이 한 그룹 안에 중복으로 들어가는 걸 막는다(상품명에 같은 단어가 두 번 나오는 등). */
+function dedupeItems(arr) {
+  const seen = new Set();
+  return arr.filter((it) => {
+    const key = it.url || `${it.rank}__${it.name || it.keyword}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+/* 각 항목은 { text: "N번 문장", groups: [{ label, items }] } 형태로, text는 사이드바에 그대로 보여주고
+   groups는 그 항목을 클릭했을 때 팝업으로 실제 상품들을 분류해서 보여주는 데 쓴다. */
 function buildCategoryInsights(items, categoryName) {
   if (!items || !items.length) return null;
-  const n = items.length;
 
-  const prices = items.map((it) => it.price).filter((p) => typeof p === "number" && p > 0);
-  const priceBands = bucketCounts(prices, [
+  const priceBands = bucketItems(items, (it) => it.price, [
     { label: "0~2만원", test: (p) => p < 20000 },
     { label: "2~4만원", test: (p) => p >= 20000 && p < 40000 },
     { label: "4~6만원", test: (p) => p >= 40000 && p < 60000 },
     { label: "6~8만원", test: (p) => p >= 60000 && p < 80000 },
     { label: "8~10만원", test: (p) => p >= 80000 && p < 100000 },
     { label: "10만원~", test: (p) => p >= 100000 },
-  ]).filter((b) => b.count > 0);
+  ]);
 
-  const discounts = items.map((it) => it.discountRatio).filter((d) => typeof d === "number");
-  const discountBands = bucketCounts(discounts, [
+  const discountBands = bucketItems(items, (it) => it.discountRatio, [
     { label: "50%↑", test: (d) => d >= 50 },
     { label: "40~49%", test: (d) => d >= 40 && d < 50 },
     { label: "30~39%", test: (d) => d >= 30 && d < 40 },
     { label: "20~29%", test: (d) => d >= 20 && d < 30 },
     { label: "10~19%", test: (d) => d >= 10 && d < 20 },
     { label: "1~9%", test: (d) => d >= 1 && d < 10 },
-  ]).filter((b) => b.count > 0);
-  const noSaleCount = discounts.filter((d) => d <= 0).length;
+  ]);
+  const noSaleItems = items.filter((it) => typeof it.discountRatio === "number" && it.discountRatio <= 0);
 
-  const brandCounts = new Map();
-  items.forEach((it) => { if (it.brand) brandCounts.set(it.brand, (brandCounts.get(it.brand) || 0) + 1); });
-  const topBrands = [...brandCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
+  const brandGroups = new Map();
+  items.forEach((it) => { if (it.brand) { if (!brandGroups.has(it.brand)) brandGroups.set(it.brand, []); brandGroups.get(it.brand).push(it); } });
+  const topBrands = [...brandGroups.entries()].sort((a, b) => b[1].length - a[1].length).slice(0, 3);
 
   const STOPWORDS = new Set([
     "세트", "패키지", "기획", "단독", "한정", "컬러", "color", "colors",
     ...(CATEGORY_OBVIOUS_WORDS[categoryName] || []),
   ]);
-  // 색상명은 3번(키워드)에서는 빼고 5번(컬러 랭킹)에서 따로 집계하니, 여기서는 raw 토큰 개수만 세어두고
-  // 필터링은 topWord/colorCounts 각자 계산할 때 한다.
-  const wordCounts = new Map();
+  // 색상명은 3번(키워드)에서는 빼고 5번(컬러 랭킹)에서 따로 집계하니, 여기서는 단어별 항목 목록만 모아두고
+  // 필터링은 topWords/colorGroups 각자 계산할 때 한다.
+  const wordGroups = new Map();
   items.forEach((it) => {
     (it.name || "").split(/[\s/_\-\[\]().,]+/).forEach((raw) => {
       const w = raw.trim();
       if (w.length < 2 || /^\d+$/.test(w)) return;
-      wordCounts.set(w, (wordCounts.get(w) || 0) + 1);
+      if (!wordGroups.has(w)) wordGroups.set(w, []);
+      wordGroups.get(w).push(it);
     });
   });
-  const topWords = [...wordCounts.entries()]
-    .filter(([word, count]) => count >= 3 && !STOPWORDS.has(word) && !STOPWORDS.has(word.toLowerCase()) && !colorOf(word))
-    .sort((a, b) => b[1] - a[1])
+  const topWords = [...wordGroups.entries()]
+    .filter(([word, arr]) => arr.length >= 3 && !STOPWORDS.has(word) && !STOPWORDS.has(word.toLowerCase()) && !colorOf(word))
+    .sort((a, b) => b[1].length - a[1].length)
     .slice(0, 3);
 
-  const colorCounts = new Map();
-  wordCounts.forEach((count, word) => {
+  const colorGroups = new Map();
+  wordGroups.forEach((arr, word) => {
     const canonical = colorOf(word);
-    if (canonical) colorCounts.set(canonical, (colorCounts.get(canonical) || 0) + count);
+    if (canonical) {
+      if (!colorGroups.has(canonical)) colorGroups.set(canonical, []);
+      colorGroups.get(canonical).push(...arr);
+    }
   });
-  const topColors = [...colorCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
+  const topColors = [...colorGroups.entries()].map(([color, arr]) => [color, dedupeItems(arr)]).sort((a, b) => b[1].length - a[1].length).slice(0, 3);
 
-  const newCount = items.filter((it) => it.delta === "NEW").length;
-  const risingCount = items.filter((it) => typeof it.delta === "number" && it.delta > 0).length;
+  const newItems = items.filter((it) => it.delta === "NEW");
+  const risingItems = items.filter((it) => typeof it.delta === "number" && it.delta > 0);
 
-  const lines = [];
+  const insights = [];
   if (discountBands.length) {
-    lines.push(`할인율 분포는 ${discountBands.map((b) => `${b.label} ${b.count}개`).join(", ")}${noSaleCount ? `이고, 세일 없는 상품은 ${noSaleCount}개` : ""}예요.`);
+    insights.push({
+      text: `할인율 분포는 ${discountBands.map((b) => `${b.label} ${b.items.length}개`).join(", ")}${noSaleItems.length ? `이고, 세일 없는 상품은 ${noSaleItems.length}개` : ""}예요.`,
+      groups: noSaleItems.length ? [...discountBands, { label: "세일 없음", items: noSaleItems }] : discountBands,
+    });
   }
   if (priceBands.length) {
-    lines.push(`가격대별로는 ${priceBands.map((b) => `${b.label} ${b.count}개`).join(", ")}예요.`);
+    insights.push({ text: `가격대별로는 ${priceBands.map((b) => `${b.label} ${b.items.length}개`).join(", ")}예요.`, groups: priceBands });
   }
   if (topBrands.length) {
-    lines.push(`가장 많이 보이는 브랜드는 ${topBrands.map(([brand, count], i) => `${i + 1}위 ${brand}(${count}개)`).join(", ")}예요.`);
+    insights.push({
+      text: `가장 많이 보이는 브랜드는 ${topBrands.map(([brand, arr], i) => `${i + 1}위 ${brand}(${arr.length}개)`).join(", ")}예요.`,
+      groups: topBrands.map(([brand, arr]) => ({ label: brand, items: arr })),
+    });
   }
   if (topWords.length) {
-    lines.push(`상품명에 자주 나오는 단어는 ${topWords.map(([word, count], i) => `${i + 1}위 "${word}"(${count}개)`).join(", ")}예요.`);
+    insights.push({
+      text: `상품명에 자주 나오는 단어는 ${topWords.map(([word, arr], i) => `${i + 1}위 "${word}"(${arr.length}개)`).join(", ")}예요.`,
+      groups: topWords.map(([word, arr]) => ({ label: `"${word}"`, items: dedupeItems(arr) })),
+    });
   }
-  if (newCount || risingCount) {
-    lines.push(`신규 진입(NEW) ${newCount}개, 순위 상승 중인 상품 ${risingCount}개예요.`);
+  if (newItems.length || risingItems.length) {
+    insights.push({
+      text: `신규 진입(NEW) ${newItems.length}개, 순위 상승 중인 상품 ${risingItems.length}개예요.`,
+      groups: [
+        ...(newItems.length ? [{ label: "신규 진입(NEW)", items: newItems }] : []),
+        ...(risingItems.length ? [{ label: "순위 상승", items: risingItems }] : []),
+      ],
+    });
   }
   if (topColors.length) {
-    lines.push(`가장 많이 보이는 컬러는 ${topColors.map(([color, count], i) => `${i + 1}위 ${color}(${count}개)`).join(", ")}예요.`);
+    insights.push({
+      text: `가장 많이 보이는 컬러는 ${topColors.map(([color, arr], i) => `${i + 1}위 ${color}(${arr.length}개)`).join(", ")}예요.`,
+      groups: topColors.map(([color, arr]) => ({ label: color, items: arr })),
+    });
   }
-  return lines;
+  return insights;
 }
 
 /* 검색어 랭킹/상품 랭킹(리스트 모드) 공용 AI 분석: 순위가 가장 많이 오른/내린 항목 5개씩을 뽑는다.
@@ -1231,8 +1294,6 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
     return brandPool.filter((item) => item.brand === openBrand).sort((a, b) => a.rank - b.rank);
   }, [brandPool, openBrand]);
 
-  const moverInsight = useMemo(() => buildMoverInsights(filteredList, "상품", (it) => truncateLabel(it.name, 16)), [filteredList]);
-
   return (
     <div className="rounded-2xl p-5" style={{ background: C.white, border: `1px solid ${C.line}` }}>
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
@@ -1306,23 +1367,18 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
           </div>
         )}
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-[5fr_2fr] gap-4 items-start">
-        <div className="min-w-0">
-          {filteredList.length === 0 ? (
-            <div className="flex items-center justify-center rounded-xl text-sm font-medium" style={{ height: 120, background: C.paper, color: C.mute }}>조건에 맞는 상품이 없어요. 다른 필터를 선택해보세요.</div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-              {filteredList.slice(0, visibleCount).map((item) => (<ProductCard key={item.rank} item={item} iconSeed={item.rank * 7 + subCat.length} />))}
-            </div>
-          )}
-          {visibleCount < filteredList.length && (
-            <div className="flex justify-center mt-4">
-              <button onClick={() => setVisibleCount((v) => Math.min(filteredList.length, v + 12))} className="px-5 py-2 rounded-full text-sm font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>더보기 ({Math.min(visibleCount, filteredList.length)}/{filteredList.length})</button>
-            </div>
-          )}
+      {filteredList.length === 0 ? (
+        <div className="flex items-center justify-center rounded-xl text-sm font-medium" style={{ height: 120, background: C.paper, color: C.mute }}>조건에 맞는 상품이 없어요. 다른 필터를 선택해보세요.</div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+          {filteredList.slice(0, visibleCount).map((item) => (<ProductCard key={item.rank} item={item} iconSeed={item.rank * 7 + subCat.length} />))}
         </div>
-        <MoverInsightBox lines={moverInsight} />
-      </div>
+      )}
+      {visibleCount < filteredList.length && (
+        <div className="flex justify-center mt-4">
+          <button onClick={() => setVisibleCount((v) => Math.min(filteredList.length, v + 12))} className="px-5 py-2 rounded-full text-sm font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>더보기 ({Math.min(visibleCount, filteredList.length)}/{filteredList.length})</button>
+        </div>
+      )}
       {!!openBrand && <BrandWatchModal brand={openBrand} items={openBrandItems} onClose={() => setOpenBrand(null)} />}
     </div>
   );
@@ -1686,7 +1742,14 @@ const PAGE_META = {
 };
 
 function Sidebar({ active, onChange, activeCategoryInsight }) {
-  const insightLines = activeCategoryInsight ? buildCategoryInsights(activeCategoryInsight.items, activeCategoryInsight.categoryName) : null;
+  const [openInsightIndex, setOpenInsightIndex] = useState(null);
+  const insights = activeCategoryInsight ? buildCategoryInsights(activeCategoryInsight.items, activeCategoryInsight.categoryName) : null;
+
+  // 카테고리/필터가 바뀌어 activeCategoryInsight 자체가 달라지면(다른 상품 목록이 되면) 열려있던 팝업은 닫는다.
+  useEffect(() => { setOpenInsightIndex(null); }, [activeCategoryInsight]);
+
+  const openInsight = insights && openInsightIndex !== null ? insights[openInsightIndex] : null;
+
   return (
     <>
       <aside className="hidden lg:flex flex-col w-60 shrink-0 sticky top-0 h-screen py-5 px-3 overflow-y-auto" style={{ background: C.white, borderRight: `1px solid ${C.line}` }}>
@@ -1712,14 +1775,19 @@ function Sidebar({ active, onChange, activeCategoryInsight }) {
             );
           })}
         </div>
-        {!!insightLines && (
+        {!!insights && (
           <div className="px-3 pt-5 mt-2" style={{ borderTop: `1px solid ${C.line}` }}>
             <p className="mt-4 mb-2 text-xs font-bold tracking-wider" style={{ color: C.mute }}>AI 분석</p>
             <p className="text-sm font-bold mb-2" style={{ color: C.ink }}>{activeCategoryInsight.label}</p>
             <ol className="flex flex-col gap-2.5">
-              {insightLines.map((line, i) => (
-                <li key={i} className="text-[13.5px] leading-snug" style={{ color: C.ink }}>
-                  <span className="font-bold" style={{ color: C.ink }}>{i + 1}. </span>{line}
+              {insights.map((insight, i) => (
+                <li
+                  key={i}
+                  onClick={() => setOpenInsightIndex(i)}
+                  className="text-[13.5px] leading-snug cursor-pointer hover:underline"
+                  style={{ color: C.ink }}
+                >
+                  <span className="font-bold" style={{ color: C.ink }}>{i + 1}. </span>{insight.text}
                 </li>
               ))}
             </ol>
@@ -1739,6 +1807,13 @@ function Sidebar({ active, onChange, activeCategoryInsight }) {
           );
         })}
       </nav>
+      {!!openInsight && (
+        <InsightDrilldownModal
+          title={`${activeCategoryInsight.label} · ${openInsightIndex + 1}번`}
+          groups={openInsight.groups}
+          onClose={() => setOpenInsightIndex(null)}
+        />
+      )}
     </>
   );
 }
