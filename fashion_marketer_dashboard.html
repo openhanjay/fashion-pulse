@@ -600,6 +600,9 @@ function KeywordRankingPanel({ dataSource, selectedDateLabel, musinsaIndex, sele
     loadMusinsaKeywordSnapshot(musinsaIndex, selectedDateKey, rawTimes, t).then(({ data }) => setKwData(data)).catch(() => {});
   };
 
+  // "최근 1주일"/"관심" 탭에서는 안 보이고, 기본 리스트 모드에서 현재 필터(전체/급상승) 기준으로만 계산.
+  const moverInsight = useMemo(() => buildKeywordMoverInsights(kwData?.[filter]), [kwData, filter]);
+
   return (
     <div className="rounded-2xl p-5 h-full flex flex-col" style={{ background: C.white, border: `1px solid ${C.line}` }}>
       <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
@@ -624,42 +627,56 @@ function KeywordRankingPanel({ dataSource, selectedDateLabel, musinsaIndex, sele
               })}
             </div>
           )}
-          <div className="flex items-stretch p-0.5 rounded-lg mb-3 self-start" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
-            {KEYWORD_FILTERS.map((f, i) => {
-              const isActive = f.key === filter;
-              const prevActive = i > 0 && KEYWORD_FILTERS[i - 1].key === filter;
-              return (<button key={f.key} onClick={() => { setFilter(f.key); setVisibleCount(20); }} className="px-4 py-1.5 text-xs font-bold transition-all" style={{ background: isActive ? C.ink : "transparent", color: isActive ? C.white : C.mute, borderRadius: 6, borderLeft: i > 0 && !isActive && !prevActive ? `1px solid ${C.line}` : "1px solid transparent" }}>{f.label}</button>);
-            })}
-          </div>
-          {(() => {
-            const fullList = (kwData?.[filter] || []).slice(0, KEYWORD_TOP_N_DISPLAY);
-            const list = fullList.slice(0, visibleCount);
-            if (list.length === 0) {
-              return (<div className="flex items-center justify-center rounded-xl text-xs font-medium flex-1" style={{ background: C.paper, color: C.mute, minHeight: 160 }}>검색어 데이터가 없어요.</div>);
-            }
-            return (
-              <>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-4">
-                  {list.map((item) => (
-                    <a key={item.url || item.keyword} href={item.url || undefined} target="_blank" rel="noreferrer" className="flex items-center gap-2 py-1.5 text-xs" style={{ borderBottom: `1px solid ${C.line}` }}>
-                      <span className="w-5 shrink-0 font-bold tabular-nums text-right" style={{ color: C.mute }}>{item.rank}</span>
-                      <span className="flex-1 truncate font-semibold" style={{ color: C.ink, fontSize: 14 }}>{item.keyword}</span>
-                      <CompactDelta delta={item.delta} />
-                    </a>
-                  ))}
-                </div>
-                {fullList.length > 20 && (
-                  <div className="flex justify-center mt-3">
-                    {visibleCount < fullList.length ? (
-                      <button onClick={() => setVisibleCount((v) => Math.min(fullList.length, v + 20))} className="px-5 py-2 rounded-full text-sm font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>펼치기 ({visibleCount}/{fullList.length})</button>
-                    ) : (
-                      <button onClick={() => setVisibleCount(20)} className="px-5 py-2 rounded-full text-sm font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>접기</button>
+          <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4 flex-1 min-h-0 items-start">
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-stretch p-0.5 rounded-lg mb-3 self-start" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+                {KEYWORD_FILTERS.map((f, i) => {
+                  const isActive = f.key === filter;
+                  const prevActive = i > 0 && KEYWORD_FILTERS[i - 1].key === filter;
+                  return (<button key={f.key} onClick={() => { setFilter(f.key); setVisibleCount(20); }} className="px-4 py-1.5 text-xs font-bold transition-all" style={{ background: isActive ? C.ink : "transparent", color: isActive ? C.white : C.mute, borderRadius: 6, borderLeft: i > 0 && !isActive && !prevActive ? `1px solid ${C.line}` : "1px solid transparent" }}>{f.label}</button>);
+                })}
+              </div>
+              {(() => {
+                const fullList = (kwData?.[filter] || []).slice(0, KEYWORD_TOP_N_DISPLAY);
+                const list = fullList.slice(0, visibleCount);
+                if (list.length === 0) {
+                  return (<div className="flex items-center justify-center rounded-xl text-xs font-medium flex-1" style={{ background: C.paper, color: C.mute, minHeight: 160 }}>검색어 데이터가 없어요.</div>);
+                }
+                return (
+                  <>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-4">
+                      {list.map((item) => (
+                        <a key={item.url || item.keyword} href={item.url || undefined} target="_blank" rel="noreferrer" className="flex items-center gap-2 py-1.5 text-xs" style={{ borderBottom: `1px solid ${C.line}` }}>
+                          <span className="w-5 shrink-0 font-bold tabular-nums text-right" style={{ color: C.mute }}>{item.rank}</span>
+                          <span className="flex-1 truncate font-semibold" style={{ color: C.ink, fontSize: 14 }}>{item.keyword}</span>
+                          <CompactDelta delta={item.delta} />
+                        </a>
+                      ))}
+                    </div>
+                    {fullList.length > 20 && (
+                      <div className="flex justify-center mt-3">
+                        {visibleCount < fullList.length ? (
+                          <button onClick={() => setVisibleCount((v) => Math.min(fullList.length, v + 20))} className="px-5 py-2 rounded-full text-sm font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>펼치기 ({visibleCount}/{fullList.length})</button>
+                        ) : (
+                          <button onClick={() => setVisibleCount(20)} className="px-5 py-2 rounded-full text-sm font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>접기</button>
+                        )}
+                      </div>
                     )}
-                  </div>
-                )}
-              </>
-            );
-          })()}
+                  </>
+                );
+              })()}
+            </div>
+            {!!moverInsight && (
+              <div className="rounded-xl p-3" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+                <p className="text-xs font-bold tracking-wider mb-2" style={{ color: C.mute }}>AI 분석</p>
+                <ol className="flex flex-col gap-2">
+                  {moverInsight.map((line, i) => (
+                    <li key={i} className="text-[12.5px] leading-snug" style={{ color: C.ink }}>{line}</li>
+                  ))}
+                </ol>
+              </div>
+            )}
+          </div>
         </div>
       ) : mode === "trend" ? (
         <div className="flex-1 min-h-0 flex flex-col">
@@ -988,6 +1005,24 @@ function buildCategoryInsights(items, categoryName) {
     lines.push(`가장 많이 보이는 컬러는 ${topColors.map(([color, count], i) => `${i + 1}위 ${color}(${count}개)`).join(", ")}예요.`);
   }
   return lines;
+}
+
+/* 검색어 랭킹(리스트 모드) 전용 AI 분석: 순위가 가장 많이 오른/내린 검색어 5개씩을 뽑는다.
+   "최근 1주일"/"관심" 탭에서는 안 보이고, 기본 리스트 모드에서만 쓴다. */
+function buildKeywordMoverInsights(list) {
+  if (!list || !list.length) return null;
+  const withDelta = list.filter((it) => typeof it.delta === "number");
+  if (!withDelta.length) return null;
+  const risers = [...withDelta].filter((it) => it.delta > 0).sort((a, b) => b.delta - a.delta).slice(0, 5);
+  const fallers = [...withDelta].filter((it) => it.delta < 0).sort((a, b) => a.delta - b.delta).slice(0, 5);
+  const lines = [];
+  if (risers.length) {
+    lines.push(`가장 많이 오른 검색어: ${risers.map((it, i) => `${i + 1}위 ${it.keyword}(+${it.delta})`).join(", ")}`);
+  }
+  if (fallers.length) {
+    lines.push(`가장 많이 내린 검색어: ${fallers.map((it, i) => `${i + 1}위 ${it.keyword}(${it.delta})`).join(", ")}`);
+  }
+  return lines.length ? lines : null;
 }
 
 function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availableTimes, selectedTime, onSelectTime, onActiveListChange }) {
@@ -1660,7 +1695,7 @@ function Sidebar({ active, onChange, activeCategoryInsight }) {
             <p className="text-sm font-bold mb-2" style={{ color: C.ink }}>{activeCategoryInsight.label}</p>
             <ol className="flex flex-col gap-2.5">
               {insightLines.map((line, i) => (
-                <li key={i} className="text-[13.5px] leading-snug" style={{ color: C.mute }}>
+                <li key={i} className="text-[13.5px] leading-snug" style={{ color: C.ink }}>
                   <span className="font-bold" style={{ color: C.ink }}>{i + 1}. </span>{line}
                 </li>
               ))}
