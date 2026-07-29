@@ -597,7 +597,7 @@ function KeywordRankingPanel({ dataSource, selectedDateLabel, musinsaIndex, sele
         </div>
         <div className="flex items-center gap-2">
           {!!selectedDateLabel && (<span className="text-xs font-medium whitespace-nowrap" style={{ color: C.mute }}>{selectedDateLabel}</span>)}
-          <button onClick={() => setMode((m) => (m === "trend" ? "list" : "trend"))} className="text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap" style={{ background: mode === "trend" ? C.ink : C.paper, color: mode === "trend" ? C.white : C.mute, border: `1px solid ${mode === "trend" ? C.ink : C.line}` }}>최근 1주일</button>
+          <button onClick={() => setMode((m) => (m === "trend" ? "list" : "trend"))} className="text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap" style={{ background: mode === "trend" ? C.ink : C.paper, color: mode === "trend" ? C.white : C.mute, border: `1px solid ${mode === "trend" ? C.ink : C.line}` }}>TOP{KEYWORD_TREND_TOP_N}</button>
           <button onClick={() => setMode((m) => (m === "watch" ? "list" : "watch"))} className="text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap" style={{ background: mode === "watch" ? C.ink : C.paper, color: mode === "watch" ? C.white : C.mute, border: `1px solid ${mode === "watch" ? C.ink : C.line}` }}>관심{watchList.length ? ` (${watchList.length})` : ""}</button>
         </div>
       </div>
@@ -1094,7 +1094,7 @@ function Cm29PopularKeywordsPanel({ cm29Index, selectedDateKey }) {
         </div>
         <div className="flex items-center gap-2">
           {!!selectedDateKey && (<span className="text-xs font-medium whitespace-nowrap" style={{ color: C.mute }}>{selectedDateKey}</span>)}
-          <button onClick={() => setMode((m) => (m === "trend" ? "list" : "trend"))} className="text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap" style={{ background: mode === "trend" ? C.ink : C.paper, color: mode === "trend" ? C.white : C.mute, border: `1px solid ${mode === "trend" ? C.ink : C.line}` }}>최근 1주일</button>
+          <button onClick={() => setMode((m) => (m === "trend" ? "list" : "trend"))} className="text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap" style={{ background: mode === "trend" ? C.ink : C.paper, color: mode === "trend" ? C.white : C.mute, border: `1px solid ${mode === "trend" ? C.ink : C.line}` }}>TOP{CM29_KEYWORD_TREND_TOP_N}</button>
           <button onClick={() => setMode((m) => (m === "watch" ? "list" : "watch"))} className="text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap" style={{ background: mode === "watch" ? C.ink : C.paper, color: mode === "watch" ? C.white : C.mute, border: `1px solid ${mode === "watch" ? C.ink : C.line}` }}>관심{watchList.length ? ` (${watchList.length})` : ""}</button>
         </div>
       </div>
