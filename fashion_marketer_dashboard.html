@@ -194,11 +194,12 @@ function attachAverageDelta(today, prior, catKeys, filterKeys) {
 }
 
 /* 29CM 스냅샷들(대분류 > 서브카테고리 > 기간 3단계 구조)을 상품별 평균 순위로 합침.
-   카테고리 구조를 하드코딩하지 않고 스냅샷에 실제로 들어있는 키들을 그대로 순회한다. */
+   카테고리 구조를 하드코딩하지 않고 스냅샷에 실제로 들어있는 키들을 그대로 순회한다.
+   popularKeywords는 대분류가 아니라 스냅샷 최상위에 같이 들어있는 별개의 필드(인기 검색어 TOP10)라서 제외. */
 function averageCm29Rankings(snapshots) {
   const result = {};
   const largeCats = new Set();
-  snapshots.forEach((s) => Object.keys(s || {}).forEach((k) => largeCats.add(k)));
+  snapshots.forEach((s) => Object.keys(s || {}).forEach((k) => { if (k !== "popularKeywords") largeCats.add(k); }));
   largeCats.forEach((largeCat) => {
     result[largeCat] = {};
     const subCats = new Set();
