@@ -809,6 +809,33 @@ function ProductCard({ item, iconSeed }) {
   return (<div className={cardClass} style={cardStyle}>{inner}</div>);
 }
 
+/* 브랜드 검색으로 추가한 브랜드의 현재 랭킹을 상품 카드(썸네일/이름/가격)로 보여주는 팝업.
+   각 카드 위에 그 상품이 속한 카테고리 배지를 붙여서 어느 카테고리 몇 위인지 바로 보이게 한다. */
+function BrandWatchModal({ brand, items, onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(23,24,28,0.55)" }} onClick={onClose}>
+      <div className="rounded-2xl w-full max-w-3xl max-h-[85vh] overflow-y-auto p-5" style={{ background: C.white }} onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-base font-bold" style={{ color: C.ink }}>{brand}</h3>
+          <button onClick={onClose} className="text-sm font-bold px-2 py-1 rounded-full" style={{ color: C.mute }}>×</button>
+        </div>
+        {items.length === 0 ? (
+          <div className="flex items-center justify-center rounded-xl text-sm font-medium" style={{ height: 120, background: C.paper, color: C.mute }}>현재 랭킹 안에 없어요.</div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {items.map((item, i) => (
+              <div key={`${item.category || ""}-${item.rank}-${i}`} className="flex flex-col gap-1.5">
+                {!!item.category && (<span className="text-[10px] font-semibold px-1.5 py-0.5 rounded self-start" style={{ background: C.indigoSoft, color: C.indigo }}>{item.category}</span>)}
+                <ProductCard item={item} iconSeed={item.rank * 7 + i} />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 const RANK_FILTERS = [{ key: "all", label: "전체" }, { key: "rising", label: "급상승" }, { key: "new", label: "NEW" }];
 
 function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availableTimes, selectedTime, onSelectTime }) {
@@ -818,6 +845,7 @@ function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availabl
   const [brandInput, setBrandInput] = useState("");
   const [brandError, setBrandError] = useState("");
   const [brandWatchList, setBrandWatchList] = useState([]);
+  const [openBrand, setOpenBrand] = useState(null);
 
   const filteredList = useMemo(() => rankings?.[cat]?.[filter] || [], [rankings, cat, filter]);
 
@@ -836,19 +864,21 @@ function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availabl
     setBrandError("");
     setBrandInput("");
     if (!brandWatchList.includes(match)) setBrandWatchList((prev) => [...prev, match]);
+    setOpenBrand(match);
   };
-  const removeBrandWatch = (b) => setBrandWatchList((prev) => prev.filter((x) => x !== b));
+  const removeBrandWatch = (b) => {
+    setBrandWatchList((prev) => prev.filter((x) => x !== b));
+    setOpenBrand((cur) => (cur === b ? null : cur));
+  };
 
-  const brandResults = useMemo(() => {
-    return brandWatchList.map((brand) => {
-      const items = [];
-      CATEGORIES.forEach((c) => {
-        (rankings?.[c]?.all || []).forEach((item) => { if (item.brand === brand) items.push({ ...item, category: c }); });
-      });
-      items.sort((a, b) => a.rank - b.rank);
-      return { brand, items };
+  const openBrandItems = useMemo(() => {
+    if (!openBrand) return [];
+    const items = [];
+    CATEGORIES.forEach((c) => {
+      (rankings?.[c]?.all || []).forEach((item) => { if (item.brand === openBrand) items.push({ ...item, category: c }); });
     });
-  }, [rankings, brandWatchList]);
+    return items.sort((a, b) => a.rank - b.rank);
+  }, [rankings, openBrand]);
 
   return (
     <div className="rounded-2xl p-5" style={{ background: C.white, border: `1px solid ${C.line}` }}>
@@ -905,28 +935,13 @@ function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availabl
           return (<button key={c} onClick={() => { setCat(c); setVisibleCount(12); }} className="px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors" style={{ background: isActive ? C.ink : C.paper, color: isActive ? C.white : C.mute }}>{c}</button>);
         })}
       </div>
-      {!!brandResults.length && (
-        <div className="flex flex-col gap-2 mb-4">
-          {brandResults.map(({ brand, items }) => (
-            <div key={brand} className="rounded-xl p-3" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-sm font-bold" style={{ color: C.ink }}>{brand}</span>
-                <button onClick={() => removeBrandWatch(brand)} className="text-xs font-bold" style={{ color: C.mute }}>×</button>
-              </div>
-              {items.length === 0 ? (
-                <span className="text-xs font-medium" style={{ color: C.mute }}>현재 TOP {MOCK_TOP_N}위 안에 없어요.</span>
-              ) : (
-                <div className="flex flex-col gap-1">
-                  {items.map((item) => (
-                    <a key={`${item.category}-${item.rank}`} href={item.url || undefined} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-xs">
-                      <span className="font-bold tabular-nums shrink-0" style={{ color: C.mute, width: 32 }}>{item.rank}위</span>
-                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded shrink-0" style={{ background: C.indigoSoft, color: C.indigo }}>{item.category}</span>
-                      <span className="flex-1 truncate font-semibold" style={{ color: C.ink }}>{item.name}</span>
-                    </a>
-                  ))}
-                </div>
-              )}
-            </div>
+      {!!brandWatchList.length && (
+        <div className="flex flex-wrap gap-1.5 mb-4">
+          {brandWatchList.map((b) => (
+            <span key={b} onClick={() => setOpenBrand(b)} className="flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-full text-xs font-bold cursor-pointer" style={{ background: C.indigoSoft, color: C.indigo }}>
+              {b}
+              <button onClick={(e) => { e.stopPropagation(); removeBrandWatch(b); }} style={{ color: C.indigo }}>×</button>
+            </span>
           ))}
         </div>
       )}
@@ -942,6 +957,7 @@ function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availabl
           <button onClick={() => setVisibleCount((v) => Math.min(filteredList.length, v + 12))} className="px-5 py-2 rounded-full text-sm font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>더보기 ({Math.min(visibleCount, filteredList.length)}/{filteredList.length})</button>
         </div>
       )}
+      {!!openBrand && <BrandWatchModal brand={openBrand} items={openBrandItems} onClose={() => setOpenBrand(null)} />}
     </div>
   );
 }
@@ -957,6 +973,7 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
   const [brandInput, setBrandInput] = useState("");
   const [brandError, setBrandError] = useState("");
   const [brandWatchList, setBrandWatchList] = useState([]);
+  const [openBrand, setOpenBrand] = useState(null);
 
   const subCats = useMemo(() => Object.keys(rankings?.[largeCat] || {}), [rankings, largeCat]);
 
@@ -982,15 +999,17 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
     setBrandError("");
     setBrandInput("");
     if (!brandWatchList.includes(match)) setBrandWatchList((prev) => [...prev, match]);
+    setOpenBrand(match);
   };
-  const removeBrandWatch = (b) => setBrandWatchList((prev) => prev.filter((x) => x !== b));
+  const removeBrandWatch = (b) => {
+    setBrandWatchList((prev) => prev.filter((x) => x !== b));
+    setOpenBrand((cur) => (cur === b ? null : cur));
+  };
 
-  const brandResults = useMemo(() => {
-    return brandWatchList.map((brand) => ({
-      brand,
-      items: brandPool.filter((item) => item.brand === brand).sort((a, b) => a.rank - b.rank),
-    }));
-  }, [brandPool, brandWatchList]);
+  const openBrandItems = useMemo(() => {
+    if (!openBrand) return [];
+    return brandPool.filter((item) => item.brand === openBrand).sort((a, b) => a.rank - b.rank);
+  }, [brandPool, openBrand]);
 
   return (
     <div className="rounded-2xl p-5" style={{ background: C.white, border: `1px solid ${C.line}` }}>
@@ -1053,27 +1072,13 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
           return (<button key={sc} onClick={() => { setSubCat(sc); setVisibleCount(12); }} className="px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors" style={{ background: isActive ? C.ink : C.paper, color: isActive ? C.white : C.mute }}>{sc}</button>);
         })}
       </div>
-      {!!brandResults.length && (
-        <div className="flex flex-col gap-2 mb-4">
-          {brandResults.map(({ brand, items }) => (
-            <div key={brand} className="rounded-xl p-3" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-sm font-bold" style={{ color: C.ink }}>{brand}</span>
-                <button onClick={() => removeBrandWatch(brand)} className="text-xs font-bold" style={{ color: C.mute }}>×</button>
-              </div>
-              {items.length === 0 ? (
-                <span className="text-xs font-medium" style={{ color: C.mute }}>현재 {subCats.includes("전체") ? "전체" : subCat} 랭킹 안에 없어요.</span>
-              ) : (
-                <div className="flex flex-col gap-1">
-                  {items.map((item) => (
-                    <a key={item.rank} href={item.url || undefined} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-xs">
-                      <span className="font-bold tabular-nums shrink-0" style={{ color: C.mute, width: 32 }}>{item.rank}위</span>
-                      <span className="flex-1 truncate font-semibold" style={{ color: C.ink }}>{item.name}</span>
-                    </a>
-                  ))}
-                </div>
-              )}
-            </div>
+      {!!brandWatchList.length && (
+        <div className="flex flex-wrap gap-1.5 mb-4">
+          {brandWatchList.map((b) => (
+            <span key={b} onClick={() => setOpenBrand(b)} className="flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-full text-xs font-bold cursor-pointer" style={{ background: C.indigoSoft, color: C.indigo }}>
+              {b}
+              <button onClick={(e) => { e.stopPropagation(); removeBrandWatch(b); }} style={{ color: C.indigo }}>×</button>
+            </span>
           ))}
         </div>
       )}
@@ -1089,6 +1094,7 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
           <button onClick={() => setVisibleCount((v) => Math.min(filteredList.length, v + 12))} className="px-5 py-2 rounded-full text-sm font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>더보기 ({Math.min(visibleCount, filteredList.length)}/{filteredList.length})</button>
         </div>
       )}
+      {!!openBrand && <BrandWatchModal brand={openBrand} items={openBrandItems} onClose={() => setOpenBrand(null)} />}
     </div>
   );
 }
