@@ -117,6 +117,19 @@ function parseDateKey(key) {
   return new Date(y, m - 1, d);
 }
 
+/* 브랜드 관심 목록 등 새로고침해도 유지하고 싶은 값을 localStorage에 저장/복원한다. */
+function loadPersistedList(key) {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(key) || "[]");
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+function savePersistedList(key, list) {
+  try { localStorage.setItem(key, JSON.stringify(list)); } catch {}
+}
+
 /* 하루 여러 번 수집한 스냅샷들을 상품별 평균 순위로 합쳐서 하나의 { all, rising, new } 랭킹으로 재구성 */
 function averageRankings(snapshots) {
   const result = {};
@@ -844,8 +857,10 @@ function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availabl
   const [visibleCount, setVisibleCount] = useState(100);
   const [brandInput, setBrandInput] = useState("");
   const [brandError, setBrandError] = useState("");
-  const [brandWatchList, setBrandWatchList] = useState([]);
+  const [brandWatchList, setBrandWatchList] = useState(() => loadPersistedList("fp_musinsa_brand_watch"));
   const [openBrand, setOpenBrand] = useState(null);
+
+  useEffect(() => { savePersistedList("fp_musinsa_brand_watch", brandWatchList); }, [brandWatchList]);
 
   const filteredList = useMemo(() => rankings?.[cat]?.[filter] || [], [rankings, cat, filter]);
 
@@ -974,8 +989,10 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
   const [visibleCount, setVisibleCount] = useState(100);
   const [brandInput, setBrandInput] = useState("");
   const [brandError, setBrandError] = useState("");
-  const [brandWatchList, setBrandWatchList] = useState([]);
+  const [brandWatchList, setBrandWatchList] = useState(() => loadPersistedList("fp_cm29_brand_watch"));
   const [openBrand, setOpenBrand] = useState(null);
+
+  useEffect(() => { savePersistedList("fp_cm29_brand_watch", brandWatchList); }, [brandWatchList]);
 
   const subCats = useMemo(() => Object.keys(rankings?.[largeCat] || {}), [rankings, largeCat]);
 
