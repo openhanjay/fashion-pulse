@@ -601,7 +601,7 @@ function KeywordRankingPanel({ dataSource, selectedDateLabel, musinsaIndex, sele
   };
 
   // "최근 1주일"/"관심" 탭에서는 안 보이고, 기본 리스트 모드에서 현재 필터(전체/급상승) 기준으로만 계산.
-  const moverInsight = useMemo(() => buildKeywordMoverInsights(kwData?.[filter]), [kwData, filter]);
+  const moverInsight = useMemo(() => buildMoverInsights(kwData?.[filter], "검색어", (it) => it.keyword), [kwData, filter]);
 
   return (
     <div className="rounded-2xl p-5 h-full flex flex-col" style={{ background: C.white, border: `1px solid ${C.line}` }}>
@@ -666,26 +666,7 @@ function KeywordRankingPanel({ dataSource, selectedDateLabel, musinsaIndex, sele
                 );
               })()}
             </div>
-            {!!moverInsight && (
-              <div className="rounded-xl p-3" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
-                <p className="text-xs font-bold tracking-wider mb-2" style={{ color: C.mute }}>AI 분석</p>
-                <ol className="flex flex-col gap-2">
-                  {moverInsight.map((line, i) => (
-                    <li key={i} className="text-[12.5px] leading-snug" style={{ color: C.ink }}>
-                      {line.label}<br />
-                      {line.movers.map((m, mi) => (
-                        <React.Fragment key={mi}>
-                          {mi > 0 && ", "}
-                          {mi + 1}위 {m.keyword}({m.rankFrom}위→{m.rankTo}위,
-                          <span style={{ color: m.delta > 0 ? "#2563EB" : C.signal, fontWeight: 700 }}>{Math.abs(m.delta)}</span>
-                          )
-                        </React.Fragment>
-                      ))}
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            )}
+            <MoverInsightBox lines={moverInsight} />
           </div>
         </div>
       ) : mode === "trend" ? (
@@ -1017,19 +998,47 @@ function buildCategoryInsights(items, categoryName) {
   return lines;
 }
 
-/* 검색어 랭킹(리스트 모드) 전용 AI 분석: 순위가 가장 많이 오른/내린 검색어 5개씩을 뽑는다.
-   "최근 1주일"/"관심" 탭에서는 안 보이고, 기본 리스트 모드에서만 쓴다. */
-function buildKeywordMoverInsights(list) {
+/* 검색어 랭킹/상품 랭킹(리스트 모드) 공용 AI 분석: 순위가 가장 많이 오른/내린 항목 5개씩을 뽑는다.
+   getLabel로 검색어면 keyword, 상품이면 이름을 뽑아서 쓴다. */
+function buildMoverInsights(list, noun, getLabel) {
   if (!list || !list.length) return null;
   const withDelta = list.filter((it) => typeof it.delta === "number");
   if (!withDelta.length) return null;
   const risers = [...withDelta].filter((it) => it.delta > 0).sort((a, b) => b.delta - a.delta).slice(0, 5);
   const fallers = [...withDelta].filter((it) => it.delta < 0).sort((a, b) => a.delta - b.delta).slice(0, 5);
-  const toMovers = (arr) => arr.map((it) => ({ keyword: it.keyword, rankFrom: it.rank + it.delta, rankTo: it.rank, delta: it.delta }));
+  const toMovers = (arr) => arr.map((it) => ({ label: getLabel(it), rankFrom: it.rank + it.delta, rankTo: it.rank, delta: it.delta }));
   const lines = [];
-  if (risers.length) lines.push({ label: "가장 많이 오른 검색어:", movers: toMovers(risers) });
-  if (fallers.length) lines.push({ label: "가장 많이 내린 검색어:", movers: toMovers(fallers) });
+  if (risers.length) lines.push({ label: `가장 많이 오른 ${noun}:`, movers: toMovers(risers) });
+  if (fallers.length) lines.push({ label: `가장 많이 내린 ${noun}:`, movers: toMovers(fallers) });
   return lines.length ? lines : null;
+}
+function truncateLabel(s, n) {
+  return s && s.length > n ? `${s.slice(0, n - 1)}…` : s;
+}
+
+/* buildMoverInsights의 결과를 카드로 그려주는 공용 컴포넌트 (무신사 검색어/29CM 상품 랭킹 공용). */
+function MoverInsightBox({ lines }) {
+  if (!lines) return null;
+  return (
+    <div className="rounded-xl p-3" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+      <p className="text-xs font-bold tracking-wider mb-2" style={{ color: C.mute }}>AI 분석</p>
+      <ol className="flex flex-col gap-2">
+        {lines.map((line, i) => (
+          <li key={i} className="text-[12.5px] leading-snug" style={{ color: C.ink }}>
+            {line.label}<br />
+            {line.movers.map((m, mi) => (
+              <React.Fragment key={mi}>
+                {mi > 0 && ", "}
+                {mi + 1}위 {m.label}({m.rankFrom}위→{m.rankTo}위,
+                <span style={{ color: m.delta > 0 ? "#2563EB" : C.signal, fontWeight: 700 }}>{Math.abs(m.delta)}</span>
+                )
+              </React.Fragment>
+            ))}
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
 }
 
 function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availableTimes, selectedTime, onSelectTime, onActiveListChange }) {
@@ -1222,6 +1231,8 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
     return brandPool.filter((item) => item.brand === openBrand).sort((a, b) => a.rank - b.rank);
   }, [brandPool, openBrand]);
 
+  const moverInsight = useMemo(() => buildMoverInsights(filteredList, "상품", (it) => truncateLabel(it.name, 16)), [filteredList]);
+
   return (
     <div className="rounded-2xl p-5" style={{ background: C.white, border: `1px solid ${C.line}` }}>
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
@@ -1295,18 +1306,23 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
           </div>
         )}
       </div>
-      {filteredList.length === 0 ? (
-        <div className="flex items-center justify-center rounded-xl text-sm font-medium" style={{ height: 120, background: C.paper, color: C.mute }}>조건에 맞는 상품이 없어요. 다른 필터를 선택해보세요.</div>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
-          {filteredList.slice(0, visibleCount).map((item) => (<ProductCard key={item.rank} item={item} iconSeed={item.rank * 7 + subCat.length} />))}
+      <div className="grid grid-cols-1 lg:grid-cols-[5fr_2fr] gap-4 items-start">
+        <div className="min-w-0">
+          {filteredList.length === 0 ? (
+            <div className="flex items-center justify-center rounded-xl text-sm font-medium" style={{ height: 120, background: C.paper, color: C.mute }}>조건에 맞는 상품이 없어요. 다른 필터를 선택해보세요.</div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {filteredList.slice(0, visibleCount).map((item) => (<ProductCard key={item.rank} item={item} iconSeed={item.rank * 7 + subCat.length} />))}
+            </div>
+          )}
+          {visibleCount < filteredList.length && (
+            <div className="flex justify-center mt-4">
+              <button onClick={() => setVisibleCount((v) => Math.min(filteredList.length, v + 12))} className="px-5 py-2 rounded-full text-sm font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>더보기 ({Math.min(visibleCount, filteredList.length)}/{filteredList.length})</button>
+            </div>
+          )}
         </div>
-      )}
-      {visibleCount < filteredList.length && (
-        <div className="flex justify-center mt-4">
-          <button onClick={() => setVisibleCount((v) => Math.min(filteredList.length, v + 12))} className="px-5 py-2 rounded-full text-sm font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>더보기 ({Math.min(visibleCount, filteredList.length)}/{filteredList.length})</button>
-        </div>
-      )}
+        <MoverInsightBox lines={moverInsight} />
+      </div>
       {!!openBrand && <BrandWatchModal brand={openBrand} items={openBrandItems} onClose={() => setOpenBrand(null)} />}
     </div>
   );
