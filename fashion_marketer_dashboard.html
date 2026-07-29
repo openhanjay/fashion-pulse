@@ -852,43 +852,75 @@ function BrandWatchModal({ brand, items, onClose }) {
 const RANK_FILTERS = [{ key: "all", label: "전체" }, { key: "rising", label: "급상승" }, { key: "new", label: "NEW" }];
 
 /* 실제 LLM 호출 없이, 현재 보고 있는 랭킹 리스트(무신사/29CM 공통 상품 형태)를 데이터로 직접 집계해서
-   "가격대/세일/브랜드/순위변동" 요약 문장 3~4줄을 만든다. 카테고리·필터를 바꿔서 다른 리스트가 들어오면
-   그 리스트 기준으로 다시 계산된다. */
+   "할인율 분포/가격대 분포/브랜드·키워드/순위변동" 요약 문장을 만든다. 카테고리·필터를 바꿔서 다른
+   리스트가 들어오면 그 리스트 기준으로 다시 계산된다. */
 function josaIGa(word) {
   const last = (word || "").trim().slice(-1);
   const code = last.charCodeAt(0);
   if (code < 0xac00 || code > 0xd7a3) return "가";
   return (code - 0xac00) % 28 !== 0 ? "이" : "가";
 }
-function buildCategoryInsights(items) {
+
+/* 상의/아우터/바지/원피스 같은 카테고리에서는 "티셔츠", "자켓", "팬츠"처럼 그 카테고리 자체를 가리키는
+   당연한 단어가 항상 최다 빈출이 되어 의미가 없다. 그런 카테고리는 해당 단어들을 키워드 후보에서 뺀다.
+   반면 가방/모자처럼 카테고리 자체가 넓은 상위 개념인 곳은 "에코백", "볼캡" 같은 세부 키워드가 실제로
+   유의미한 정보라서 별도로 빼지 않는다. */
+const CATEGORY_OBVIOUS_WORDS = {
+  "상의": ["티셔츠", "티", "반팔", "긴팔", "셔츠", "맨투맨", "후드", "후드티", "스웨트", "스웨트셔츠", "탑", "블라우스"],
+  "아우터": ["자켓", "재킷", "코트", "점퍼", "패딩", "가디건", "베스트", "무스탕", "블루종", "야상", "집업", "후드집업"],
+  "바지": ["팬츠", "슬랙스", "데님", "청바지", "조거팬츠", "트레이닝팬츠", "반바지"],
+  "하의": ["팬츠", "슬랙스", "데님", "청바지", "조거팬츠", "트레이닝팬츠", "반바지"],
+  "원피스": ["원피스", "드레스"],
+  "스커트": ["스커트", "치마"],
+  "니트웨어": ["니트", "니트웨어", "스웨터"],
+  "셋업": ["셋업", "투피스"],
+  "홈웨어": ["홈웨어", "잠옷", "파자마", "실내복"],
+  "이너웨어": ["이너웨어", "속옷", "내의", "언더웨어"],
+};
+
+function bucketCounts(values, bands) {
+  return bands.map((b) => ({ label: b.label, count: values.filter(b.test).length }));
+}
+
+function buildCategoryInsights(items, categoryName) {
   if (!items || !items.length) return null;
   const n = items.length;
 
   const prices = items.map((it) => it.price).filter((p) => typeof p === "number" && p > 0);
-  const avgPrice = prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : null;
-  const bandCounts = new Map();
-  prices.forEach((p) => {
-    const band = Math.floor(p / 10000);
-    bandCounts.set(band, (bandCounts.get(band) || 0) + 1);
-  });
-  let modeBand = null, modeBandCount = 0;
-  bandCounts.forEach((count, band) => { if (count > modeBandCount) { modeBandCount = count; modeBand = band; } });
+  const priceBands = bucketCounts(prices, [
+    { label: "0~2만원", test: (p) => p < 20000 },
+    { label: "2~4만원", test: (p) => p >= 20000 && p < 40000 },
+    { label: "4~6만원", test: (p) => p >= 40000 && p < 60000 },
+    { label: "6~8만원", test: (p) => p >= 60000 && p < 80000 },
+    { label: "8~10만원", test: (p) => p >= 80000 && p < 100000 },
+    { label: "10만원~", test: (p) => p >= 100000 },
+  ]).filter((b) => b.count > 0);
 
-  const onSale = items.filter((it) => typeof it.discountRatio === "number" && it.discountRatio > 0);
-  const saleRatio = Math.round((onSale.length / n) * 100);
-  const avgDiscount = onSale.length ? Math.round(onSale.reduce((a, b) => a + b.discountRatio, 0) / onSale.length) : 0;
+  const discounts = items.map((it) => it.discountRatio).filter((d) => typeof d === "number");
+  const discountBands = bucketCounts(discounts, [
+    { label: "50%↑", test: (d) => d >= 50 },
+    { label: "40~49%", test: (d) => d >= 40 && d < 50 },
+    { label: "30~39%", test: (d) => d >= 30 && d < 40 },
+    { label: "20~29%", test: (d) => d >= 20 && d < 30 },
+    { label: "10~19%", test: (d) => d >= 10 && d < 20 },
+    { label: "1~9%", test: (d) => d >= 1 && d < 10 },
+  ]).filter((b) => b.count > 0);
+  const noSaleCount = discounts.filter((d) => d <= 0).length;
 
   const brandCounts = new Map();
   items.forEach((it) => { if (it.brand) brandCounts.set(it.brand, (brandCounts.get(it.brand) || 0) + 1); });
   let topBrand = null, topBrandCount = 0;
   brandCounts.forEach((count, brand) => { if (count > topBrandCount) { topBrandCount = count; topBrand = brand; } });
 
-  const STOPWORDS = new Set(["세트", "패키지", "기획", "단독", "한정", "컬러", "color", "colors"]);
+  const STOPWORDS = new Set([
+    "세트", "패키지", "기획", "단독", "한정", "컬러", "color", "colors",
+    ...(CATEGORY_OBVIOUS_WORDS[categoryName] || []),
+  ]);
   const wordCounts = new Map();
   items.forEach((it) => {
     (it.name || "").split(/[\s/_\-\[\]().,]+/).forEach((raw) => {
       const w = raw.trim();
-      if (w.length < 2 || /^\d+$/.test(w) || STOPWORDS.has(w.toLowerCase())) return;
+      if (w.length < 2 || /^\d+$/.test(w) || STOPWORDS.has(w) || STOPWORDS.has(w.toLowerCase())) return;
       wordCounts.set(w, (wordCounts.get(w) || 0) + 1);
     });
   });
@@ -899,12 +931,11 @@ function buildCategoryInsights(items) {
   const risingCount = items.filter((it) => typeof it.delta === "number" && it.delta > 0).length;
 
   const lines = [];
-  lines.push(`총 ${n}개 상품 중 ${onSale.length}개(${saleRatio}%)가 세일 중이고, 평균 할인율은 ${avgDiscount}%예요.`);
-  if (avgPrice !== null) {
-    const bandLabel = modeBand !== null ? (modeBand === 0 ? "1만원 미만" : `${modeBand}만원대`) : null;
-    lines.push(bandLabel
-      ? `평균 가격은 ${avgPrice.toLocaleString()}원이고, ${bandLabel} 상품이 ${modeBandCount}개(${Math.round((modeBandCount / n) * 100)}%)로 가장 많아요.`
-      : `평균 가격은 ${avgPrice.toLocaleString()}원이에요.`);
+  if (discountBands.length) {
+    lines.push(`할인율 분포는 ${discountBands.map((b) => `${b.label} ${b.count}개`).join(", ")}${noSaleCount ? `이고, 세일 없는 상품은 ${noSaleCount}개` : ""}예요.`);
+  }
+  if (priceBands.length) {
+    lines.push(`가격대별로는 ${priceBands.map((b) => `${b.label} ${b.count}개`).join(", ")}예요.`);
   }
   if (topBrand) {
     lines.push(`${topBrand} 브랜드가 ${topBrandCount}개로 가장 많이 올라와 있어요${topWord ? `, "${topWord}"${josaIGa(topWord)} 들어간 상품명도 ${topWordCount}개 보여요` : ""}.`);
@@ -930,7 +961,7 @@ function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availabl
 
   useEffect(() => {
     const filterLabel = RANK_FILTERS.find((f) => f.key === filter)?.label || filter;
-    onActiveListChange?.({ label: `${cat} · ${filterLabel}`, items: filteredList });
+    onActiveListChange?.({ label: `${cat} · ${filterLabel}`, categoryName: cat, items: filteredList });
   }, [filteredList, cat, filter]);
 
   // 브랜드 검색 후보/결과는 카테고리 구분 없이 "전체" 리스트 전체를 훑는다(브랜드 상품이 여러 카테고리에 흩어져 있을 수 있어서).
@@ -1074,7 +1105,7 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
   const filteredList = useMemo(() => rankings?.[largeCat]?.[subCat]?.[period] || [], [rankings, largeCat, subCat, period]);
 
   useEffect(() => {
-    onActiveListChange?.({ label: `${largeCat} · ${subCat} · ${period}`, items: filteredList });
+    onActiveListChange?.({ label: `${largeCat} · ${subCat} · ${period}`, categoryName: subCat, items: filteredList });
   }, [filteredList, largeCat, subCat, period]);
 
   // 브랜드 검색은 현재 대분류+기간의 "전체" 서브카테고리(그 대분류의 모든 상품이 다 들어있는 목록)에서 찾는다.
@@ -1553,7 +1584,7 @@ const PAGE_META = {
 };
 
 function Sidebar({ active, onChange, activeCategoryInsight }) {
-  const insightLines = activeCategoryInsight ? buildCategoryInsights(activeCategoryInsight.items) : null;
+  const insightLines = activeCategoryInsight ? buildCategoryInsights(activeCategoryInsight.items, activeCategoryInsight.categoryName) : null;
   return (
     <>
       <aside className="hidden lg:flex flex-col w-60 shrink-0 sticky top-0 h-screen py-5 px-3 overflow-y-auto" style={{ background: C.white, borderRight: `1px solid ${C.line}` }}>
