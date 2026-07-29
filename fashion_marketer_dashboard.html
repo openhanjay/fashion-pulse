@@ -252,6 +252,69 @@ const TIMELINE_EVENTS = [
   { brand: IG_BRANDS[1], date: "2026.07.15", seasonOff: { active: false, period: null }, drop: "여름 리넨 캡슐 컬렉션 7.25 정오 출시", issue: "제작 비하인드 영상 업로드, 조회수 급상승" },
 ];
 
+const LINE_PALETTE = [
+  "#4338CA","#FF3B5C","#0F9D8C","#D97B0D","#7A45C9",
+  "#0E7AC4","#B8862F","#C0378A","#3E8E3E","#555555",
+];
+
+/* 검색어 순위 추이 그래프. rows는 개수가 고정이 아니고(그 주에 한 번이라도 TOP7이었던 만큼),
+   선 위에 라벨을 직접 얹으면 겹쳐서 지저분해지니 라벨은 그래프 아래 범례로 따로 뺀다.
+   중간에 순위 밖으로 빠진 구간은 이어 그리지 않고 끊어서, 순위가 없던 기간이라는 걸 그대로 보여준다. */
+function KeywordTrendGraph({ dates, rows }) {
+  const width = 700, height = 240;
+  const padL = 26, padR = 14, padT = 14, padB = 26;
+  const innerW = width - padL - padR;
+  const innerH = height - padT - padB;
+  const RANK_MAX = 7;
+  const n = dates.length;
+  const xFor = (i) => padL + (n > 1 ? (i / (n - 1)) * innerW : innerW / 2);
+  const yFor = (rank) => padT + ((rank - 1) / (RANK_MAX - 1)) * innerH;
+
+  const segmentsFor = (ranksByDay) => {
+    const segments = [];
+    let current = [];
+    ranksByDay.forEach((rank, i) => {
+      if (typeof rank === "number") {
+        current.push({ x: xFor(i), y: yFor(rank) });
+      } else if (current.length) {
+        segments.push(current);
+        current = [];
+      }
+    });
+    if (current.length) segments.push(current);
+    return segments;
+  };
+
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} width="100%" height="100%" preserveAspectRatio="none">
+      {Array.from({ length: RANK_MAX }, (_, i) => i + 1).map((rank) => {
+        const y = yFor(rank);
+        return (
+          <g key={rank}>
+            <line x1={padL} x2={width - padR} y1={y} y2={y} stroke={C.line} strokeDasharray="3 5" />
+            <text x={padL - 6} y={y + 3} fontSize="10" fill={C.mute} textAnchor="end">{rank}</text>
+          </g>
+        );
+      })}
+      {dates.map((d, i) => (<text key={d} x={xFor(i)} y={height - 6} fontSize="10" fill={C.mute} textAnchor="middle">{d.slice(5)}</text>))}
+      {rows.map((row, ri) => {
+        const color = LINE_PALETTE[ri % LINE_PALETTE.length];
+        const segments = segmentsFor(row.ranksByDay);
+        return (
+          <g key={row.key}>
+            {segments.map((seg, si) => (
+              <React.Fragment key={si}>
+                {seg.length > 1 && (<polyline points={seg.map((p) => `${p.x},${p.y}`).join(" ")} fill="none" stroke={color} strokeWidth="2.2" strokeLinejoin="round" strokeLinecap="round" />)}
+                {seg.map((p, pi) => (<circle key={pi} cx={p.x} cy={p.y} r="3.2" fill={color} />))}
+              </React.Fragment>
+            ))}
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
 /* ============================== 서브 컴포넌트 ============================== */
 function Ticker({ keywords }) {
   const items = [...keywords, ...keywords];
@@ -479,26 +542,16 @@ function KeywordRankingPanel({ keywords, dataSource, selectedDateLabel, musinsaI
           )}
           {trend.status === "ready" && (
             <>
-              <span className="text-xs font-medium mb-2" style={{ color: C.mute }}>전체 검색어 TOP {KEYWORD_TREND_TOP_N} 순위 추이 (최근 {trend.dates.length}개 수집일{trend.dates.length < 7 ? ", 아직 7일치 미만" : ""})</span>
-              <div className="flex-1 min-h-0 overflow-auto">
-                <table className="w-full text-xs border-collapse">
-                  <thead>
-                    <tr>
-                      <th className="text-left font-bold pb-2 pr-3 sticky left-0" style={{ color: C.mute, background: C.white }}>검색어</th>
-                      {trend.dates.map((d) => (<th key={d} className="text-center font-semibold pb-2 px-2 whitespace-nowrap" style={{ color: C.mute }}>{d.slice(5)}</th>))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {trend.rows.map((row) => (
-                      <tr key={row.key}>
-                        <td className="py-1.5 pr-3 font-semibold whitespace-nowrap sticky left-0" style={{ color: C.ink, background: C.white, borderTop: `1px solid ${C.line}` }}>{row.keyword}</td>
-                        {row.ranksByDay.map((rank, i) => (
-                          <td key={i} className="text-center py-1.5 px-2 tabular-nums font-bold" style={{ color: rank ? C.ink : "#D8D6D0", borderTop: `1px solid ${C.line}` }}>{rank ?? "-"}</td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <span className="text-xs font-medium mb-1" style={{ color: C.mute }}>전체 검색어 TOP {KEYWORD_TREND_TOP_N} 순위 추이 (최근 {trend.dates.length}개 수집일{trend.dates.length < 7 ? ", 아직 7일치 미만" : ""})</span>
+              <div className="flex-1 min-h-[180px]">
+                <KeywordTrendGraph dates={trend.dates} rows={trend.rows} />
+              </div>
+              <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
+                {trend.rows.map((row, ri) => (
+                  <span key={row.key} className="flex items-center gap-1 text-[11px] font-semibold" style={{ color: C.ink }}>
+                    <span className="rounded-full shrink-0" style={{ width: 8, height: 8, background: LINE_PALETTE[ri % LINE_PALETTE.length] }} />{row.keyword}
+                  </span>
+                ))}
               </div>
             </>
           )}
