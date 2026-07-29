@@ -866,17 +866,51 @@ function josaIGa(word) {
    반면 가방/모자처럼 카테고리 자체가 넓은 상위 개념인 곳은 "에코백", "볼캡" 같은 세부 키워드가 실제로
    유의미한 정보라서 별도로 빼지 않는다. */
 const CATEGORY_OBVIOUS_WORDS = {
-  "상의": ["티셔츠", "티", "반팔", "긴팔", "셔츠", "맨투맨", "후드", "후드티", "스웨트", "스웨트셔츠", "탑", "블라우스"],
-  "아우터": ["자켓", "재킷", "코트", "점퍼", "패딩", "가디건", "베스트", "무스탕", "블루종", "야상", "집업", "후드집업"],
-  "바지": ["팬츠", "슬랙스", "데님", "청바지", "조거팬츠", "트레이닝팬츠", "반바지"],
-  "하의": ["팬츠", "슬랙스", "데님", "청바지", "조거팬츠", "트레이닝팬츠", "반바지"],
-  "원피스": ["원피스", "드레스"],
-  "스커트": ["스커트", "치마"],
-  "니트웨어": ["니트", "니트웨어", "스웨터"],
-  "셋업": ["셋업", "투피스"],
-  "홈웨어": ["홈웨어", "잠옷", "파자마", "실내복"],
-  "이너웨어": ["이너웨어", "속옷", "내의", "언더웨어"],
+  "상의": ["티셔츠", "티", "반팔", "긴팔", "셔츠", "맨투맨", "후드", "후드티", "스웨트", "스웨트셔츠", "탑", "블라우스", "t-shirt", "tshirt", "tee", "shirt", "hoodie", "sweatshirt", "blouse", "top"],
+  "아우터": ["자켓", "재킷", "코트", "점퍼", "패딩", "가디건", "베스트", "무스탕", "블루종", "야상", "집업", "후드집업", "jacket", "coat", "jumper", "padding", "cardigan", "vest"],
+  "바지": ["팬츠", "슬랙스", "데님", "청바지", "조거팬츠", "트레이닝팬츠", "반바지", "pants", "slacks", "denim", "jeans", "shorts"],
+  "하의": ["팬츠", "슬랙스", "데님", "청바지", "조거팬츠", "트레이닝팬츠", "반바지", "pants", "slacks", "denim", "jeans", "shorts"],
+  "원피스": ["원피스", "드레스", "스커트", "치마", "dress", "skirt"],
+  "스커트": ["스커트", "치마", "skirt"],
+  "니트웨어": ["니트", "니트웨어", "스웨터", "knit", "knitwear", "sweater"],
+  "셋업": ["셋업", "투피스", "setup"],
+  "홈웨어": ["홈웨어", "잠옷", "파자마", "실내복", "pajama", "pajamas"],
+  "이너웨어": ["이너웨어", "속옷", "내의", "언더웨어", "underwear"],
 };
+
+/* 상품명에 색상이 한글/영문 어느 쪽으로 적혀 있어도 같은 색으로 합쳐서 세도록 하는 별칭 표.
+   키워드(3번 항목)에서는 색상명을 제외하고, 대신 색상 랭킹(5번 항목)으로 따로 집계한다. */
+const COLOR_ALIASES = {
+  "블랙": "블랙", "black": "블랙",
+  "화이트": "화이트", "white": "화이트",
+  "그레이": "그레이", "회색": "그레이", "gray": "그레이", "grey": "그레이",
+  "네이비": "네이비", "navy": "네이비",
+  "베이지": "베이지", "beige": "베이지",
+  "브라운": "브라운", "brown": "브라운",
+  "카키": "카키", "khaki": "카키",
+  "아이보리": "아이보리", "ivory": "아이보리",
+  "그린": "그린", "green": "그린",
+  "레드": "레드", "red": "레드",
+  "블루": "블루", "blue": "블루",
+  "옐로우": "옐로우", "yellow": "옐로우",
+  "핑크": "핑크", "pink": "핑크",
+  "퍼플": "퍼플", "purple": "퍼플",
+  "오렌지": "오렌지", "orange": "오렌지",
+  "실버": "실버", "silver": "실버",
+  "골드": "골드", "gold": "골드",
+  "차콜": "차콜", "charcoal": "차콜",
+  "버건디": "버건디", "burgundy": "버건디",
+  "와인": "와인", "wine": "와인",
+  "민트": "민트", "mint": "민트",
+  "라벤더": "라벤더", "lavender": "라벤더",
+  "코랄": "코랄", "coral": "코랄",
+  "머스타드": "머스타드", "mustard": "머스타드",
+  "크림": "크림", "cream": "크림",
+  "카멜": "카멜", "camel": "카멜",
+};
+function colorOf(word) {
+  return COLOR_ALIASES[word] || COLOR_ALIASES[word.toLowerCase()];
+}
 
 function bucketCounts(values, bands) {
   return bands.map((b) => ({ label: b.label, count: values.filter(b.test).length }));
@@ -916,16 +950,28 @@ function buildCategoryInsights(items, categoryName) {
     "세트", "패키지", "기획", "단독", "한정", "컬러", "color", "colors",
     ...(CATEGORY_OBVIOUS_WORDS[categoryName] || []),
   ]);
+  // 색상명은 3번(키워드)에서는 빼고 5번(컬러 랭킹)에서 따로 집계하니, 여기서는 raw 토큰 개수만 세어두고
+  // 필터링은 topWord/colorCounts 각자 계산할 때 한다.
   const wordCounts = new Map();
   items.forEach((it) => {
     (it.name || "").split(/[\s/_\-\[\]().,]+/).forEach((raw) => {
       const w = raw.trim();
-      if (w.length < 2 || /^\d+$/.test(w) || STOPWORDS.has(w) || STOPWORDS.has(w.toLowerCase())) return;
+      if (w.length < 2 || /^\d+$/.test(w)) return;
       wordCounts.set(w, (wordCounts.get(w) || 0) + 1);
     });
   });
   let topWord = null, topWordCount = 0;
-  wordCounts.forEach((count, word) => { if (count >= 3 && count > topWordCount) { topWordCount = count; topWord = word; } });
+  wordCounts.forEach((count, word) => {
+    if (STOPWORDS.has(word) || STOPWORDS.has(word.toLowerCase()) || colorOf(word)) return;
+    if (count >= 3 && count > topWordCount) { topWordCount = count; topWord = word; }
+  });
+
+  const colorCounts = new Map();
+  wordCounts.forEach((count, word) => {
+    const canonical = colorOf(word);
+    if (canonical) colorCounts.set(canonical, (colorCounts.get(canonical) || 0) + count);
+  });
+  const topColors = [...colorCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
 
   const newCount = items.filter((it) => it.delta === "NEW").length;
   const risingCount = items.filter((it) => typeof it.delta === "number" && it.delta > 0).length;
@@ -942,6 +988,9 @@ function buildCategoryInsights(items, categoryName) {
   }
   if (newCount || risingCount) {
     lines.push(`신규 진입(NEW) ${newCount}개, 순위 상승 중인 상품 ${risingCount}개예요.`);
+  }
+  if (topColors.length) {
+    lines.push(`가장 많이 보이는 컬러는 ${topColors.map(([color, count], i) => `${i + 1}위 ${color}(${count}개)`).join(", ")}예요.`);
   }
   return lines;
 }
