@@ -854,12 +854,6 @@ const RANK_FILTERS = [{ key: "all", label: "전체" }, { key: "rising", label: "
 /* 실제 LLM 호출 없이, 현재 보고 있는 랭킹 리스트(무신사/29CM 공통 상품 형태)를 데이터로 직접 집계해서
    "할인율 분포/가격대 분포/브랜드·키워드/순위변동" 요약 문장을 만든다. 카테고리·필터를 바꿔서 다른
    리스트가 들어오면 그 리스트 기준으로 다시 계산된다. */
-function josaIGa(word) {
-  const last = (word || "").trim().slice(-1);
-  const code = last.charCodeAt(0);
-  if (code < 0xac00 || code > 0xd7a3) return "가";
-  return (code - 0xac00) % 28 !== 0 ? "이" : "가";
-}
 
 /* 상의/아우터/바지/원피스 같은 카테고리에서는 "티셔츠", "자켓", "팬츠"처럼 그 카테고리 자체를 가리키는
    당연한 단어가 항상 최다 빈출이 되어 의미가 없다. 그런 카테고리는 해당 단어들을 키워드 후보에서 뺀다.
@@ -943,8 +937,7 @@ function buildCategoryInsights(items, categoryName) {
 
   const brandCounts = new Map();
   items.forEach((it) => { if (it.brand) brandCounts.set(it.brand, (brandCounts.get(it.brand) || 0) + 1); });
-  let topBrand = null, topBrandCount = 0;
-  brandCounts.forEach((count, brand) => { if (count > topBrandCount) { topBrandCount = count; topBrand = brand; } });
+  const topBrands = [...brandCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
 
   const STOPWORDS = new Set([
     "세트", "패키지", "기획", "단독", "한정", "컬러", "color", "colors",
@@ -960,11 +953,10 @@ function buildCategoryInsights(items, categoryName) {
       wordCounts.set(w, (wordCounts.get(w) || 0) + 1);
     });
   });
-  let topWord = null, topWordCount = 0;
-  wordCounts.forEach((count, word) => {
-    if (STOPWORDS.has(word) || STOPWORDS.has(word.toLowerCase()) || colorOf(word)) return;
-    if (count >= 3 && count > topWordCount) { topWordCount = count; topWord = word; }
-  });
+  const topWords = [...wordCounts.entries()]
+    .filter(([word, count]) => count >= 3 && !STOPWORDS.has(word) && !STOPWORDS.has(word.toLowerCase()) && !colorOf(word))
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3);
 
   const colorCounts = new Map();
   wordCounts.forEach((count, word) => {
@@ -983,8 +975,11 @@ function buildCategoryInsights(items, categoryName) {
   if (priceBands.length) {
     lines.push(`가격대별로는 ${priceBands.map((b) => `${b.label} ${b.count}개`).join(", ")}예요.`);
   }
-  if (topBrand) {
-    lines.push(`${topBrand} 브랜드가 ${topBrandCount}개로 가장 많이 올라와 있어요${topWord ? `, "${topWord}"${josaIGa(topWord)} 들어간 상품명도 ${topWordCount}개 보여요` : ""}.`);
+  if (topBrands.length) {
+    lines.push(`가장 많이 보이는 브랜드는 ${topBrands.map(([brand, count], i) => `${i + 1}위 ${brand}(${count}개)`).join(", ")}예요.`);
+  }
+  if (topWords.length) {
+    lines.push(`상품명에 자주 나오는 단어는 ${topWords.map(([word, count], i) => `${i + 1}위 "${word}"(${count}개)`).join(", ")}예요.`);
   }
   if (newCount || risingCount) {
     lines.push(`신규 진입(NEW) ${newCount}개, 순위 상승 중인 상품 ${risingCount}개예요.`);
