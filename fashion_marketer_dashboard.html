@@ -257,14 +257,15 @@ const LINE_PALETTE = [
   "#0E7AC4","#B8862F","#C0378A","#3E8E3E","#555555",
 ];
 
-/* 검색어 순위 추이 그래프. rows는 개수가 고정이 아니고(그 주에 한 번이라도 TOP7이었던 만큼 유동적).
-   순위 밖으로 빠진 날은 선을 끊는 대신 그래프 아래쪽 "순위밖" 구간에 점을 찍어서 계속 이어 그린다
-   (그날도 동그라미가 남아있도록). 각 선 끝(가장 최근 지점)에 검색어 이름을 바로 옆에 적어준다. */
-function KeywordTrendGraph({ dates, rows }) {
+/* 검색어 순위 추이 그래프. rows는 개수가 고정이 아니고(그 주에 한 번이라도 TOP N이었던 만큼 유동적).
+   순위 밖으로 빠진 날(또는 추적 범위인 rankMax보다 낮은 순위였던 날)은 선을 끊는 대신 그래프 아래쪽
+   "순위밖" 구간에 점을 찍어서 계속 이어 그린다(그날도 동그라미가 남아있도록).
+   각 선 끝(가장 최근 지점)에 검색어 이름을 바로 옆에 적어준다. */
+function KeywordTrendGraph({ dates, rows, rankMax = 7 }) {
   const width = 700, height = 260;
   const padL = 26, padR = 92, padT = 14, padB = 26;
   const innerW = width - padL - padR;
-  const RANK_MAX = 7;
+  const RANK_MAX = rankMax;
   const rankZoneH = (height - padT - padB) * 0.76;
   const outBaseY = padT + rankZoneH + 22;
   const outStep = 11;
@@ -272,15 +273,16 @@ function KeywordTrendGraph({ dates, rows }) {
   const xFor = (i) => padL + (n > 1 ? (i / (n - 1)) * innerW : innerW / 2);
   const yForRank = (rank) => padT + ((rank - 1) / (RANK_MAX - 1)) * rankZoneH;
   const shortLabel = (s) => (s.length > 8 ? `${s.slice(0, 7)}…` : s);
+  const isRanked = (r) => typeof r === "number" && r <= RANK_MAX;
 
   let outSlot = 0;
   const rowsWithPoints = rows.map((row) => {
     const firstSeen = row.ranksByDay.findIndex((r) => typeof r === "number");
-    const outOnLastDay = firstSeen !== -1 && typeof row.ranksByDay[row.ranksByDay.length - 1] !== "number";
+    const outOnLastDay = firstSeen !== -1 && !isRanked(row.ranksByDay[row.ranksByDay.length - 1]);
     const myOutY = outOnLastDay ? outBaseY + outSlot++ * outStep : outBaseY;
     const points = row.ranksByDay.map((rank, i) => {
       if (firstSeen === -1 || i < firstSeen) return null;
-      if (typeof rank === "number") return { x: xFor(i), y: yForRank(rank), ranked: true };
+      if (isRanked(rank)) return { x: xFor(i), y: yForRank(rank), ranked: true };
       return { x: xFor(i), y: myOutY, ranked: false };
     });
     return { ...row, points };
@@ -422,17 +424,15 @@ async function fetchKeywordDateAverage(dateKey, times) {
   return averageKeywordRankings(snapshots).all;
 }
 
-/* 선택한 날짜까지 중 최근 7개 수집일의 "전체" 검색어 랭킹을 모아서, 그중 하루라도 TOP 7에 들었던
-   검색어를 전부 모은 표를 만든다(어제 7위였던 게 오늘 안 보이는 일이 없도록, 최신일 순위만 보지 않음). */
-async function loadKeywordWeekTrend(musinsaIndex, selectedDateKey) {
-  const availableDates = Object.keys(musinsaIndex || {}).filter((d) => d <= selectedDateKey).sort();
-  const last7 = availableDates.slice(-7);
-  if (last7.length === 0) return null;
-  const perDay = await Promise.all(last7.map((d) => fetchKeywordDateAverage(d, musinsaIndex[d])));
-
+/* perDay(날짜별 "그날 전체 순위" 리스트, rank 오름차순)로부터 그래프/표에 쓸 rows를 만든다.
+   그중 하루라도 TOP N(topN)에 들었던 검색어를 전부 모으고, 각 날짜별 실제 순위(ranksByDay, TOP N 밖이어도
+   랭킹 리스트에 있었으면 그 순위를 그대로 채움 - "-"가 되는 건 그 날 리스트에 아예 없었을 때뿐)와
+   전날 대비 변동(deltasByDay: 첫 날이거나 그 날 순위 자체가 없으면 undefined, 전날에 없었으면 "NEW")을
+   같이 계산한다. Musinsa 검색어/29CM 인기 검색어 둘 다 이 함수를 공유한다. */
+function buildKeywordTrendRows(perDay, topN) {
   const keywordMeta = new Map(); // key -> { keyword, lastSeenDayIndex }
   perDay.forEach((dayList, di) => {
-    dayList.slice(0, KEYWORD_TREND_TOP_N).forEach((item) => {
+    dayList.slice(0, topN).forEach((item) => {
       const key = item.url || item.keyword;
       keywordMeta.set(key, { keyword: item.keyword, lastSeenDayIndex: di });
     });
@@ -441,24 +441,42 @@ async function loadKeywordWeekTrend(musinsaIndex, selectedDateKey) {
   const todayList = perDay[perDay.length - 1];
   const todayRankByKey = new Map(todayList.map((item) => [item.url || item.keyword, item.rank]));
 
-  const rows = [...keywordMeta.entries()]
-    .map(([key, meta]) => ({
-      key,
-      keyword: meta.keyword,
-      todayRank: todayRankByKey.has(key) ? todayRankByKey.get(key) : null,
-      lastSeenDayIndex: meta.lastSeenDayIndex,
-      ranksByDay: perDay.map((dayList) => {
+  return [...keywordMeta.entries()]
+    .map(([key, meta]) => {
+      const ranksByDay = perDay.map((dayList) => {
         const found = dayList.find((item) => (item.url || item.keyword) === key);
         return found ? found.rank : null;
-      }),
-    }))
+      });
+      const deltasByDay = ranksByDay.map((rank, i) => {
+        if (i === 0 || rank === null) return undefined;
+        const prevRank = ranksByDay[i - 1];
+        return prevRank === null ? "NEW" : prevRank - rank;
+      });
+      return {
+        key,
+        keyword: meta.keyword,
+        todayRank: todayRankByKey.has(key) ? todayRankByKey.get(key) : null,
+        lastSeenDayIndex: meta.lastSeenDayIndex,
+        ranksByDay,
+        deltasByDay,
+      };
+    })
     .sort((a, b) => {
       if (a.todayRank !== null && b.todayRank !== null) return a.todayRank - b.todayRank;
       if (a.todayRank !== null) return -1;
       if (b.todayRank !== null) return 1;
       return b.lastSeenDayIndex - a.lastSeenDayIndex;
     });
+}
 
+/* 선택한 날짜까지 중 최근 7개 수집일의 "전체" 검색어 랭킹을 모아서, 그중 하루라도 TOP 7에 들었던
+   검색어를 전부 모은 표를 만든다(어제 7위였던 게 오늘 안 보이는 일이 없도록, 최신일 순위만 보지 않음). */
+async function loadKeywordWeekTrend(musinsaIndex, selectedDateKey) {
+  const availableDates = Object.keys(musinsaIndex || {}).filter((d) => d <= selectedDateKey).sort();
+  const last7 = availableDates.slice(-7);
+  if (last7.length === 0) return null;
+  const perDay = await Promise.all(last7.map((d) => fetchKeywordDateAverage(d, musinsaIndex[d])));
+  const rows = buildKeywordTrendRows(perDay, KEYWORD_TREND_TOP_N);
   return { dates: last7, rows };
 }
 
@@ -551,7 +569,7 @@ function KeywordRankingPanel({ keywords, dataSource, selectedDateLabel, musinsaI
               </div>
               {trendView === "graph" ? (
                 <div className="flex-1 min-h-[200px]">
-                  <KeywordTrendGraph dates={trend.dates} rows={trend.rows} />
+                  <KeywordTrendGraph dates={trend.dates} rows={trend.rows} rankMax={KEYWORD_TREND_TOP_N} />
                 </div>
               ) : (
                 <div className="flex-1 min-h-0 overflow-auto">
@@ -567,7 +585,12 @@ function KeywordRankingPanel({ keywords, dataSource, selectedDateLabel, musinsaI
                         <tr key={row.key}>
                           <td className="py-1.5 pr-3 font-semibold whitespace-nowrap sticky left-0" style={{ color: C.ink, background: C.white, borderTop: `1px solid ${C.line}` }}>{row.keyword}</td>
                           {row.ranksByDay.map((rank, i) => (
-                            <td key={i} className="text-center py-1.5 px-2 tabular-nums font-bold" style={{ color: rank ? C.ink : "#D8D6D0", borderTop: `1px solid ${C.line}` }}>{rank ?? "-"}</td>
+                            <td key={i} className="text-center py-1.5 px-2 tabular-nums font-bold" style={{ color: rank ? C.ink : "#D8D6D0", borderTop: `1px solid ${C.line}` }}>
+                              <div className="flex flex-col items-center gap-0.5">
+                                <span>{rank ?? "-"}</span>
+                                <CompactDelta delta={row.deltasByDay[i]} />
+                              </div>
+                            </td>
                           ))}
                         </tr>
                       ))}
@@ -762,9 +785,49 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
 /* 29CM은 검색어 순위/등락 데이터가 따로 없고 인기 검색어 TOP 10 리스트만 있어서, 그래프 대신
    이전/다음 버튼으로 수집 시점을 하나씩 넘겨보는 방식으로 만든다. 등락 표시는 바로 직전 수집 시점과
    비교해서 이 화면에서 직접 계산한다(같은 키워드가 있으면 순위 차이, 없으면 NEW). */
-function Cm29PopularKeywordsPanel({ cm29Index }) {
+
+const CM29_KEYWORD_TREND_TOP_N = 10; // 인기 검색어 리스트 자체가 TOP 10까지라 사실상 전체
+
+/* 그 날 수집된 모든 시점의 인기 검색어(TOP10, URL 없이 문자열만) 순위를 평균 내서 하루치 랭킹으로 합침 */
+function averageCm29PopularKeywords(snapshots) {
+  const merged = new Map();
+  snapshots.forEach((snap) => {
+    (snap?.popularKeywords || []).forEach((kw, i) => {
+      const rank = i + 1;
+      const existing = merged.get(kw);
+      if (existing) { existing.sumRank += rank; existing.count += 1; }
+      else { merged.set(kw, { sumRank: rank, count: 1 }); }
+    });
+  });
+  return [...merged.entries()]
+    .map(([keyword, v]) => ({ keyword, avgRank: v.sumRank / v.count }))
+    .sort((a, b) => a.avgRank - b.avgRank)
+    .map((item, idx) => ({ ...item, rank: idx + 1 }));
+}
+
+async function fetchCm29KeywordDateAverage(dateKey, times) {
+  const snapshots = await Promise.all(
+    times.map((t) => fetch(`data/cm29_${dateKey}_${t}.json`).then((res) => { if (!res.ok) throw new Error("no snapshot file"); return res.json(); }))
+  );
+  return averageCm29PopularKeywords(snapshots);
+}
+
+/* Musinsa 검색어 추이(loadKeywordWeekTrend)와 동일한 규칙으로 29CM 인기 검색어의 최근 7개 수집일 추이를 만든다. */
+async function loadCm29KeywordWeekTrend(cm29Index, selectedDateKey) {
+  const availableDates = Object.keys(cm29Index || {}).filter((d) => d <= selectedDateKey).sort();
+  const last7 = availableDates.slice(-7);
+  if (last7.length === 0) return null;
+  const perDay = await Promise.all(last7.map((d) => fetchCm29KeywordDateAverage(d, cm29Index[d])));
+  const rows = buildKeywordTrendRows(perDay, CM29_KEYWORD_TREND_TOP_N);
+  return { dates: last7, rows };
+}
+
+function Cm29PopularKeywordsPanel({ cm29Index, selectedDateKey }) {
+  const [mode, setMode] = useState("list");
   const [historyIndex, setHistoryIndex] = useState(null);
   const [snapshotData, setSnapshotData] = useState({ status: "idle", list: [], prevList: null });
+  const [trend, setTrend] = useState({ status: "idle" });
+  const [trendView, setTrendView] = useState("graph");
 
   const entries = useMemo(() => {
     if (!cm29Index) return [];
@@ -780,7 +843,7 @@ function Cm29PopularKeywordsPanel({ cm29Index }) {
   }, [entries.length]);
 
   useEffect(() => {
-    if (historyIndex === null || !entries.length) return;
+    if (mode !== "list" || historyIndex === null || !entries.length) return;
     const cur = entries[historyIndex];
     const prev = historyIndex > 0 ? entries[historyIndex - 1] : null;
     const fetchOne = (e) => (e ? fetch(`data/cm29_${e.date}_${e.time}.json`).then((res) => (res.ok ? res.json() : null)).catch(() => null) : Promise.resolve(null));
@@ -792,7 +855,17 @@ function Cm29PopularKeywordsPanel({ cm29Index }) {
       setSnapshotData({ status: list.length ? "ready" : "empty", list, prevList: prevData?.popularKeywords || null });
     });
     return () => { cancelled = true; };
-  }, [historyIndex, entries]);
+  }, [mode, historyIndex, entries]);
+
+  useEffect(() => {
+    if (mode !== "trend" || !cm29Index || !selectedDateKey) return;
+    let cancelled = false;
+    setTrend({ status: "loading" });
+    loadCm29KeywordWeekTrend(cm29Index, selectedDateKey)
+      .then((result) => { if (!cancelled) setTrend(result ? { status: "ready", ...result } : { status: "empty" }); })
+      .catch(() => { if (!cancelled) setTrend({ status: "error" }); });
+    return () => { cancelled = true; };
+  }, [mode, cm29Index, selectedDateKey]);
 
   if (!entries.length) return null;
 
@@ -807,30 +880,89 @@ function Cm29PopularKeywordsPanel({ cm29Index }) {
           <h2 className="text-base font-bold" style={{ color: C.ink }}>29CM 인기 검색어</h2>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => setHistoryIndex((i) => Math.max(0, i - 1))} disabled={historyIndex <= 0} className="px-2.5 py-1 rounded-full text-xs font-bold" style={{ background: C.paper, color: historyIndex <= 0 ? "#C9C7C0" : C.ink, border: `1px solid ${C.line}`, cursor: historyIndex <= 0 ? "not-allowed" : "pointer" }}>이전</button>
-          <span className="text-xs font-medium whitespace-nowrap" style={{ color: C.mute }}>{label}</span>
-          <button onClick={() => setHistoryIndex((i) => Math.min(entries.length - 1, i + 1))} disabled={historyIndex >= entries.length - 1} className="px-2.5 py-1 rounded-full text-xs font-bold" style={{ background: C.paper, color: historyIndex >= entries.length - 1 ? "#C9C7C0" : C.ink, border: `1px solid ${C.line}`, cursor: historyIndex >= entries.length - 1 ? "not-allowed" : "pointer" }}>다음</button>
+          {mode === "list" ? (
+            <>
+              <button onClick={() => setHistoryIndex((i) => Math.max(0, i - 1))} disabled={historyIndex <= 0} className="px-2.5 py-1 rounded-full text-xs font-bold" style={{ background: C.paper, color: historyIndex <= 0 ? "#C9C7C0" : C.ink, border: `1px solid ${C.line}`, cursor: historyIndex <= 0 ? "not-allowed" : "pointer" }}>이전</button>
+              <span className="text-xs font-medium whitespace-nowrap" style={{ color: C.mute }}>{label}</span>
+              <button onClick={() => setHistoryIndex((i) => Math.min(entries.length - 1, i + 1))} disabled={historyIndex >= entries.length - 1} className="px-2.5 py-1 rounded-full text-xs font-bold" style={{ background: C.paper, color: historyIndex >= entries.length - 1 ? "#C9C7C0" : C.ink, border: `1px solid ${C.line}`, cursor: historyIndex >= entries.length - 1 ? "not-allowed" : "pointer" }}>다음</button>
+            </>
+          ) : null}
+          <button onClick={() => setMode((m) => (m === "list" ? "trend" : "list"))} className="text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap" style={{ background: mode === "trend" ? C.ink : C.paper, color: mode === "trend" ? C.white : C.mute, border: `1px solid ${mode === "trend" ? C.ink : C.line}` }}>최근 1주일</button>
         </div>
       </div>
-      <div className="flex-1 min-h-0">
-        {snapshotData.status === "loading" && (<div className="flex items-center justify-center h-full text-xs font-medium" style={{ color: C.mute }}>불러오는 중...</div>)}
-        {snapshotData.status === "empty" && (<div className="flex items-center justify-center h-full text-xs font-medium" style={{ color: C.mute }}>이 시점엔 인기 검색어 데이터가 없어요.</div>)}
-        {snapshotData.status === "ready" && (
-          <div className="flex flex-col">
-            {snapshotData.list.map((kw, i) => {
-              const prevIdx = snapshotData.prevList ? snapshotData.prevList.indexOf(kw) : -1;
-              const delta = !snapshotData.prevList ? undefined : prevIdx === -1 ? "NEW" : prevIdx - i;
-              return (
-                <div key={kw} className="flex items-center gap-2 py-1.5 text-sm" style={{ borderBottom: `1px solid ${C.line}` }}>
-                  <span className="w-5 shrink-0 font-bold tabular-nums" style={{ color: C.mute }}>{i + 1}</span>
-                  <span className="flex-1 truncate font-semibold" style={{ color: C.ink }}>{kw}</span>
-                  <CompactDelta delta={delta} />
+      {mode === "list" ? (
+        <div className="flex-1 min-h-0">
+          {snapshotData.status === "loading" && (<div className="flex items-center justify-center h-full text-xs font-medium" style={{ color: C.mute }}>불러오는 중...</div>)}
+          {snapshotData.status === "empty" && (<div className="flex items-center justify-center h-full text-xs font-medium" style={{ color: C.mute }}>이 시점엔 인기 검색어 데이터가 없어요.</div>)}
+          {snapshotData.status === "ready" && (
+            <div className="flex flex-col">
+              {snapshotData.list.map((kw, i) => {
+                const prevIdx = snapshotData.prevList ? snapshotData.prevList.indexOf(kw) : -1;
+                const delta = !snapshotData.prevList ? undefined : prevIdx === -1 ? "NEW" : prevIdx - i;
+                return (
+                  <div key={kw} className="flex items-center gap-2 py-1.5 text-sm" style={{ borderBottom: `1px solid ${C.line}` }}>
+                    <span className="w-5 shrink-0 font-bold tabular-nums" style={{ color: C.mute }}>{i + 1}</span>
+                    <span className="flex-1 truncate font-semibold" style={{ color: C.ink }}>{kw}</span>
+                    <CompactDelta delta={delta} />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="flex-1 min-h-0 flex flex-col">
+          {(trend.status === "idle" || trend.status === "loading") && (
+            <div className="flex items-center justify-center flex-1 text-xs font-medium" style={{ color: C.mute }}>불러오는 중...</div>
+          )}
+          {trend.status === "empty" && (
+            <div className="flex items-center justify-center flex-1 text-xs font-medium" style={{ color: C.mute }}>아직 쌓인 수집일이 없어요.</div>
+          )}
+          {trend.status === "error" && (
+            <div className="flex items-center justify-center flex-1 text-xs font-medium" style={{ color: C.mute }}>추이 데이터를 불러오지 못했어요.</div>
+          )}
+          {trend.status === "ready" && (
+            <>
+              <span className="text-xs font-medium mb-2" style={{ color: C.mute }}>인기 검색어 순위 추이 (최근 {trend.dates.length}개 수집일{trend.dates.length < 7 ? ", 아직 7일치 미만" : ""})</span>
+              <div className="flex items-stretch p-0.5 rounded-lg mb-2 self-start" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+                <button onClick={() => setTrendView("graph")} className="px-3 py-1 text-xs font-bold transition-all" style={{ background: trendView === "graph" ? C.ink : "transparent", color: trendView === "graph" ? C.white : C.mute, borderRadius: 6 }}>그래프</button>
+                <button onClick={() => setTrendView("table")} className="px-3 py-1 text-xs font-bold transition-all" style={{ background: trendView === "table" ? C.ink : "transparent", color: trendView === "table" ? C.white : C.mute, borderRadius: 6 }}>표</button>
+              </div>
+              {trendView === "graph" ? (
+                <div className="flex-1 min-h-[200px]">
+                  <KeywordTrendGraph dates={trend.dates} rows={trend.rows} rankMax={CM29_KEYWORD_TREND_TOP_N} />
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+              ) : (
+                <div className="flex-1 min-h-0 overflow-auto">
+                  <table className="w-full text-xs border-collapse">
+                    <thead>
+                      <tr>
+                        <th className="text-left font-bold pb-2 pr-3 sticky left-0" style={{ color: C.mute, background: C.white }}>검색어</th>
+                        {trend.dates.map((d) => (<th key={d} className="text-center font-semibold pb-2 px-2 whitespace-nowrap" style={{ color: C.mute }}>{d.slice(5)}</th>))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {trend.rows.map((row) => (
+                        <tr key={row.key}>
+                          <td className="py-1.5 pr-3 font-semibold whitespace-nowrap sticky left-0" style={{ color: C.ink, background: C.white, borderTop: `1px solid ${C.line}` }}>{row.keyword}</td>
+                          {row.ranksByDay.map((rank, i) => (
+                            <td key={i} className="text-center py-1.5 px-2 tabular-nums font-bold" style={{ color: rank ? C.ink : "#D8D6D0", borderTop: `1px solid ${C.line}` }}>
+                              <div className="flex flex-col items-center gap-0.5">
+                                <span>{rank ?? "-"}</span>
+                                <CompactDelta delta={row.deltasByDay[i]} />
+                              </div>
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -1119,7 +1251,7 @@ function FashionMarketerDashboard() {
           {view === "cm29" && (
             <>
               <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-5 items-stretch">
-                <Cm29PopularKeywordsPanel cm29Index={cm29Index} />
+                <Cm29PopularKeywordsPanel cm29Index={cm29Index} selectedDateKey={selectedDateKey} />
                 <MiniCalendar selected={selectedDate} onSelect={setSelectedDate} availableDates={cm29Dates} />
               </div>
               <Cm29RankingPanel
