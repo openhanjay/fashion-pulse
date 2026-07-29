@@ -34,6 +34,8 @@ const HEADERS = {
 };
 
 // 대분류 + 서브카테고리 코드 (largeId/middleId, 실제 29CM 데이터에서 확인한 값). 전체 = middleId 없음.
+// "가방"은 29CM에서는 여성의류/남성의류와 같은 급의 별도 대분류(여성가방=269100100, 남성가방=273100100)라서,
+// 서브카테고리 값에 { largeId, middleId }를 넣어 부모 대분류가 아닌 이 대분류로 조회하도록 오버라이드한다.
 const CM29_CATEGORIES = {
   여성의류: {
     largeId: 268100100,
@@ -47,6 +49,7 @@ const CM29_CATEGORIES = {
       니트웨어: 268105100,
       셋업: 268117100,
       홈웨어: 268110100,
+      가방: { largeId: 269100100, middleId: null },
     },
   },
   남성의류: {
@@ -60,6 +63,7 @@ const CM29_CATEGORIES = {
       셋업: 272112100,
       이너웨어: 272105100,
       홈웨어: 272113100,
+      가방: { largeId: 273100100, middleId: null },
     },
   },
 };
@@ -215,11 +219,15 @@ async function main() {
   const result = {};
   for (const [largeCat, { largeId, subs }] of Object.entries(CM29_CATEGORIES)) {
     result[largeCat] = {};
-    for (const [subCat, middleId] of Object.entries(subs)) {
+    for (const [subCat, subConfig] of Object.entries(subs)) {
+      // subConfig가 { largeId, middleId } 객체면 부모 대분류가 아닌 그 대분류로 조회 (가방 등)
+      const isOverride = subConfig && typeof subConfig === "object";
+      const effectiveLargeId = isOverride ? subConfig.largeId : largeId;
+      const effectiveMiddleId = isOverride ? subConfig.middleId : subConfig;
       result[largeCat][subCat] = {};
       for (const [periodLabel, periodType] of Object.entries(PERIOD_TYPES)) {
         console.log(`수집 중: ${largeCat} / ${subCat} / ${periodLabel} ...`);
-        result[largeCat][subCat][periodLabel] = await fetchRanking(largeId, middleId, periodType);
+        result[largeCat][subCat][periodLabel] = await fetchRanking(effectiveLargeId, effectiveMiddleId, periodType);
         await sleep(REQUEST_DELAY_MS);
       }
     }
