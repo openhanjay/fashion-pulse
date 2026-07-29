@@ -1110,13 +1110,13 @@ function FashionMarketerDashboard() {
               <h1 className="font-display text-xl font-bold leading-none" style={{ color: C.ink }}>{meta.title}</h1>
               <p className="text-xs font-medium mt-1.5" style={{ color: C.mute }}>{meta.subtitle}</p>
             </div>
-            <div className="flex flex-col items-start">
-              <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex flex-col items-end">
+              <div className="flex items-center gap-2 flex-wrap justify-end">
+                {scrapeStatus.state === "success" && (<span className="text-xs font-semibold" style={{ color: "#1E8E5A" }}>{scrapeStatus.message}</span>)}
+                {scrapeStatus.state === "error" && (<span className="text-xs font-semibold" style={{ color: C.signal }}>{scrapeStatus.message}</span>)}
                 <button onClick={triggerScrape} disabled={scrapeStatus.state === "loading"} className="px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap" style={{ background: C.ink, color: C.white, opacity: scrapeStatus.state === "loading" ? 0.6 : 1, cursor: scrapeStatus.state === "loading" ? "not-allowed" : "pointer" }}>
                   {scrapeStatus.state === "loading" ? "요청 중..." : "지금 스크랩하기"}
                 </button>
-                {scrapeStatus.state === "success" && (<span className="text-xs font-semibold" style={{ color: "#1E8E5A" }}>{scrapeStatus.message}</span>)}
-                {scrapeStatus.state === "error" && (<span className="text-xs font-semibold" style={{ color: C.signal }}>{scrapeStatus.message}</span>)}
               </div>
               {!!lastScrapedLabel && (<span className="text-[10px] mt-1" style={{ color: C.mute }}>마지막 수집: {lastScrapedLabel}</span>)}
             </div>
