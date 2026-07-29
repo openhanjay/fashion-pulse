@@ -192,6 +192,20 @@ function attachAverageDelta(today, prior, catKeys, filterKeys) {
   return today;
 }
 
+/* index({"YYYY-MM-DD":["HH-mm",...]})에서 (dateStr, rawTime) 바로 직전 수집 시점을 찾는다.
+   scrape_musinsa.js/scrape_cm29.js의 findLatestPriorSnapshot과 동일한 규칙
+   (같은 날 이전 시각이 있으면 그중 가장 늦은 시각, 없으면 이전 날짜의 마지막 시각). */
+function findPriorSnapshotEntry(index, dateStr, rawTime) {
+  const sameDayEarlier = (index[dateStr] || []).filter((t) => t < rawTime).sort();
+  if (sameDayEarlier.length) return { date: dateStr, time: sameDayEarlier[sameDayEarlier.length - 1] };
+  const priorDates = Object.keys(index || {}).filter((d) => d < dateStr).sort();
+  const priorDate = priorDates[priorDates.length - 1];
+  if (!priorDate) return null;
+  const priorTimes = index[priorDate] || [];
+  if (!priorTimes.length) return null;
+  return { date: priorDate, time: priorTimes[priorTimes.length - 1] };
+}
+
 /* 29CM 스냅샷들(대분류 > 서브카테고리 > 기간 3단계 구조)을 상품별 평균 순위로 합침.
    카테고리 구조를 하드코딩하지 않고 스냅샷에 실제로 들어있는 키들을 그대로 순회한다.
    popularKeywords는 대분류가 아니라 스냅샷 최상위에 같이 들어있는 별개의 필드(인기 검색어 TOP10)라서 제외. */
@@ -458,11 +472,32 @@ async function loadKeywordWeekTrend(musinsaIndex, selectedDateKey) {
   return { dates: last7, rows };
 }
 
-function KeywordRankingPanel({ keywords, dataSource, selectedDateLabel, musinsaIndex, selectedDateKey }) {
+/* 검색어 랭킹 패널 자체의 시간 선택(상품 랭킹 패널과 독립적)에 쓰는 로더. "평균"은 당일 평균 vs 전일 평균,
+   특정 시각은 그 시각의 스냅샷에 이미 붙어있는 delta(스크랩 시점에 계산됨)를 그대로 사용한다. */
+async function loadMusinsaKeywordSnapshot(musinsaIndex, dateKey, rawTimes, timeLabel) {
+  const fetchOne = (dKey, rawTime) => fetch(`data/musinsa_${dKey}_${rawTime}.json`).then((res) => { if (!res.ok) throw new Error("no snapshot file"); return res.json(); });
+  if (timeLabel === "평균") {
+    const todaySnapshots = await Promise.all(rawTimes.map((t) => fetchOne(dateKey, t)));
+    const todayKeywordAvg = averageKeywordRankings(todaySnapshots);
+    const priorDates = Object.keys(musinsaIndex || {}).filter((d) => d < dateKey).sort();
+    const priorDateKey = priorDates[priorDates.length - 1];
+    if (!priorDateKey) return todayKeywordAvg;
+    const priorTimes = musinsaIndex[priorDateKey] || [];
+    const priorSnapshots = await Promise.all(priorTimes.map((t) => fetchOne(priorDateKey, t)));
+    const priorKeywordAvg = averageKeywordRankings(priorSnapshots);
+    return attachAverageDelta({ keywords: todayKeywordAvg }, { keywords: priorKeywordAvg }, ["keywords"], ["all", "rising"]).keywords;
+  }
+  const data = await fetchOne(dateKey, timeLabel.replace(":", "-"));
+  return data.keywords || { all: [], rising: [] };
+}
+
+function KeywordRankingPanel({ dataSource, selectedDateLabel, musinsaIndex, selectedDateKey }) {
   const [mode, setMode] = useState("list");
   const [filter, setFilter] = useState("all");
   const [visibleCount, setVisibleCount] = useState(20);
   const [trend, setTrend] = useState({ status: "idle" });
+  const [kwTime, setKwTime] = useState("평균");
+  const [kwData, setKwData] = useState({ all: [], rising: [] });
   const [trendView, setTrendView] = useState("graph");
 
   useEffect(() => {
@@ -474,6 +509,27 @@ function KeywordRankingPanel({ keywords, dataSource, selectedDateLabel, musinsaI
       .catch(() => { if (!cancelled) setTrend({ status: "error" }); });
     return () => { cancelled = true; };
   }, [mode, musinsaIndex, selectedDateKey]);
+
+  const rawKwTimes = musinsaIndex?.[selectedDateKey] || [];
+  const availableKwTimes = rawKwTimes.length ? ["평균", ...rawKwTimes.map((t) => t.replace("-", ":"))] : [];
+
+  useEffect(() => {
+    if (mode !== "list" || !musinsaIndex || !selectedDateKey) return;
+    const rawTimes = musinsaIndex[selectedDateKey] || [];
+    if (!rawTimes.length) { setKwData({ all: [], rising: [] }); return; }
+    let cancelled = false;
+    setKwTime("평균");
+    loadMusinsaKeywordSnapshot(musinsaIndex, selectedDateKey, rawTimes, "평균")
+      .then((data) => { if (!cancelled) setKwData(data); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [mode, musinsaIndex, selectedDateKey]);
+
+  const onSelectKwTime = (t) => {
+    const rawTimes = musinsaIndex?.[selectedDateKey] || [];
+    setKwTime(t);
+    loadMusinsaKeywordSnapshot(musinsaIndex, selectedDateKey, rawTimes, t).then(setKwData).catch(() => {});
+  };
 
   return (
     <div className="rounded-2xl p-5 h-full flex flex-col" style={{ background: C.white, border: `1px solid ${C.line}` }}>
@@ -490,6 +546,14 @@ function KeywordRankingPanel({ keywords, dataSource, selectedDateLabel, musinsaI
       </div>
       {mode === "list" ? (
         <div className="flex-1 min-h-0 flex flex-col">
+          {!!availableKwTimes.length && (
+            <div className="flex items-center gap-1.5 mb-3 overflow-x-auto pb-1">
+              {availableKwTimes.map((t) => {
+                const isActive = t === kwTime;
+                return (<button key={t} onClick={() => onSelectKwTime(t)} className="px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-colors" style={{ background: isActive ? C.ink : C.paper, color: isActive ? C.white : C.mute, border: `1px solid ${isActive ? C.ink : C.line}` }}>{t}</button>);
+              })}
+            </div>
+          )}
           <div className="flex items-stretch p-0.5 rounded-lg mb-3 self-start" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
             {KEYWORD_FILTERS.map((f, i) => {
               const isActive = f.key === filter;
@@ -498,7 +562,7 @@ function KeywordRankingPanel({ keywords, dataSource, selectedDateLabel, musinsaI
             })}
           </div>
           {(() => {
-            const fullList = (keywords?.[filter] || []).slice(0, KEYWORD_TOP_N_DISPLAY);
+            const fullList = (kwData?.[filter] || []).slice(0, KEYWORD_TOP_N_DISPLAY);
             const list = fullList.slice(0, visibleCount);
             if (list.length === 0) {
               return (<div className="flex items-center justify-center rounded-xl text-xs font-medium flex-1" style={{ background: C.paper, color: C.mute, minHeight: 160 }}>검색어 데이터가 없어요.</div>);
@@ -760,9 +824,9 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
   );
 }
 
-/* 29CM은 검색어 순위/등락 데이터가 따로 없고 인기 검색어 TOP 10 리스트만 있어서, 그래프 대신
-   이전/다음 버튼으로 수집 시점을 하나씩 넘겨보는 방식으로 만든다. 등락 표시는 바로 직전 수집 시점과
-   비교해서 이 화면에서 직접 계산한다(같은 키워드가 있으면 순위 차이, 없으면 NEW). */
+/* 29CM은 검색어 순위/등락 데이터가 따로 없고 인기 검색어 TOP 10 리스트만 있다. 등락 표시는
+   비교 대상 스냅샷(평균이면 전일 평균, 특정 시각이면 바로 직전 수집 시점)과 이 화면에서 직접 계산한다
+   (같은 키워드가 있으면 순위 차이, 없으면 NEW). */
 
 const CM29_KEYWORD_TREND_TOP_N = 5; // 최근 1주일 추이(그래프/표)는 TOP 5까지만 표시
 
@@ -800,40 +864,67 @@ async function loadCm29KeywordWeekTrend(cm29Index, selectedDateKey) {
   return { dates: last7, rows };
 }
 
+/* 검색어 랭킹 패널 자체의 시간 선택(상품 랭킹 패널과 독립적)에 쓰는 로더. "평균"은 당일 평균 vs 전일 평균,
+   특정 시각은 그 시각의 스냅샷 vs 바로 직전 수집 시점을 비교해서 등락을 직접 계산한다
+   (29CM 인기 검색어는 스크래퍼가 delta를 안 붙여줌). */
+async function loadCm29KeywordSnapshot(cm29Index, dateKey, rawTimes, timeLabel) {
+  const fetchOne = (dKey, rawTime) => fetch(`data/cm29_${dKey}_${rawTime}.json`).then((res) => { if (!res.ok) throw new Error("no snapshot file"); return res.json(); });
+  if (timeLabel === "평균") {
+    const todaySnapshots = await Promise.all(rawTimes.map((t) => fetchOne(dateKey, t)));
+    const list = averageCm29PopularKeywords(todaySnapshots);
+    const priorDates = Object.keys(cm29Index || {}).filter((d) => d < dateKey).sort();
+    const priorDateKey = priorDates[priorDates.length - 1];
+    if (!priorDateKey) return { list, priorList: null };
+    const priorTimes = cm29Index[priorDateKey] || [];
+    const priorSnapshots = await Promise.all(priorTimes.map((t) => fetchOne(priorDateKey, t)));
+    return { list, priorList: averageCm29PopularKeywords(priorSnapshots) };
+  }
+  const rawTime = timeLabel.replace(":", "-");
+  const data = await fetchOne(dateKey, rawTime);
+  const list = (data.popularKeywords || []).map((kw, i) => ({ keyword: kw, rank: i + 1 }));
+  const prior = findPriorSnapshotEntry(cm29Index, dateKey, rawTime);
+  if (!prior) return { list, priorList: null };
+  const priorData = await fetchOne(prior.date, prior.time);
+  const priorList = (priorData.popularKeywords || []).map((kw, i) => ({ keyword: kw, rank: i + 1 }));
+  return { list, priorList };
+}
+
 function Cm29PopularKeywordsPanel({ cm29Index, selectedDateKey }) {
   const [mode, setMode] = useState("list");
-  const [historyIndex, setHistoryIndex] = useState(null);
-  const [snapshotData, setSnapshotData] = useState({ status: "idle", list: [], prevList: null });
+  const [kwTime, setKwTime] = useState("평균");
+  const [snapshotData, setSnapshotData] = useState({ status: "idle", list: [], priorList: null });
   const [trend, setTrend] = useState({ status: "idle" });
   const [trendView, setTrendView] = useState("graph");
 
-  const entries = useMemo(() => {
-    if (!cm29Index) return [];
-    const flat = [];
-    Object.keys(cm29Index).sort().forEach((d) => {
-      (cm29Index[d] || []).forEach((t) => flat.push({ date: d, time: t }));
-    });
-    return flat;
-  }, [cm29Index]);
+  const hasAnyData = useMemo(
+    () => !!cm29Index && Object.keys(cm29Index).some((d) => (cm29Index[d] || []).length > 0),
+    [cm29Index]
+  );
+
+  const rawKwTimes = cm29Index?.[selectedDateKey] || [];
+  const availableKwTimes = rawKwTimes.length ? ["평균", ...rawKwTimes.map((t) => t.replace("-", ":"))] : [];
 
   useEffect(() => {
-    setHistoryIndex(entries.length ? entries.length - 1 : null);
-  }, [entries.length]);
-
-  useEffect(() => {
-    if (mode !== "list" || historyIndex === null || !entries.length) return;
-    const cur = entries[historyIndex];
-    const prev = historyIndex > 0 ? entries[historyIndex - 1] : null;
-    const fetchOne = (e) => (e ? fetch(`data/cm29_${e.date}_${e.time}.json`).then((res) => (res.ok ? res.json() : null)).catch(() => null) : Promise.resolve(null));
+    if (mode !== "list" || !cm29Index || !selectedDateKey) return;
+    const rawTimes = cm29Index[selectedDateKey] || [];
+    if (!rawTimes.length) { setSnapshotData({ status: "empty", list: [], priorList: null }); return; }
     let cancelled = false;
-    setSnapshotData({ status: "loading", list: [], prevList: null });
-    Promise.all([fetchOne(cur), fetchOne(prev)]).then(([curData, prevData]) => {
-      if (cancelled) return;
-      const list = curData?.popularKeywords || [];
-      setSnapshotData({ status: list.length ? "ready" : "empty", list, prevList: prevData?.popularKeywords || null });
-    });
+    setKwTime("평균");
+    setSnapshotData({ status: "loading", list: [], priorList: null });
+    loadCm29KeywordSnapshot(cm29Index, selectedDateKey, rawTimes, "평균")
+      .then(({ list, priorList }) => { if (!cancelled) setSnapshotData({ status: list.length ? "ready" : "empty", list, priorList }); })
+      .catch(() => { if (!cancelled) setSnapshotData({ status: "error", list: [], priorList: null }); });
     return () => { cancelled = true; };
-  }, [mode, historyIndex, entries]);
+  }, [mode, cm29Index, selectedDateKey]);
+
+  const onSelectKwTime = (t) => {
+    const rawTimes = cm29Index?.[selectedDateKey] || [];
+    setKwTime(t);
+    setSnapshotData((d) => ({ ...d, status: "loading" }));
+    loadCm29KeywordSnapshot(cm29Index, selectedDateKey, rawTimes, t)
+      .then(({ list, priorList }) => setSnapshotData({ status: list.length ? "ready" : "empty", list, priorList }))
+      .catch(() => setSnapshotData({ status: "error", list: [], priorList: null }));
+  };
 
   useEffect(() => {
     if (mode !== "trend" || !cm29Index || !selectedDateKey) return;
@@ -845,10 +936,7 @@ function Cm29PopularKeywordsPanel({ cm29Index, selectedDateKey }) {
     return () => { cancelled = true; };
   }, [mode, cm29Index, selectedDateKey]);
 
-  if (!entries.length) return null;
-
-  const cur = entries[historyIndex] || entries[entries.length - 1];
-  const label = `${cur.date} ${cur.time.replace("-", ":")}`;
+  if (!hasAnyData) return null;
 
   return (
     <div className="rounded-2xl p-5 h-full flex flex-col" style={{ background: C.white, border: `1px solid ${C.line}` }}>
@@ -858,40 +946,44 @@ function Cm29PopularKeywordsPanel({ cm29Index, selectedDateKey }) {
           <h2 className="text-base font-bold" style={{ color: C.ink }}>29CM 인기 검색어</h2>
         </div>
         <div className="flex items-center gap-2">
-          {mode === "list" ? (
-            <>
-              <button onClick={() => setHistoryIndex((i) => Math.max(0, i - 1))} disabled={historyIndex <= 0} className="px-2.5 py-1 rounded-full text-xs font-bold" style={{ background: C.paper, color: historyIndex <= 0 ? "#C9C7C0" : C.ink, border: `1px solid ${C.line}`, cursor: historyIndex <= 0 ? "not-allowed" : "pointer" }}>이전</button>
-              <span className="text-xs font-medium whitespace-nowrap" style={{ color: C.mute }}>{label}</span>
-              <button onClick={() => setHistoryIndex((i) => Math.min(entries.length - 1, i + 1))} disabled={historyIndex >= entries.length - 1} className="px-2.5 py-1 rounded-full text-xs font-bold" style={{ background: C.paper, color: historyIndex >= entries.length - 1 ? "#C9C7C0" : C.ink, border: `1px solid ${C.line}`, cursor: historyIndex >= entries.length - 1 ? "not-allowed" : "pointer" }}>다음</button>
-            </>
-          ) : null}
+          {!!selectedDateKey && (<span className="text-xs font-medium whitespace-nowrap" style={{ color: C.mute }}>{selectedDateKey}</span>)}
           <button onClick={() => setMode((m) => (m === "list" ? "trend" : "list"))} className="text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap" style={{ background: mode === "trend" ? C.ink : C.paper, color: mode === "trend" ? C.white : C.mute, border: `1px solid ${mode === "trend" ? C.ink : C.line}` }}>최근 1주일</button>
         </div>
       </div>
       {mode === "list" ? (
-        <div className="flex-1 min-h-0">
-          {snapshotData.status === "loading" && (<div className="flex items-center justify-center h-full text-xs font-medium" style={{ color: C.mute }}>불러오는 중...</div>)}
-          {snapshotData.status === "empty" && (<div className="flex items-center justify-center h-full text-xs font-medium" style={{ color: C.mute }}>이 시점엔 인기 검색어 데이터가 없어요.</div>)}
-          {snapshotData.status === "ready" && (
-            <div className="flex flex-col gap-2">
-              {[snapshotData.list.slice(0, 5), snapshotData.list.slice(5, 10)].map((rowList, ri) => (
-                <div key={ri} className="grid grid-cols-5 gap-2">
-                  {rowList.map((kw, ci) => {
-                    const i = ri * 5 + ci;
-                    const prevIdx = snapshotData.prevList ? snapshotData.prevList.indexOf(kw) : -1;
-                    const delta = !snapshotData.prevList ? undefined : prevIdx === -1 ? "NEW" : prevIdx - i;
-                    return (
-                      <div key={kw} className="flex flex-col items-center gap-1 py-2 px-1 rounded-xl text-center" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
-                        <span className="text-xs font-bold tabular-nums" style={{ color: C.mute }}>{i + 1}</span>
-                        <span className="text-sm font-semibold truncate w-full" style={{ color: C.ink }}>{kw}</span>
-                        <CompactDelta delta={delta} />
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
+        <div className="flex-1 min-h-0 flex flex-col">
+          {!!availableKwTimes.length && (
+            <div className="flex items-center gap-1.5 mb-3 overflow-x-auto pb-1">
+              {availableKwTimes.map((t) => {
+                const isActive = t === kwTime;
+                return (<button key={t} onClick={() => onSelectKwTime(t)} className="px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-colors" style={{ background: isActive ? C.ink : C.paper, color: isActive ? C.white : C.mute, border: `1px solid ${isActive ? C.ink : C.line}` }}>{t}</button>);
+              })}
             </div>
           )}
+          <div className="flex-1 min-h-0">
+            {snapshotData.status === "loading" && (<div className="flex items-center justify-center h-full text-xs font-medium" style={{ color: C.mute }}>불러오는 중...</div>)}
+            {snapshotData.status === "empty" && (<div className="flex items-center justify-center h-full text-xs font-medium" style={{ color: C.mute }}>이 시점엔 인기 검색어 데이터가 없어요.</div>)}
+            {snapshotData.status === "error" && (<div className="flex items-center justify-center h-full text-xs font-medium" style={{ color: C.mute }}>인기 검색어를 불러오지 못했어요.</div>)}
+            {snapshotData.status === "ready" && (
+              <div className="flex flex-col gap-2">
+                {[snapshotData.list.slice(0, 5), snapshotData.list.slice(5, 10)].map((rowList, ri) => (
+                  <div key={ri} className="grid grid-cols-5 gap-2">
+                    {rowList.map((item) => {
+                      const priorIdx = snapshotData.priorList ? snapshotData.priorList.findIndex((p) => p.keyword === item.keyword) : -1;
+                      const delta = !snapshotData.priorList ? undefined : priorIdx === -1 ? "NEW" : snapshotData.priorList[priorIdx].rank - item.rank;
+                      return (
+                        <div key={item.keyword} className="flex flex-col items-center gap-1 py-2 px-1 rounded-xl text-center" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+                          <span className="text-xs font-bold tabular-nums" style={{ color: C.mute }}>{item.rank}</span>
+                          <span className="text-sm font-semibold truncate w-full" style={{ color: C.ink }}>{item.keyword}</span>
+                          <CompactDelta delta={delta} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       ) : (
         <div className="flex-1 min-h-0 flex flex-col">
@@ -1050,8 +1142,6 @@ function FashionMarketerDashboard() {
   const [musinsaIndex, setMusinsaIndex] = useState(null); // { "YYYY-MM-DD": ["08-00", "17-00"] } | null(로딩 전)
   const [musinsaSelectedTime, setMusinsaSelectedTime] = useState(null);
 
-  const musinsaKeywords = useMemo(() => musinsaRankings?.keywords || { all: [], rising: [] }, [musinsaRankings]);
-
   const musinsaDates = useMemo(() => (musinsaIndex ? Object.keys(musinsaIndex).sort() : []), [musinsaIndex]);
   const selectedDateKey = useMemo(() => formatDateKey(selectedDate), [selectedDate]);
   const rawTimesForSelectedDate = musinsaIndex?.[selectedDateKey] || [];
@@ -1066,17 +1156,14 @@ function FashionMarketerDashboard() {
       // (두 날짜 데이터를 하나로 뒤섞지 않고, "전일 평균" vs "당일 평균"을 각각 구해서 비교함).
       request = Promise.all(rawTimes.map((t) => fetchOne(dateKey, t))).then((todaySnapshots) => {
         const todayCategoryAvg = averageRankings(todaySnapshots);
-        const todayKeywordAvg = averageKeywordRankings(todaySnapshots);
         const priorDates = Object.keys(musinsaIndex || {}).filter((d) => d < dateKey).sort();
         const priorDateKey = priorDates[priorDates.length - 1];
-        if (!priorDateKey) return { ...todayCategoryAvg, keywords: todayKeywordAvg };
+        if (!priorDateKey) return todayCategoryAvg;
         const priorTimes = musinsaIndex[priorDateKey] || [];
         return Promise.all(priorTimes.map((t) => fetchOne(priorDateKey, t))).then((priorSnapshots) => {
           const priorCategoryAvg = averageRankings(priorSnapshots);
-          const priorKeywordAvg = averageKeywordRankings(priorSnapshots);
           attachAverageDelta(todayCategoryAvg, priorCategoryAvg, CATEGORIES, ["all", "rising", "new"]);
-          const keywordsWithDelta = attachAverageDelta({ keywords: todayKeywordAvg }, { keywords: priorKeywordAvg }, ["keywords"], ["all", "rising"]).keywords;
-          return { ...todayCategoryAvg, keywords: keywordsWithDelta };
+          return todayCategoryAvg;
         });
       });
     } else {
@@ -1216,7 +1303,7 @@ function FashionMarketerDashboard() {
           {view === "musinsa" && (
             <>
               <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-5 items-stretch">
-                <KeywordRankingPanel keywords={musinsaKeywords} dataSource={musinsaDataSource} selectedDateLabel={panelDateLabel} musinsaIndex={musinsaIndex} selectedDateKey={selectedDateKey} />
+                <KeywordRankingPanel dataSource={musinsaDataSource} selectedDateLabel={panelDateLabel} musinsaIndex={musinsaIndex} selectedDateKey={selectedDateKey} />
                 <MiniCalendar selected={selectedDate} onSelect={setSelectedDate} availableDates={musinsaDates} />
               </div>
               <RankingPanel
