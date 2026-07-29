@@ -815,8 +815,40 @@ function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availabl
   const [cat, setCat] = useState(CATEGORIES[0]);
   const [filter, setFilter] = useState("all");
   const [visibleCount, setVisibleCount] = useState(100);
+  const [brandInput, setBrandInput] = useState("");
+  const [brandError, setBrandError] = useState("");
+  const [brandWatchList, setBrandWatchList] = useState([]);
 
   const filteredList = useMemo(() => rankings?.[cat]?.[filter] || [], [rankings, cat, filter]);
+
+  // 브랜드 검색 후보/결과는 카테고리 구분 없이 "전체" 리스트 전체를 훑는다(브랜드 상품이 여러 카테고리에 흩어져 있을 수 있어서).
+  const brandCandidates = useMemo(() => {
+    const set = new Set();
+    CATEGORIES.forEach((c) => (rankings?.[c]?.all || []).forEach((item) => { if (item.brand) set.add(item.brand); }));
+    return [...set];
+  }, [rankings]);
+
+  const addBrandWatch = () => {
+    const text = brandInput.trim();
+    if (!text) return;
+    const match = brandCandidates.find((b) => b === text) || brandCandidates.find((b) => b.includes(text));
+    if (!match) { setBrandError("현재 데이터에서 찾을 수 없어요."); return; }
+    setBrandError("");
+    setBrandInput("");
+    if (!brandWatchList.includes(match)) setBrandWatchList((prev) => [...prev, match]);
+  };
+  const removeBrandWatch = (b) => setBrandWatchList((prev) => prev.filter((x) => x !== b));
+
+  const brandResults = useMemo(() => {
+    return brandWatchList.map((brand) => {
+      const items = [];
+      CATEGORIES.forEach((c) => {
+        (rankings?.[c]?.all || []).forEach((item) => { if (item.brand === brand) items.push({ ...item, category: c }); });
+      });
+      items.sort((a, b) => a.rank - b.rank);
+      return { brand, items };
+    });
+  }, [rankings, brandWatchList]);
 
   return (
     <div className="rounded-2xl p-5" style={{ background: C.white, border: `1px solid ${C.line}` }}>
@@ -855,6 +887,47 @@ function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availabl
           return (<button key={c} onClick={() => { setCat(c); setVisibleCount(12); }} className="px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors" style={{ background: isActive ? C.ink : C.paper, color: isActive ? C.white : C.mute }}>{c}</button>);
         })}
       </div>
+      <div className="flex items-center gap-1.5 flex-wrap mb-3">
+        <input
+          list="musinsa-brand-watch-list"
+          value={brandInput}
+          onChange={(e) => { setBrandInput(e.target.value); setBrandError(""); }}
+          onKeyDown={(e) => { if (e.key === "Enter") addBrandWatch(); }}
+          placeholder="브랜드 검색"
+          className="px-2.5 py-1 rounded-full text-xs"
+          style={{ border: `1px solid ${C.line}`, color: C.ink, width: 140 }}
+        />
+        <datalist id="musinsa-brand-watch-list">
+          {brandCandidates.map((b) => (<option key={b} value={b} />))}
+        </datalist>
+        <button onClick={addBrandWatch} className="px-3 py-1 rounded-full text-xs font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>추가</button>
+        {!!brandError && <span className="text-[11px] font-medium" style={{ color: C.signal }}>{brandError}</span>}
+      </div>
+      {!!brandResults.length && (
+        <div className="flex flex-col gap-2 mb-4">
+          {brandResults.map(({ brand, items }) => (
+            <div key={brand} className="rounded-xl p-3" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-sm font-bold" style={{ color: C.ink }}>{brand}</span>
+                <button onClick={() => removeBrandWatch(brand)} className="text-xs font-bold" style={{ color: C.mute }}>×</button>
+              </div>
+              {items.length === 0 ? (
+                <span className="text-xs font-medium" style={{ color: C.mute }}>현재 TOP {MOCK_TOP_N}위 안에 없어요.</span>
+              ) : (
+                <div className="flex flex-col gap-1">
+                  {items.map((item) => (
+                    <a key={`${item.category}-${item.rank}`} href={item.url || undefined} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-xs">
+                      <span className="font-bold tabular-nums shrink-0" style={{ color: C.mute, width: 32 }}>{item.rank}위</span>
+                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded shrink-0" style={{ background: C.indigoSoft, color: C.indigo }}>{item.category}</span>
+                      <span className="flex-1 truncate font-semibold" style={{ color: C.ink }}>{item.name}</span>
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
       {filteredList.length === 0 ? (
         <div className="flex items-center justify-center rounded-xl text-sm font-medium" style={{ height: 120, background: C.paper, color: C.mute }}>조건에 맞는 상품이 없어요. 다른 필터를 선택해보세요.</div>
       ) : (
@@ -879,6 +952,9 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
   const [subCat, setSubCat] = useState("전체");
   const [period, setPeriod] = useState("실시간");
   const [visibleCount, setVisibleCount] = useState(100);
+  const [brandInput, setBrandInput] = useState("");
+  const [brandError, setBrandError] = useState("");
+  const [brandWatchList, setBrandWatchList] = useState([]);
 
   const subCats = useMemo(() => Object.keys(rankings?.[largeCat] || {}), [rankings, largeCat]);
 
@@ -887,6 +963,32 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
   }, [largeCat, subCats]);
 
   const filteredList = useMemo(() => rankings?.[largeCat]?.[subCat]?.[period] || [], [rankings, largeCat, subCat, period]);
+
+  // 브랜드 검색은 현재 대분류+기간의 "전체" 서브카테고리(그 대분류의 모든 상품이 다 들어있는 목록)에서 찾는다.
+  const brandPool = useMemo(() => rankings?.[largeCat]?.["전체"]?.[period] || [], [rankings, largeCat, period]);
+  const brandCandidates = useMemo(() => {
+    const set = new Set();
+    brandPool.forEach((item) => { if (item.brand) set.add(item.brand); });
+    return [...set];
+  }, [brandPool]);
+
+  const addBrandWatch = () => {
+    const text = brandInput.trim();
+    if (!text) return;
+    const match = brandCandidates.find((b) => b === text) || brandCandidates.find((b) => b.includes(text));
+    if (!match) { setBrandError("현재 데이터에서 찾을 수 없어요."); return; }
+    setBrandError("");
+    setBrandInput("");
+    if (!brandWatchList.includes(match)) setBrandWatchList((prev) => [...prev, match]);
+  };
+  const removeBrandWatch = (b) => setBrandWatchList((prev) => prev.filter((x) => x !== b));
+
+  const brandResults = useMemo(() => {
+    return brandWatchList.map((brand) => ({
+      brand,
+      items: brandPool.filter((item) => item.brand === brand).sort((a, b) => a.rank - b.rank),
+    }));
+  }, [brandPool, brandWatchList]);
 
   return (
     <div className="rounded-2xl p-5" style={{ background: C.white, border: `1px solid ${C.line}` }}>
@@ -931,6 +1033,46 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
           return (<button key={sc} onClick={() => { setSubCat(sc); setVisibleCount(12); }} className="px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors" style={{ background: isActive ? C.ink : C.paper, color: isActive ? C.white : C.mute }}>{sc}</button>);
         })}
       </div>
+      <div className="flex items-center gap-1.5 flex-wrap mb-3">
+        <input
+          list="cm29-brand-watch-list"
+          value={brandInput}
+          onChange={(e) => { setBrandInput(e.target.value); setBrandError(""); }}
+          onKeyDown={(e) => { if (e.key === "Enter") addBrandWatch(); }}
+          placeholder="브랜드 검색"
+          className="px-2.5 py-1 rounded-full text-xs"
+          style={{ border: `1px solid ${C.line}`, color: C.ink, width: 140 }}
+        />
+        <datalist id="cm29-brand-watch-list">
+          {brandCandidates.map((b) => (<option key={b} value={b} />))}
+        </datalist>
+        <button onClick={addBrandWatch} className="px-3 py-1 rounded-full text-xs font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>추가</button>
+        {!!brandError && <span className="text-[11px] font-medium" style={{ color: C.signal }}>{brandError}</span>}
+      </div>
+      {!!brandResults.length && (
+        <div className="flex flex-col gap-2 mb-4">
+          {brandResults.map(({ brand, items }) => (
+            <div key={brand} className="rounded-xl p-3" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-sm font-bold" style={{ color: C.ink }}>{brand}</span>
+                <button onClick={() => removeBrandWatch(brand)} className="text-xs font-bold" style={{ color: C.mute }}>×</button>
+              </div>
+              {items.length === 0 ? (
+                <span className="text-xs font-medium" style={{ color: C.mute }}>현재 {subCats.includes("전체") ? "전체" : subCat} 랭킹 안에 없어요.</span>
+              ) : (
+                <div className="flex flex-col gap-1">
+                  {items.map((item) => (
+                    <a key={item.rank} href={item.url || undefined} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-xs">
+                      <span className="font-bold tabular-nums shrink-0" style={{ color: C.mute, width: 32 }}>{item.rank}위</span>
+                      <span className="flex-1 truncate font-semibold" style={{ color: C.ink }}>{item.name}</span>
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
       {filteredList.length === 0 ? (
         <div className="flex items-center justify-center rounded-xl text-sm font-medium" style={{ height: 120, background: C.paper, color: C.mute }}>조건에 맞는 상품이 없어요. 다른 필터를 선택해보세요.</div>
       ) : (
