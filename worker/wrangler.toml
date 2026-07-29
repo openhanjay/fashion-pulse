@@ -1,0 +1,7 @@
+name = "fashion-pulse-scrape-trigger"
+main = "index.js"
+compatibility_date = "2026-07-28"
+
+kv_namespaces = [
+  { binding = "RATE_LIMIT_KV", id = "2945a69b0c7b4c5bb54bae247dbc0078" }
+]

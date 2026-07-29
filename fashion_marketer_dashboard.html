@@ -1070,6 +1070,18 @@ function FashionMarketerDashboard() {
     if (rawTimes && rawTimes.length) loadCm29Snapshot(selectedDateKey, rawTimes, "평균");
   }, [selectedDateKey, cm29Index]);
 
+  const [scrapeStatus, setScrapeStatus] = useState({ state: "idle", message: "" });
+
+  const triggerScrape = () => {
+    setScrapeStatus({ state: "loading", message: "" });
+    fetch("https://fashion-pulse-scrape-trigger.rankinginsta.workers.dev", { method: "POST" })
+      .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
+      .then(({ ok, data }) => {
+        setScrapeStatus({ state: ok && data.ok ? "success" : "error", message: data.message || "요청 실패" });
+      })
+      .catch(() => setScrapeStatus({ state: "error", message: "요청을 보내지 못했어요." }));
+  };
+
   const meta = PAGE_META[view];
 
   return (
@@ -1082,9 +1094,16 @@ function FashionMarketerDashboard() {
               <h1 className="font-display text-xl font-bold leading-none" style={{ color: C.ink }}>{meta.title}</h1>
               <p className="text-xs font-medium mt-1.5" style={{ color: C.mute }}>{meta.subtitle}</p>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: C.white, color: C.ink, border: `1px solid ${C.line}` }}>
-              <span className="rounded-full" style={{ width: 6, height: 6, background: "#1E8E5A" }} />
-              2026.07.20 (월) 기준 데이터
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: C.white, color: C.ink, border: `1px solid ${C.line}` }}>
+                <span className="rounded-full" style={{ width: 6, height: 6, background: "#1E8E5A" }} />
+                2026.07.20 (월) 기준 데이터
+              </div>
+              <button onClick={triggerScrape} disabled={scrapeStatus.state === "loading"} className="px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap" style={{ background: C.ink, color: C.white, opacity: scrapeStatus.state === "loading" ? 0.6 : 1, cursor: scrapeStatus.state === "loading" ? "not-allowed" : "pointer" }}>
+                {scrapeStatus.state === "loading" ? "요청 중..." : "지금 스크랩하기"}
+              </button>
+              {scrapeStatus.state === "success" && (<span className="text-xs font-semibold" style={{ color: "#1E8E5A" }}>{scrapeStatus.message}</span>)}
+              {scrapeStatus.state === "error" && (<span className="text-xs font-semibold" style={{ color: C.signal }}>{scrapeStatus.message}</span>)}
             </div>
           </div>
         </header>
