@@ -333,11 +333,10 @@ function KeywordTrendGraph({ dates, rows, rankMax = 7 }) {
             {labelIdxs.map((idx) => {
               const delta = row.deltasByDay?.[idx];
               const deltaText = delta === undefined ? null : delta === "NEW" ? "NEW" : delta === 0 ? "0" : delta > 0 ? `+${delta}` : `${delta}`;
-              const deltaColor = delta === "NEW" ? C.signal : delta > 0 ? "#1E8E5A" : delta < 0 ? C.signal : C.mute;
               return (
                 <text key={idx} x={row.points[idx].x} y={row.points[idx].y - 9} fontSize="10.5" fontWeight="700" fill={color} textAnchor={anchorFor(idx)}>
                   {shortLabel(row.keyword)}
-                  {!!deltaText && (<tspan fill={deltaColor} fontSize="9" dx="3">{deltaText}</tspan>)}
+                  {!!deltaText && (<tspan fontSize="9" dx="3">{deltaText}</tspan>)}
                 </text>
               );
             })}
