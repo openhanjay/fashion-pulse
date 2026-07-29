@@ -869,39 +869,41 @@ function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availabl
           <span className="text-xs font-medium whitespace-nowrap" style={{ color: C.mute }}>{filteredList.length}개 중 {Math.min(visibleCount, filteredList.length)}개 표시</span>
         </div>
       </div>
-      {!!availableTimes?.length && (
-        <div className="flex items-center gap-1.5 mb-3 overflow-x-auto pb-1">
-          <span className="text-xs font-bold whitespace-nowrap shrink-0" style={{ color: C.mute }}>{selectedDateLabel}</span>
-          {availableTimes.map((t) => {
-            const isActive = t === selectedTime;
-            const label = t === "평균" ? "평균" : t;
-            return (
-              <button key={t} onClick={() => onSelectTime(t)} className="px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-colors" style={{ background: isActive ? C.ink : C.paper, color: isActive ? C.white : C.mute, border: `1px solid ${isActive ? C.ink : C.line}` }}>{label}</button>
-            );
-          })}
+      <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+        {!!availableTimes?.length && (
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 min-w-0">
+            <span className="text-xs font-bold whitespace-nowrap shrink-0" style={{ color: C.mute }}>{selectedDateLabel}</span>
+            {availableTimes.map((t) => {
+              const isActive = t === selectedTime;
+              const label = t === "평균" ? "평균" : t;
+              return (
+                <button key={t} onClick={() => onSelectTime(t)} className="px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-colors" style={{ background: isActive ? C.ink : C.paper, color: isActive ? C.white : C.mute, border: `1px solid ${isActive ? C.ink : C.line}` }}>{label}</button>
+              );
+            })}
+          </div>
+        )}
+        <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+          <input
+            list="musinsa-brand-watch-list"
+            value={brandInput}
+            onChange={(e) => { setBrandInput(e.target.value); setBrandError(""); }}
+            onKeyDown={(e) => { if (e.key === "Enter") addBrandWatch(); }}
+            placeholder="브랜드 검색"
+            className="px-2.5 py-1 rounded-full text-xs"
+            style={{ border: `1px solid ${C.line}`, color: C.ink, width: 140 }}
+          />
+          <datalist id="musinsa-brand-watch-list">
+            {brandCandidates.map((b) => (<option key={b} value={b} />))}
+          </datalist>
+          <button onClick={addBrandWatch} className="px-3 py-1 rounded-full text-xs font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>추가</button>
+          {!!brandError && <span className="text-[11px] font-medium whitespace-nowrap" style={{ color: C.signal }}>{brandError}</span>}
         </div>
-      )}
+      </div>
       <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1">
         {CATEGORIES.map((c) => {
           const isActive = c === cat;
           return (<button key={c} onClick={() => { setCat(c); setVisibleCount(12); }} className="px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors" style={{ background: isActive ? C.ink : C.paper, color: isActive ? C.white : C.mute }}>{c}</button>);
         })}
-      </div>
-      <div className="flex items-center gap-1.5 flex-wrap mb-3">
-        <input
-          list="musinsa-brand-watch-list"
-          value={brandInput}
-          onChange={(e) => { setBrandInput(e.target.value); setBrandError(""); }}
-          onKeyDown={(e) => { if (e.key === "Enter") addBrandWatch(); }}
-          placeholder="브랜드 검색"
-          className="px-2.5 py-1 rounded-full text-xs"
-          style={{ border: `1px solid ${C.line}`, color: C.ink, width: 140 }}
-        />
-        <datalist id="musinsa-brand-watch-list">
-          {brandCandidates.map((b) => (<option key={b} value={b} />))}
-        </datalist>
-        <button onClick={addBrandWatch} className="px-3 py-1 rounded-full text-xs font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>추가</button>
-        {!!brandError && <span className="text-[11px] font-medium" style={{ color: C.signal }}>{brandError}</span>}
       </div>
       {!!brandResults.length && (
         <div className="flex flex-col gap-2 mb-4">
@@ -1016,38 +1018,40 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
           <span className="text-xs font-medium whitespace-nowrap" style={{ color: C.mute }}>{filteredList.length}개 중 {Math.min(visibleCount, filteredList.length)}개 표시</span>
         </div>
       </div>
-      {!!availableTimes?.length && (
-        <div className="flex items-center gap-1.5 mb-3 overflow-x-auto pb-1">
-          <span className="text-xs font-bold whitespace-nowrap shrink-0" style={{ color: C.mute }}>{selectedDateLabel}</span>
-          {availableTimes.map((t) => {
-            const isActive = t === selectedTime;
-            return (
-              <button key={t} onClick={() => onSelectTime(t)} className="px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-colors" style={{ background: isActive ? C.ink : C.paper, color: isActive ? C.white : C.mute, border: `1px solid ${isActive ? C.ink : C.line}` }}>{t}</button>
-            );
-          })}
+      <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+        {!!availableTimes?.length && (
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 min-w-0">
+            <span className="text-xs font-bold whitespace-nowrap shrink-0" style={{ color: C.mute }}>{selectedDateLabel}</span>
+            {availableTimes.map((t) => {
+              const isActive = t === selectedTime;
+              return (
+                <button key={t} onClick={() => onSelectTime(t)} className="px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-colors" style={{ background: isActive ? C.ink : C.paper, color: isActive ? C.white : C.mute, border: `1px solid ${isActive ? C.ink : C.line}` }}>{t}</button>
+              );
+            })}
+          </div>
+        )}
+        <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+          <input
+            list="cm29-brand-watch-list"
+            value={brandInput}
+            onChange={(e) => { setBrandInput(e.target.value); setBrandError(""); }}
+            onKeyDown={(e) => { if (e.key === "Enter") addBrandWatch(); }}
+            placeholder="브랜드 검색"
+            className="px-2.5 py-1 rounded-full text-xs"
+            style={{ border: `1px solid ${C.line}`, color: C.ink, width: 140 }}
+          />
+          <datalist id="cm29-brand-watch-list">
+            {brandCandidates.map((b) => (<option key={b} value={b} />))}
+          </datalist>
+          <button onClick={addBrandWatch} className="px-3 py-1 rounded-full text-xs font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>추가</button>
+          {!!brandError && <span className="text-[11px] font-medium whitespace-nowrap" style={{ color: C.signal }}>{brandError}</span>}
         </div>
-      )}
+      </div>
       <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1">
         {subCats.map((sc) => {
           const isActive = sc === subCat;
           return (<button key={sc} onClick={() => { setSubCat(sc); setVisibleCount(12); }} className="px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors" style={{ background: isActive ? C.ink : C.paper, color: isActive ? C.white : C.mute }}>{sc}</button>);
         })}
-      </div>
-      <div className="flex items-center gap-1.5 flex-wrap mb-3">
-        <input
-          list="cm29-brand-watch-list"
-          value={brandInput}
-          onChange={(e) => { setBrandInput(e.target.value); setBrandError(""); }}
-          onKeyDown={(e) => { if (e.key === "Enter") addBrandWatch(); }}
-          placeholder="브랜드 검색"
-          className="px-2.5 py-1 rounded-full text-xs"
-          style={{ border: `1px solid ${C.line}`, color: C.ink, width: 140 }}
-        />
-        <datalist id="cm29-brand-watch-list">
-          {brandCandidates.map((b) => (<option key={b} value={b} />))}
-        </datalist>
-        <button onClick={addBrandWatch} className="px-3 py-1 rounded-full text-xs font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>추가</button>
-        {!!brandError && <span className="text-[11px] font-medium" style={{ color: C.signal }}>{brandError}</span>}
       </div>
       {!!brandResults.length && (
         <div className="flex flex-col gap-2 mb-4">
