@@ -4,14 +4,14 @@
  * 있고 클라이언트(대시보드)에는 절대 노출되지 않는다.
  *
  * 아무나 계속 눌러서 도배하지 못하도록, KV에 짧은 TTL로 "최근 실행됨" 표시를 남겨
- * 쿨다운(기본 5분) 동안은 재요청을 막는다.
+ * 쿨다운(1시간) 동안은 재요청을 막는다.
  */
 
 const OWNER = "openhanjay";
 const REPO = "fashion-pulse";
 const WORKFLOW_FILE = "scrape.yml";
 const ALLOWED_ORIGIN = "https://openhanjay.github.io";
-const COOLDOWN_SECONDS = 300;
+const COOLDOWN_SECONDS = 3600;
 
 function corsHeaders() {
   return {

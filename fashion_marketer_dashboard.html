@@ -1082,6 +1082,22 @@ function FashionMarketerDashboard() {
       .catch(() => setScrapeStatus({ state: "error", message: "요청을 보내지 못했어요." }));
   };
 
+  const lastScrapedLabel = useMemo(() => {
+    const candidates = [];
+    if (musinsaDates.length) {
+      const d = musinsaDates[musinsaDates.length - 1];
+      const times = musinsaIndex?.[d] || [];
+      if (times.length) candidates.push(`${d} ${times[times.length - 1].replace("-", ":")}`);
+    }
+    if (cm29Dates.length) {
+      const d = cm29Dates[cm29Dates.length - 1];
+      const times = cm29Index?.[d] || [];
+      if (times.length) candidates.push(`${d} ${times[times.length - 1].replace("-", ":")}`);
+    }
+    if (!candidates.length) return null;
+    return candidates.sort().slice(-1)[0];
+  }, [musinsaDates, musinsaIndex, cm29Dates, cm29Index]);
+
   const meta = PAGE_META[view];
 
   return (
@@ -1099,9 +1115,12 @@ function FashionMarketerDashboard() {
                 <span className="rounded-full" style={{ width: 6, height: 6, background: "#1E8E5A" }} />
                 2026.07.20 (월) 기준 데이터
               </div>
-              <button onClick={triggerScrape} disabled={scrapeStatus.state === "loading"} className="px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap" style={{ background: C.ink, color: C.white, opacity: scrapeStatus.state === "loading" ? 0.6 : 1, cursor: scrapeStatus.state === "loading" ? "not-allowed" : "pointer" }}>
-                {scrapeStatus.state === "loading" ? "요청 중..." : "지금 스크랩하기"}
-              </button>
+              <div className="flex flex-col items-start">
+                <button onClick={triggerScrape} disabled={scrapeStatus.state === "loading"} className="px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap" style={{ background: C.ink, color: C.white, opacity: scrapeStatus.state === "loading" ? 0.6 : 1, cursor: scrapeStatus.state === "loading" ? "not-allowed" : "pointer" }}>
+                  {scrapeStatus.state === "loading" ? "요청 중..." : "지금 스크랩하기"}
+                </button>
+                {!!lastScrapedLabel && (<span className="text-[10px] mt-1" style={{ color: C.mute }}>마지막 수집: {lastScrapedLabel}</span>)}
+              </div>
               {scrapeStatus.state === "success" && (<span className="text-xs font-semibold" style={{ color: "#1E8E5A" }}>{scrapeStatus.message}</span>)}
               {scrapeStatus.state === "error" && (<span className="text-xs font-semibold" style={{ color: C.signal }}>{scrapeStatus.message}</span>)}
             </div>
