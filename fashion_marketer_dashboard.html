@@ -260,10 +260,11 @@ const LINE_PALETTE = [
 /* 검색어 순위 추이 그래프. rows는 개수가 고정이 아니고(그 주에 한 번이라도 TOP N이었던 만큼 유동적).
    순위 밖으로 빠진 날(또는 추적 범위인 rankMax보다 낮은 순위였던 날)은 선을 끊는 대신 그래프 아래쪽
    "순위밖" 구간에 점을 찍어서 계속 이어 그린다(그날도 동그라미가 남아있도록).
-   각 선 끝(가장 최근 지점)에 검색어 이름을 바로 옆에 적어준다. */
+   각 선이 실제로 TOP N 안에 들었던 첫 지점과 마지막 지점 위에 검색어 이름을 적어준다
+   (순위밖 구간에 있는 동안은 라벨을 붙이지 않음). */
 function KeywordTrendGraph({ dates, rows, rankMax = 7 }) {
   const width = 700, height = 260;
-  const padL = 26, padR = 92, padT = 14, padB = 26;
+  const padL = 26, padR = 20, padT = 30, padB = 26;
   const innerW = width - padL - padR;
   const RANK_MAX = rankMax;
   const rankZoneH = (height - padT - padB) * 0.76;
@@ -285,7 +286,8 @@ function KeywordTrendGraph({ dates, rows, rankMax = 7 }) {
       if (isRanked(rank)) return { x: xFor(i), y: yForRank(rank), ranked: true };
       return { x: xFor(i), y: myOutY, ranked: false };
     });
-    return { ...row, points };
+    const rankedIdxs = points.map((p, i) => (p && p.ranked ? i : null)).filter((v) => v !== null);
+    return { ...row, points, firstRankedIdx: rankedIdxs[0] ?? null, lastRankedIdx: rankedIdxs.length ? rankedIdxs[rankedIdxs.length - 1] : null };
   });
 
   return (
@@ -305,12 +307,15 @@ function KeywordTrendGraph({ dates, rows, rankMax = 7 }) {
       {rowsWithPoints.map((row, ri) => {
         const color = LINE_PALETTE[ri % LINE_PALETTE.length];
         const present = row.points.map((p, i) => (p ? { ...p, i } : null)).filter(Boolean);
-        const last = present[present.length - 1];
+        const anchorFor = (i) => (i === 0 ? "start" : i === n - 1 ? "end" : "middle");
+        const labelIdxs = [row.firstRankedIdx, row.lastRankedIdx].filter((v, i, arr) => v !== null && arr.indexOf(v) === i);
         return (
           <g key={row.key}>
             {present.length > 1 && (<polyline points={present.map((p) => `${p.x},${p.y}`).join(" ")} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" opacity="0.85" />)}
             {present.map((p, pi) => (<circle key={pi} cx={p.x} cy={p.y} r={p.ranked ? 3.2 : 3} fill={p.ranked ? color : C.white} stroke={color} strokeWidth={p.ranked ? 0 : 1.5} />))}
-            {!!last && (<text x={last.x + 7} y={last.y + 3.5} fontSize="10.5" fontWeight="700" fill={color}>{shortLabel(row.keyword)}</text>)}
+            {labelIdxs.map((idx) => (
+              <text key={idx} x={row.points[idx].x} y={row.points[idx].y - 9} fontSize="10.5" fontWeight="700" fill={color} textAnchor={anchorFor(idx)}>{shortLabel(row.keyword)}</text>
+            ))}
           </g>
         );
       })}
@@ -586,7 +591,7 @@ function KeywordRankingPanel({ keywords, dataSource, selectedDateLabel, musinsaI
                           <td className="py-1.5 pr-3 font-semibold whitespace-nowrap sticky left-0" style={{ color: C.ink, background: C.white, borderTop: `1px solid ${C.line}` }}>{row.keyword}</td>
                           {row.ranksByDay.map((rank, i) => (
                             <td key={i} className="text-center py-1.5 px-2 tabular-nums font-bold" style={{ color: rank ? C.ink : "#D8D6D0", borderTop: `1px solid ${C.line}` }}>
-                              <div className="flex flex-col items-center gap-0.5">
+                              <div className="flex flex-row items-center justify-center gap-1">
                                 <span>{rank ?? "-"}</span>
                                 <CompactDelta delta={row.deltasByDay[i]} />
                               </div>
@@ -947,7 +952,7 @@ function Cm29PopularKeywordsPanel({ cm29Index, selectedDateKey }) {
                           <td className="py-1.5 pr-3 font-semibold whitespace-nowrap sticky left-0" style={{ color: C.ink, background: C.white, borderTop: `1px solid ${C.line}` }}>{row.keyword}</td>
                           {row.ranksByDay.map((rank, i) => (
                             <td key={i} className="text-center py-1.5 px-2 tabular-nums font-bold" style={{ color: rank ? C.ink : "#D8D6D0", borderTop: `1px solid ${C.line}` }}>
-                              <div className="flex flex-col items-center gap-0.5">
+                              <div className="flex flex-row items-center justify-center gap-1">
                                 <span>{rank ?? "-"}</span>
                                 <CompactDelta delta={row.deltasByDay[i]} />
                               </div>
