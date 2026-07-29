@@ -672,7 +672,15 @@ function KeywordRankingPanel({ dataSource, selectedDateLabel, musinsaIndex, sele
                 <ol className="flex flex-col gap-2">
                   {moverInsight.map((line, i) => (
                     <li key={i} className="text-[12.5px] leading-snug" style={{ color: C.ink }}>
-                      {line.label}<br />{line.detail}
+                      {line.label}<br />
+                      {line.movers.map((m, mi) => (
+                        <React.Fragment key={mi}>
+                          {mi > 0 && ", "}
+                          {mi + 1}위 {m.keyword}({m.rankFrom}위→{m.rankTo}위,
+                          <span style={{ color: m.delta > 0 ? "#2563EB" : C.signal, fontWeight: 700 }}>{Math.abs(m.delta)}</span>
+                          )
+                        </React.Fragment>
+                      ))}
                     </li>
                   ))}
                 </ol>
@@ -1017,13 +1025,10 @@ function buildKeywordMoverInsights(list) {
   if (!withDelta.length) return null;
   const risers = [...withDelta].filter((it) => it.delta > 0).sort((a, b) => b.delta - a.delta).slice(0, 5);
   const fallers = [...withDelta].filter((it) => it.delta < 0).sort((a, b) => a.delta - b.delta).slice(0, 5);
+  const toMovers = (arr) => arr.map((it) => ({ keyword: it.keyword, rankFrom: it.rank + it.delta, rankTo: it.rank, delta: it.delta }));
   const lines = [];
-  if (risers.length) {
-    lines.push({ label: "가장 많이 오른 검색어:", detail: risers.map((it, i) => `${i + 1}위 ${it.keyword}(${it.rank + it.delta}위→${it.rank}위)`).join(", ") });
-  }
-  if (fallers.length) {
-    lines.push({ label: "가장 많이 내린 검색어:", detail: fallers.map((it, i) => `${i + 1}위 ${it.keyword}(${it.rank + it.delta}위→${it.rank}위)`).join(", ") });
-  }
+  if (risers.length) lines.push({ label: "가장 많이 오른 검색어:", movers: toMovers(risers) });
+  if (fallers.length) lines.push({ label: "가장 많이 내린 검색어:", movers: toMovers(fallers) });
   return lines.length ? lines : null;
 }
 
