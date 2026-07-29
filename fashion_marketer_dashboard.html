@@ -141,7 +141,7 @@ function averageRankings(snapshots) {
       result[cat][filterKey] = [...merged.values()]
         .map((v) => { const { delta, ...rest } = v.latest; return { ...rest, avgRank: v.sumRank / v.count }; })
         .sort((a, b) => a.avgRank - b.avgRank)
-        .slice(0, 100)
+        .slice(0, 150)
         .map((item, idx) => ({ ...item, rank: idx + 1 }));
     });
   });
@@ -1447,7 +1447,7 @@ function FashionMarketerDashboard() {
               </div>
               <RankingPanel
                 rankings={musinsaRankings}
-                title="무신사 랭킹 TOP 100"
+                title="무신사 랭킹 TOP 150"
                 dataSource={musinsaDataSource}
                 selectedDateLabel={panelDateLabel}
                 availableTimes={availableTimesForSelectedDate}
