@@ -873,7 +873,7 @@ function InsightDrilldownModal({ title, groups, onClose }) {
           <div className="flex flex-col gap-5">
             {groups.map((g, gi) => (
               <div key={gi}>
-                <p className="text-xs font-bold mb-2" style={{ color: C.mute }}>{g.label} ({g.items.length}개)</p>
+                <p className="text-sm font-bold mb-2" style={{ color: "#1E3A8A" }}>{g.label} ({g.items.length}개)</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                   {g.items.map((item, i) => (<ProductCard key={item.url || `${gi}-${item.rank}-${i}`} item={item} iconSeed={(item.rank || i) * 7 + gi} />))}
                 </div>
