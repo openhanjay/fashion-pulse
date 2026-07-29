@@ -240,66 +240,6 @@ function averageCm29Rankings(snapshots) {
 }
 
 const REALTIME_KEYWORDS_CM29 = ["린넨 블레이저","와이드 슬랙스","크롭 가디건","버킷백","스퀘어토 플랫","오피스룩","베스트 세트","미니멀 자켓","서머 니트","레더 로퍼"];
-const MARKETER_KEYWORDS_CM29 = ["미니멀 셋업","오피스룩 코디","여름 슬랙스","박시 블레이저","니트 베스트","와이드 슈트팬츠","젠더리스룩","시티보이룩","클린룩","러기지백"];
-
-const DATA_START = new Date(2026, 0, 1);
-const DATA_END = new Date(2026, 6, 20);
-const MS_PER_DAY = 86400000;
-const TOTAL_DAYS = Math.round((DATA_END - DATA_START) / MS_PER_DAY) + 1;
-
-function dayIndex(date) { return Math.round((date - DATA_START) / MS_PER_DAY); }
-
-function buildTrendSeries(keywords, seedBase) {
-  const map = {};
-  keywords.forEach((kw, ki) => {
-    let v = 400 + seeded(seedBase + ki * 51 + 3) * 1400;
-    const arr = [];
-    for (let d = 0; d < TOTAL_DAYS; d++) {
-      const shift = (seeded(seedBase + ki * 91 + d * 7 + 1) - 0.5) * 220;
-      v = Math.max(80, v + shift);
-      arr.push(Math.round(v));
-    }
-    map[kw] = arr;
-  });
-  return map;
-}
-
-const CM29_TREND_SERIES = buildTrendSeries(MARKETER_KEYWORDS_CM29, 90000);
-
-function buildChartData(selectedKeys, start, end, seriesMap) {
-  const days = [];
-  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) days.push(new Date(d));
-  return days.map((d) => {
-    const idx = dayIndex(d);
-    const row = { day: `${d.getMonth() + 1}/${d.getDate()}` };
-    selectedKeys.forEach((kw) => { row[kw] = seriesMap[kw][idx]; });
-    return row;
-  });
-}
-
-const TREND_YEARS = [2026];
-const TREND_MONTHS = [1, 2, 3, 4, 5, 6, 7];
-const WEEK_LABELS = ["첫째주", "둘째주", "셋째주", "넷째주", "다섯째주"];
-
-function daysAvailableInMonth(year, month) {
-  const daysInMonth = new Date(year, month, 0).getDate();
-  if (year === DATA_END.getFullYear() && month === DATA_END.getMonth() + 1) {
-    return Math.min(daysInMonth, DATA_END.getDate());
-  }
-  return daysInMonth;
-}
-
-function getWeeksForMonth(year, month) {
-  const totalDays = daysAvailableInMonth(year, month);
-  const weeks = [];
-  let start = 1, wi = 0;
-  while (start <= totalDays) {
-    const end = Math.min(start + 6, totalDays);
-    weeks.push({ key: `w${wi + 1}`, label: WEEK_LABELS[wi] || `${wi + 1}주차`, startDay: start, endDay: end });
-    start = end + 1; wi++;
-  }
-  return weeks;
-}
 
 const IG_BRANDS = [
   { name: "VIVASTUDIO", handle: "@vivastudio_official", initials: "VS", color: "#17181C" },
@@ -316,35 +256,6 @@ const TIMELINE_EVENTS = [
   { brand: IG_BRANDS[0], date: "2026.07.16", seasonOff: { active: true, period: "7.20 ~ 7.31" }, drop: "26 F/W 프리뷰 8월 초 공개 예정", issue: "인플루언서 협업 착용샷 3건 동시 게시" },
   { brand: IG_BRANDS[1], date: "2026.07.15", seasonOff: { active: false, period: null }, drop: "여름 리넨 캡슐 컬렉션 7.25 정오 출시", issue: "제작 비하인드 영상 업로드, 조회수 급상승" },
 ];
-
-/* ============================== 커스텀 미니 라인차트 (recharts 대체) ============================== */
-function MiniLineChart({ data, lines }) {
-  const width = 700, height = 240;
-  const padL = 40, padR = 10, padT = 10, padB = 26;
-  const innerW = width - padL - padR;
-  const innerH = height - padT - padB;
-  const values = [];
-  data.forEach((d) => lines.forEach((l) => { if (typeof d[l.key] === "number") values.push(d[l.key]); }));
-  const minV = values.length ? Math.min(...values) : 0;
-  const maxV = values.length ? Math.max(...values) : 1;
-  const range = maxV - minV || 1;
-  const n = data.length;
-  const xFor = (i) => padL + (n > 1 ? (i / (n - 1)) * innerW : innerW / 2);
-  const yFor = (v) => padT + innerH - ((v - minV) / range) * innerH;
-  const gridYs = [0, 0.25, 0.5, 0.75, 1].map((t) => padT + innerH * (1 - t));
-  const labelEvery = Math.max(1, Math.ceil(n / 7));
-
-  return (
-    <svg viewBox={`0 0 ${width} ${height}`} width="100%" height="100%" preserveAspectRatio="none">
-      {gridYs.map((y, i) => (<line key={i} x1={padL} x2={width - padR} y1={y} y2={y} stroke={C.line} strokeDasharray="3 5" />))}
-      {data.map((d, i) => (i % labelEvery === 0 ? (<text key={i} x={xFor(i)} y={height - 6} fontSize="10" fill={C.mute} textAnchor="middle">{d.day}</text>) : null))}
-      {lines.map((l) => {
-        const pts = data.map((d, i) => `${xFor(i)},${yFor(d[l.key] ?? minV)}`).join(" ");
-        return <polyline key={l.key} points={pts} fill="none" stroke={l.color} strokeWidth="2.2" strokeLinejoin="round" strokeLinecap="round" />;
-      })}
-    </svg>
-  );
-}
 
 /* 순위 추이 전용 차트: 데이터가 하루(점 1개)뿐이어도 보이도록 각 점에 원 마커를 찍고,
    범례 대신 각 선 끝(가장 최근 지점)에 검색어 이름을 직접 그래프 위에 적어준다. */
@@ -465,80 +376,6 @@ function MiniCalendar({ selected, onSelect, availableDates }) {
       <div className="mt-3 pt-3 text-xs flex items-center justify-between" style={{ borderTop: `1px solid ${C.line}`, color: C.mute }}>
         <span>선택된 날짜</span>
         <span className="font-bold" style={{ color: C.ink }}>{selected.getFullYear()}.{String(selected.getMonth() + 1).padStart(2, "0")}.{String(selected.getDate()).padStart(2, "0")}</span>
-      </div>
-    </div>
-  );
-}
-
-function KeywordTrendPanel({ keywords, series }) {
-  const [active, setActive] = useState(new Set([keywords[0], keywords[1], keywords[3]]));
-  const [mode, setMode] = useState("recent");
-  const [year, setYear] = useState(2026);
-  const [month, setMonth] = useState(7);
-  const weeks = useMemo(() => getWeeksForMonth(year, month), [year, month]);
-  const [weekKey, setWeekKey] = useState(weeks[weeks.length - 1]?.key);
-
-  const toggle = (kw) => {
-    setActive((prev) => {
-      const next = new Set(prev);
-      if (next.has(kw)) { if (next.size > 1) next.delete(kw); } else next.add(kw);
-      return next;
-    });
-  };
-
-  const handleMonthChange = (nextMonth) => {
-    setMonth(nextMonth);
-    const nextWeeks = getWeeksForMonth(year, nextMonth);
-    setWeekKey(nextWeeks[nextWeeks.length - 1]?.key);
-    setMode("week");
-  };
-
-  const { data, rangeLabel } = useMemo(() => {
-    if (mode === "recent") {
-      const start = new Date(DATA_END);
-      start.setDate(start.getDate() - 13);
-      return { data: buildChartData([...active], start, DATA_END, series), rangeLabel: `최근 14일 (${start.getMonth() + 1}/${start.getDate()} ~ ${DATA_END.getMonth() + 1}/${DATA_END.getDate()})` };
-    }
-    const w = weeks.find((w) => w.key === weekKey) || weeks[weeks.length - 1];
-    if (!w) return { data: [], rangeLabel: "데이터 없음" };
-    const start = new Date(year, month - 1, w.startDay);
-    const end = new Date(year, month - 1, w.endDay);
-    return { data: buildChartData([...active], start, end, series), rangeLabel: `${year}.${String(month).padStart(2, "0")} ${w.label} (${month}/${w.startDay} ~ ${month}/${w.endDay})` };
-  }, [active, mode, weeks, weekKey, year, month, series]);
-
-  const lines = keywords.map((kw, ki) => (active.has(kw) ? { key: kw, color: LINE_PALETTE[ki] } : null)).filter(Boolean);
-
-  return (
-    <div className="rounded-2xl p-5 h-full flex flex-col" style={{ background: C.white, border: `1px solid ${C.line}` }}>
-      <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
-        <div className="flex items-center gap-2">
-          <Sparkles size={16} color={C.indigo} />
-          <h2 className="text-base font-bold" style={{ color: C.ink }}>키워드 검색량 추이</h2>
-        </div>
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <select value={year} onChange={(e) => { setYear(Number(e.target.value)); setMode("week"); }} className="text-xs font-bold px-2.5 py-1.5 rounded-full cursor-pointer" style={{ background: mode === "week" ? C.paper : C.white, color: C.ink, border: `1px solid ${C.line}` }}>
-            {TREND_YEARS.map((y) => (<option key={y} value={y}>{y}년</option>))}
-          </select>
-          <select value={month} onChange={(e) => handleMonthChange(Number(e.target.value))} className="text-xs font-bold px-2.5 py-1.5 rounded-full cursor-pointer" style={{ background: mode === "week" ? C.paper : C.white, color: C.ink, border: `1px solid ${C.line}` }}>
-            {TREND_MONTHS.map((m) => (<option key={m} value={m}>{m}월</option>))}
-          </select>
-          <select value={weekKey} onChange={(e) => { setWeekKey(e.target.value); setMode("week"); }} className="text-xs font-bold px-2.5 py-1.5 rounded-full cursor-pointer" style={{ background: mode === "week" ? C.paper : C.white, color: C.ink, border: `1px solid ${C.line}` }}>
-            {weeks.map((w) => (<option key={w.key} value={w.key}>{w.label}</option>))}
-          </select>
-          <button onClick={() => setMode("recent")} className="text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap" style={{ background: mode === "recent" ? C.ink : C.paper, color: mode === "recent" ? C.white : C.mute, border: `1px solid ${mode === "recent" ? C.ink : C.line}` }}>최근 14일</button>
-        </div>
-      </div>
-      <span className="text-xs font-medium" style={{ color: C.mute }}>마케터 지정 키워드 · {rangeLabel}</span>
-      <div className="flex flex-wrap gap-1.5 my-3">
-        {keywords.map((kw, ki) => {
-          const isActive = active.has(kw);
-          return (
-            <button key={kw} onClick={() => toggle(kw)} className="px-2.5 py-1 rounded-full text-xs font-semibold transition-opacity" style={{ background: isActive ? `${LINE_PALETTE[ki]}1A` : C.paper, color: isActive ? LINE_PALETTE[ki] : C.mute, border: `1px solid ${isActive ? LINE_PALETTE[ki] + "55" : C.line}` }}>{kw}</button>
-          );
-        })}
-      </div>
-      <div className="flex-1 min-h-[220px]">
-        <MiniLineChart data={data} lines={lines} />
       </div>
     </div>
   );
@@ -860,6 +697,82 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
   );
 }
 
+/* 29CM은 검색어 순위/등락 데이터가 따로 없고 인기 검색어 TOP 10 리스트만 있어서, 그래프 대신
+   이전/다음 버튼으로 수집 시점을 하나씩 넘겨보는 방식으로 만든다. 등락 표시는 바로 직전 수집 시점과
+   비교해서 이 화면에서 직접 계산한다(같은 키워드가 있으면 순위 차이, 없으면 NEW). */
+function Cm29PopularKeywordsPanel({ cm29Index }) {
+  const [historyIndex, setHistoryIndex] = useState(null);
+  const [snapshotData, setSnapshotData] = useState({ status: "idle", list: [], prevList: null });
+
+  const entries = useMemo(() => {
+    if (!cm29Index) return [];
+    const flat = [];
+    Object.keys(cm29Index).sort().forEach((d) => {
+      (cm29Index[d] || []).forEach((t) => flat.push({ date: d, time: t }));
+    });
+    return flat;
+  }, [cm29Index]);
+
+  useEffect(() => {
+    setHistoryIndex(entries.length ? entries.length - 1 : null);
+  }, [entries.length]);
+
+  useEffect(() => {
+    if (historyIndex === null || !entries.length) return;
+    const cur = entries[historyIndex];
+    const prev = historyIndex > 0 ? entries[historyIndex - 1] : null;
+    const fetchOne = (e) => (e ? fetch(`data/cm29_${e.date}_${e.time}.json`).then((res) => (res.ok ? res.json() : null)).catch(() => null) : Promise.resolve(null));
+    let cancelled = false;
+    setSnapshotData({ status: "loading", list: [], prevList: null });
+    Promise.all([fetchOne(cur), fetchOne(prev)]).then(([curData, prevData]) => {
+      if (cancelled) return;
+      const list = curData?.popularKeywords || [];
+      setSnapshotData({ status: list.length ? "ready" : "empty", list, prevList: prevData?.popularKeywords || null });
+    });
+    return () => { cancelled = true; };
+  }, [historyIndex, entries]);
+
+  if (!entries.length) return null;
+
+  const cur = entries[historyIndex] || entries[entries.length - 1];
+  const label = `${cur.date} ${cur.time.replace("-", ":")}`;
+
+  return (
+    <div className="rounded-2xl p-5 h-full flex flex-col" style={{ background: C.white, border: `1px solid ${C.line}` }}>
+      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          <Sparkles size={16} color={C.indigo} />
+          <h2 className="text-base font-bold" style={{ color: C.ink }}>29CM 인기 검색어</h2>
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setHistoryIndex((i) => Math.max(0, i - 1))} disabled={historyIndex <= 0} className="px-2.5 py-1 rounded-full text-xs font-bold" style={{ background: C.paper, color: historyIndex <= 0 ? "#C9C7C0" : C.ink, border: `1px solid ${C.line}`, cursor: historyIndex <= 0 ? "not-allowed" : "pointer" }}>이전</button>
+          <span className="text-xs font-medium whitespace-nowrap" style={{ color: C.mute }}>{label}</span>
+          <button onClick={() => setHistoryIndex((i) => Math.min(entries.length - 1, i + 1))} disabled={historyIndex >= entries.length - 1} className="px-2.5 py-1 rounded-full text-xs font-bold" style={{ background: C.paper, color: historyIndex >= entries.length - 1 ? "#C9C7C0" : C.ink, border: `1px solid ${C.line}`, cursor: historyIndex >= entries.length - 1 ? "not-allowed" : "pointer" }}>다음</button>
+        </div>
+      </div>
+      <div className="flex-1 min-h-0">
+        {snapshotData.status === "loading" && (<div className="flex items-center justify-center h-full text-xs font-medium" style={{ color: C.mute }}>불러오는 중...</div>)}
+        {snapshotData.status === "empty" && (<div className="flex items-center justify-center h-full text-xs font-medium" style={{ color: C.mute }}>이 시점엔 인기 검색어 데이터가 없어요.</div>)}
+        {snapshotData.status === "ready" && (
+          <div className="flex flex-col">
+            {snapshotData.list.map((kw, i) => {
+              const prevIdx = snapshotData.prevList ? snapshotData.prevList.indexOf(kw) : -1;
+              const delta = !snapshotData.prevList ? undefined : prevIdx === -1 ? "NEW" : prevIdx - i;
+              return (
+                <div key={kw} className="flex items-center gap-2 py-1.5 text-sm" style={{ borderBottom: `1px solid ${C.line}` }}>
+                  <span className="w-5 shrink-0 font-bold tabular-nums" style={{ color: C.mute }}>{i + 1}</span>
+                  <span className="flex-1 truncate font-semibold" style={{ color: C.ink }}>{kw}</span>
+                  <CompactDelta delta={delta} />
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function InstagramTimeline() {
   return (
     <div className="rounded-2xl p-5" style={{ background: C.white, border: `1px solid ${C.line}` }}>
@@ -1144,7 +1057,7 @@ function FashionMarketerDashboard() {
           {view === "cm29" && (
             <>
               <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-5 items-stretch">
-                <KeywordTrendPanel key="cm29-keyword" keywords={MARKETER_KEYWORDS_CM29} series={CM29_TREND_SERIES} />
+                <Cm29PopularKeywordsPanel cm29Index={cm29Index} />
                 <MiniCalendar selected={selectedDate} onSelect={setSelectedDate} availableDates={cm29Dates} />
               </div>
               <Cm29RankingPanel

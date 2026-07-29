@@ -133,6 +133,16 @@ async function fetchRanking(largeId, middleId, periodType) {
   return list.map((item, i) => mapItem(item, i + 1));
 }
 
+const POPULAR_KEYWORD_URL = "https://search-api.29cm.co.kr/api/v4/keyword/popular";
+
+// 29CM은 검색어 랭킹(순위 변동 포함)은 따로 없고, 인기 검색어 TOP 10 리스트만 제공한다.
+async function fetchPopularKeywords() {
+  const res = await fetch(POPULAR_KEYWORD_URL, { headers: HEADERS });
+  if (!res.ok) throw new Error(`HTTP ${res.status} (popular keywords)`);
+  const payload = await res.json();
+  return payload?.data?.popularKeyword || [];
+}
+
 function readIndex() {
   if (!fs.existsSync(INDEX_FILE)) return {};
   try {
@@ -216,6 +226,9 @@ async function main() {
   }
 
   attachDeltas(result, priorSnapshot);
+
+  console.log("수집 중: 인기 검색어 ...");
+  result.popularKeywords = await fetchPopularKeywords();
 
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
