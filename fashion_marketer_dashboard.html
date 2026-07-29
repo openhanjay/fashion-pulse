@@ -22,7 +22,7 @@
 <div id="root"></div>
 
 <script type="text/babel">
-const { useState, useMemo, useEffect } = React;
+const { useState, useMemo, useEffect, useRef } = React;
 
 /* =========================================================================
    COLOR / TYPE TOKENS
@@ -1827,9 +1827,15 @@ function FashionMarketerDashboard() {
   const [musinsaSelectedTime, setMusinsaSelectedTime] = useState(null);
   const [activeCategoryInsight, setActiveCategoryInsight] = useState(null);
 
-  // 플랫폼(view)을 바꾸면 직전 플랫폼의 AI 분석이 잠깐 남아있지 않도록 비워준다 -
-  // 새 플랫폼의 랭킹 패널이 마운트되면서 곧바로 자기 데이터로 다시 채운다.
-  useEffect(() => { setActiveCategoryInsight(null); }, [view]);
+  // 플랫폼(view)을 실제로 바꿨을 때만 직전 플랫폼의 AI 분석을 비워준다 - 새 플랫폼의 랭킹 패널이
+  // 마운트되면서 곧바로 자기 데이터로 다시 채운다. (마운트 시점엔 건드리지 않아야 함: 마운트 때도
+  // 이 이펙트가 한 번 실행되는데, 그때 비워버리면 RankingPanel이 막 채워넣은 초기값을 지워버려서
+  // 페이지에 처음 들어왔을 때 "전체" 카테고리의 AI 분석이 안 보이는 버그가 생김.)
+  const prevViewRef = useRef(view);
+  useEffect(() => {
+    if (prevViewRef.current !== view) setActiveCategoryInsight(null);
+    prevViewRef.current = view;
+  }, [view]);
 
   const musinsaDates = useMemo(() => (musinsaIndex ? Object.keys(musinsaIndex).sort() : []), [musinsaIndex]);
   const selectedDateKey = useMemo(() => formatDateKey(selectedDate), [selectedDate]);
