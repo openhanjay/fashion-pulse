@@ -46,7 +46,6 @@ function ChevronRight({size=16,color="currentColor"}){return (<svg width={size} 
 function Minus({size=16,color="currentColor"}){return (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>);}
 function TrendingUp({size=16,color="currentColor"}){return (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 17 9 11 13 15 21 6"/><polyline points="14 6 21 6 21 13"/></svg>);}
 function TrendingDown({size=16,color="currentColor"}){return (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 7 9 13 13 9 21 18"/><polyline points="14 18 21 18 21 11"/></svg>);}
-function Flame({size=16,color="currentColor"}){return (<svg width={size} height={size} viewBox="0 0 24 24" fill={color} stroke="none"><path d="M12 2c1 4-3 5-3 9a3 3 0 0 0 6 0c0-1-.5-2-1-3 2 1 3 3 3 5a5 5 0 0 1-10 0c0-4 3-6 5-11z"/></svg>);}
 function Sparkles({size=16,color="currentColor"}){return (<svg width={size} height={size} viewBox="0 0 24 24" fill={color} stroke="none"><path d="M12 2l1.5 5L19 9l-5.5 2L12 16l-1.5-5L5 9l5.5-2z"/><circle cx="19" cy="17" r="1.4"/><circle cx="5" cy="6" r="1"/></svg>);}
 function Camera({size=16,color="currentColor"}){return (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.4"/></svg>);}
 function ShoppingBag({size=16,color="currentColor"}){return (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8h12l1 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>);}
@@ -235,8 +234,6 @@ function averageCm29Rankings(snapshots) {
   return result;
 }
 
-const REALTIME_KEYWORDS_CM29 = ["린넨 블레이저","와이드 슬랙스","크롭 가디건","버킷백","스퀘어토 플랫","오피스룩","베스트 세트","미니멀 자켓","서머 니트","레더 로퍼"];
-
 const IG_BRANDS = [
   { name: "VIVASTUDIO", handle: "@vivastudio_official", initials: "VS", color: "#17181C" },
   { name: "COVERNAT", handle: "@covernat_official", initials: "CN", color: "#3E5C76" },
@@ -325,31 +322,6 @@ function KeywordTrendGraph({ dates, rows, rankMax = 7 }) {
 }
 
 /* ============================== 서브 컴포넌트 ============================== */
-function Ticker({ keywords }) {
-  const items = [...keywords, ...keywords];
-  return (
-    <div className="w-full overflow-hidden border-y" style={{ borderColor: C.line, background: C.ink }}>
-      <div className="flex items-center py-2.5 whitespace-nowrap ticker-track">
-        {items.map((kw, i) => {
-          const rank = (i % keywords.length) + 1;
-          return (
-            <div key={i} className="flex items-center gap-2 px-6">
-              <span className="text-xs font-bold tabular-nums" style={{ color: rank <= 3 ? C.signal : "#9A9AA0" }}>{String(rank).padStart(2, "0")}</span>
-              <span className="text-sm font-medium" style={{ color: C.white }}>{kw}</span>
-              {rank <= 3 && <Flame size={13} color={C.signal} />}
-            </div>
-          );
-        })}
-      </div>
-      <style>{`
-        .ticker-track { width: max-content; animation: ticker-scroll 32s linear infinite; }
-        .ticker-track:hover { animation-play-state: paused; }
-        @keyframes ticker-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-      `}</style>
-    </div>
-  );
-}
-
 function MiniCalendar({ selected, onSelect, availableDates }) {
   const [cursor, setCursor] = useState(new Date(2026, 6, 1));
   const year = cursor.getFullYear();
@@ -1240,7 +1212,6 @@ function FashionMarketerDashboard() {
             </div>
           </div>
         </header>
-        {view === "cm29" && (<Ticker keywords={REALTIME_KEYWORDS_CM29} />)}
         <main className="px-6 py-5 flex flex-col gap-5">
           {view === "musinsa" && (
             <>
