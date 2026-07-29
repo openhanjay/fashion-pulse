@@ -534,7 +534,7 @@ function KeywordRankingPanel({ dataSource, selectedDateLabel, musinsaIndex, sele
   const [watchError, setWatchError] = useState("");
 
   useEffect(() => {
-    if (mode !== "trend" || !musinsaIndex || !selectedDateKey) return;
+    if ((mode !== "trend" && mode !== "watch") || !musinsaIndex || !selectedDateKey) return;
     let cancelled = false;
     setTrend({ status: "loading" });
     loadKeywordWeekTrend(musinsaIndex, selectedDateKey)
@@ -555,14 +555,9 @@ function KeywordRankingPanel({ dataSource, selectedDateLabel, musinsaIndex, sele
   };
   const removeWatchKeyword = (key) => setWatchList((prev) => prev.filter((w) => w.key !== key));
 
-  const displayRows = useMemo(() => {
+  const watchRows = useMemo(() => {
     if (trend.status !== "ready") return [];
-    const autoKeys = new Set(trend.rows.map((r) => r.key));
-    const extraRows = watchList
-      .filter((w) => !autoKeys.has(w.key))
-      .map((w) => buildKeywordTrendRow(trend.perDay, w.key))
-      .filter(Boolean);
-    return [...trend.rows, ...extraRows];
+    return watchList.map((w) => buildKeywordTrendRow(trend.perDay, w.key)).filter(Boolean);
   }, [trend, watchList]);
 
   const availableKwTimes = validKwTimes.length ? ["평균", ...validKwTimes.map((t) => t.replace("-", ":"))] : [];
@@ -595,7 +590,8 @@ function KeywordRankingPanel({ dataSource, selectedDateLabel, musinsaIndex, sele
         </div>
         <div className="flex items-center gap-2">
           {!!selectedDateLabel && (<span className="text-xs font-medium whitespace-nowrap" style={{ color: C.mute }}>{selectedDateLabel}</span>)}
-          <button onClick={() => setMode((m) => (m === "list" ? "trend" : "list"))} className="text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap" style={{ background: mode === "trend" ? C.ink : C.paper, color: mode === "trend" ? C.white : C.mute, border: `1px solid ${mode === "trend" ? C.ink : C.line}` }}>최근 1주일</button>
+          <button onClick={() => setMode((m) => (m === "trend" ? "list" : "trend"))} className="text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap" style={{ background: mode === "trend" ? C.ink : C.paper, color: mode === "trend" ? C.white : C.mute, border: `1px solid ${mode === "trend" ? C.ink : C.line}` }}>최근 1주일</button>
+          <button onClick={() => setMode((m) => (m === "watch" ? "list" : "watch"))} className="text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap" style={{ background: mode === "watch" ? C.ink : C.paper, color: mode === "watch" ? C.white : C.mute, border: `1px solid ${mode === "watch" ? C.ink : C.line}` }}>관심{watchList.length ? ` (${watchList.length})` : ""}</button>
         </div>
       </div>
       {mode === "list" ? (
@@ -645,7 +641,7 @@ function KeywordRankingPanel({ dataSource, selectedDateLabel, musinsaIndex, sele
             );
           })()}
         </div>
-      ) : (
+      ) : mode === "trend" ? (
         <div className="flex-1 min-h-0 flex flex-col">
           {(trend.status === "idle" || trend.status === "loading") && (
             <div className="flex items-center justify-center flex-1 text-xs font-medium" style={{ color: C.mute }}>불러오는 중...</div>
@@ -659,41 +655,13 @@ function KeywordRankingPanel({ dataSource, selectedDateLabel, musinsaIndex, sele
           {trend.status === "ready" && (
             <>
               <span className="text-xs font-medium mb-2" style={{ color: C.mute }}>전체 검색어 TOP {KEYWORD_TREND_TOP_N} 순위 추이 (최근 {trend.dates.length}개 수집일{trend.dates.length < 7 ? ", 아직 7일치 미만" : ""})</span>
-              <div className="flex items-center gap-2 flex-wrap mb-2">
-                <div className="flex items-stretch p-0.5 rounded-lg self-start" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
-                  <button onClick={() => setTrendView("graph")} className="px-3 py-1 text-xs font-bold transition-all" style={{ background: trendView === "graph" ? C.ink : "transparent", color: trendView === "graph" ? C.white : C.mute, borderRadius: 6 }}>그래프</button>
-                  <button onClick={() => setTrendView("table")} className="px-3 py-1 text-xs font-bold transition-all" style={{ background: trendView === "table" ? C.ink : "transparent", color: trendView === "table" ? C.white : C.mute, borderRadius: 6 }}>표</button>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <input
-                    list="musinsa-kw-watch-list"
-                    value={watchInput}
-                    onChange={(e) => { setWatchInput(e.target.value); setWatchError(""); }}
-                    onKeyDown={(e) => { if (e.key === "Enter") addWatchKeyword(); }}
-                    placeholder="관심 검색어 추가"
-                    className="px-2.5 py-1 rounded-full text-xs"
-                    style={{ border: `1px solid ${C.line}`, color: C.ink, width: 140 }}
-                  />
-                  <datalist id="musinsa-kw-watch-list">
-                    {allKeywordCandidates(trend.perDay).map((c) => (<option key={c.key} value={c.keyword} />))}
-                  </datalist>
-                  <button onClick={addWatchKeyword} className="px-3 py-1 rounded-full text-xs font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>추가</button>
-                </div>
-                {!!watchError && <span className="text-[11px] font-medium" style={{ color: C.signal }}>{watchError}</span>}
+              <div className="flex items-stretch p-0.5 rounded-lg mb-2 self-start" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+                <button onClick={() => setTrendView("graph")} className="px-3 py-1 text-xs font-bold transition-all" style={{ background: trendView === "graph" ? C.ink : "transparent", color: trendView === "graph" ? C.white : C.mute, borderRadius: 6 }}>그래프</button>
+                <button onClick={() => setTrendView("table")} className="px-3 py-1 text-xs font-bold transition-all" style={{ background: trendView === "table" ? C.ink : "transparent", color: trendView === "table" ? C.white : C.mute, borderRadius: 6 }}>표</button>
               </div>
-              {!!watchList.length && (
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  {watchList.map((w) => (
-                    <span key={w.key} className="flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-full text-xs font-bold" style={{ background: C.indigoSoft, color: C.indigo }}>
-                      {w.keyword}
-                      <button onClick={() => removeWatchKeyword(w.key)} className="leading-none" style={{ color: C.indigo }}>×</button>
-                    </span>
-                  ))}
-                </div>
-              )}
               {trendView === "graph" ? (
                 <div className="flex-1 min-h-[200px]">
-                  <KeywordTrendGraph dates={trend.dates} rows={displayRows} rankMax={KEYWORD_TREND_TOP_N} />
+                  <KeywordTrendGraph dates={trend.dates} rows={trend.rows} rankMax={KEYWORD_TREND_TOP_N} />
                 </div>
               ) : (
                 <div className="flex-1 min-h-0 overflow-auto">
@@ -705,7 +673,7 @@ function KeywordRankingPanel({ dataSource, selectedDateLabel, musinsaIndex, sele
                       </tr>
                     </thead>
                     <tbody>
-                      {displayRows.map((row) => (
+                      {trend.rows.map((row) => (
                         <tr key={row.key}>
                           <td className="py-1.5 pr-3 font-semibold whitespace-nowrap sticky left-0" style={{ color: C.ink, background: C.white, borderTop: `1px solid ${C.line}` }}>{row.keyword}</td>
                           {row.ranksByDay.map((rank, i) => (
@@ -716,6 +684,72 @@ function KeywordRankingPanel({ dataSource, selectedDateLabel, musinsaIndex, sele
                               </div>
                             </td>
                           ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      ) : (
+        <div className="flex-1 min-h-0 flex flex-col">
+          {(trend.status === "idle" || trend.status === "loading") && (
+            <div className="flex items-center justify-center flex-1 text-xs font-medium" style={{ color: C.mute }}>불러오는 중...</div>
+          )}
+          {trend.status === "empty" && (
+            <div className="flex items-center justify-center flex-1 text-xs font-medium" style={{ color: C.mute }}>아직 쌓인 수집일이 없어요.</div>
+          )}
+          {trend.status === "error" && (
+            <div className="flex items-center justify-center flex-1 text-xs font-medium" style={{ color: C.mute }}>추이 데이터를 불러오지 못했어요.</div>
+          )}
+          {trend.status === "ready" && (
+            <>
+              <span className="text-xs font-medium mb-2" style={{ color: C.mute }}>관심 검색어 순위 (최근 {trend.dates.length}개 수집일{trend.dates.length < 7 ? ", 아직 7일치 미만" : ""})</span>
+              <div className="flex items-center gap-1.5 flex-wrap mb-2">
+                <input
+                  list="musinsa-kw-watch-list"
+                  value={watchInput}
+                  onChange={(e) => { setWatchInput(e.target.value); setWatchError(""); }}
+                  onKeyDown={(e) => { if (e.key === "Enter") addWatchKeyword(); }}
+                  placeholder="관심 검색어 추가"
+                  className="px-2.5 py-1 rounded-full text-xs"
+                  style={{ border: `1px solid ${C.line}`, color: C.ink, width: 140 }}
+                />
+                <datalist id="musinsa-kw-watch-list">
+                  {allKeywordCandidates(trend.perDay).map((c) => (<option key={c.key} value={c.keyword} />))}
+                </datalist>
+                <button onClick={addWatchKeyword} className="px-3 py-1 rounded-full text-xs font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>추가</button>
+                {!!watchError && <span className="text-[11px] font-medium" style={{ color: C.signal }}>{watchError}</span>}
+              </div>
+              {watchRows.length === 0 ? (
+                <div className="flex items-center justify-center flex-1 text-xs font-medium" style={{ background: C.paper, color: C.mute, minHeight: 160, borderRadius: 12 }}>추가한 관심 검색어가 없어요.</div>
+              ) : (
+                <div className="flex-1 min-h-0 overflow-auto">
+                  <table className="w-full text-xs border-collapse">
+                    <thead>
+                      <tr>
+                        <th className="text-left font-bold pb-2 pr-3 sticky left-0" style={{ color: C.mute, background: C.white }}>검색어</th>
+                        {trend.dates.map((d) => (<th key={d} className="text-center font-semibold pb-2 px-2 whitespace-nowrap" style={{ color: C.mute }}>{d.slice(5)}</th>))}
+                        <th className="pb-2"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {watchRows.map((row) => (
+                        <tr key={row.key}>
+                          <td className="py-1.5 pr-3 font-semibold whitespace-nowrap sticky left-0" style={{ color: C.ink, background: C.white, borderTop: `1px solid ${C.line}` }}>{row.keyword}</td>
+                          {row.ranksByDay.map((rank, i) => (
+                            <td key={i} className="text-center py-1.5 px-2 tabular-nums font-bold" style={{ color: rank ? C.ink : "#D8D6D0", borderTop: `1px solid ${C.line}` }}>
+                              <div className="flex flex-row items-center justify-center gap-1">
+                                <span>{rank ?? "-"}</span>
+                                <CompactDelta delta={row.deltasByDay[i]} />
+                              </div>
+                            </td>
+                          ))}
+                          <td className="py-1.5 pl-2" style={{ borderTop: `1px solid ${C.line}` }}>
+                            <button onClick={() => removeWatchKeyword(row.key)} className="text-xs font-bold" style={{ color: C.mute }}>×</button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -1016,7 +1050,7 @@ function Cm29PopularKeywordsPanel({ cm29Index, selectedDateKey }) {
   };
 
   useEffect(() => {
-    if (mode !== "trend" || !cm29Index || !selectedDateKey) return;
+    if ((mode !== "trend" && mode !== "watch") || !cm29Index || !selectedDateKey) return;
     let cancelled = false;
     setTrend({ status: "loading" });
     loadCm29KeywordWeekTrend(cm29Index, selectedDateKey)
@@ -1037,14 +1071,9 @@ function Cm29PopularKeywordsPanel({ cm29Index, selectedDateKey }) {
   };
   const removeWatchKeyword = (key) => setWatchList((prev) => prev.filter((w) => w.key !== key));
 
-  const displayRows = useMemo(() => {
+  const watchRows = useMemo(() => {
     if (trend.status !== "ready") return [];
-    const autoKeys = new Set(trend.rows.map((r) => r.key));
-    const extraRows = watchList
-      .filter((w) => !autoKeys.has(w.key))
-      .map((w) => buildKeywordTrendRow(trend.perDay, w.key))
-      .filter(Boolean);
-    return [...trend.rows, ...extraRows];
+    return watchList.map((w) => buildKeywordTrendRow(trend.perDay, w.key)).filter(Boolean);
   }, [trend, watchList]);
 
   if (!hasAnyData) return null;
@@ -1058,7 +1087,8 @@ function Cm29PopularKeywordsPanel({ cm29Index, selectedDateKey }) {
         </div>
         <div className="flex items-center gap-2">
           {!!selectedDateKey && (<span className="text-xs font-medium whitespace-nowrap" style={{ color: C.mute }}>{selectedDateKey}</span>)}
-          <button onClick={() => setMode((m) => (m === "list" ? "trend" : "list"))} className="text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap" style={{ background: mode === "trend" ? C.ink : C.paper, color: mode === "trend" ? C.white : C.mute, border: `1px solid ${mode === "trend" ? C.ink : C.line}` }}>최근 1주일</button>
+          <button onClick={() => setMode((m) => (m === "trend" ? "list" : "trend"))} className="text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap" style={{ background: mode === "trend" ? C.ink : C.paper, color: mode === "trend" ? C.white : C.mute, border: `1px solid ${mode === "trend" ? C.ink : C.line}` }}>최근 1주일</button>
+          <button onClick={() => setMode((m) => (m === "watch" ? "list" : "watch"))} className="text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap" style={{ background: mode === "watch" ? C.ink : C.paper, color: mode === "watch" ? C.white : C.mute, border: `1px solid ${mode === "watch" ? C.ink : C.line}` }}>관심{watchList.length ? ` (${watchList.length})` : ""}</button>
         </div>
       </div>
       {mode === "list" ? (
@@ -1096,7 +1126,7 @@ function Cm29PopularKeywordsPanel({ cm29Index, selectedDateKey }) {
             )}
           </div>
         </div>
-      ) : (
+      ) : mode === "trend" ? (
         <div className="flex-1 min-h-0 flex flex-col">
           {(trend.status === "idle" || trend.status === "loading") && (
             <div className="flex items-center justify-center flex-1 text-xs font-medium" style={{ color: C.mute }}>불러오는 중...</div>
@@ -1110,41 +1140,13 @@ function Cm29PopularKeywordsPanel({ cm29Index, selectedDateKey }) {
           {trend.status === "ready" && (
             <>
               <span className="text-xs font-medium mb-2" style={{ color: C.mute }}>인기 검색어 TOP {CM29_KEYWORD_TREND_TOP_N} 순위 추이 (최근 {trend.dates.length}개 수집일{trend.dates.length < 7 ? ", 아직 7일치 미만" : ""})</span>
-              <div className="flex items-center gap-2 flex-wrap mb-2">
-                <div className="flex items-stretch p-0.5 rounded-lg self-start" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
-                  <button onClick={() => setTrendView("graph")} className="px-3 py-1 text-xs font-bold transition-all" style={{ background: trendView === "graph" ? C.ink : "transparent", color: trendView === "graph" ? C.white : C.mute, borderRadius: 6 }}>그래프</button>
-                  <button onClick={() => setTrendView("table")} className="px-3 py-1 text-xs font-bold transition-all" style={{ background: trendView === "table" ? C.ink : "transparent", color: trendView === "table" ? C.white : C.mute, borderRadius: 6 }}>표</button>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <input
-                    list="cm29-kw-watch-list"
-                    value={watchInput}
-                    onChange={(e) => { setWatchInput(e.target.value); setWatchError(""); }}
-                    onKeyDown={(e) => { if (e.key === "Enter") addWatchKeyword(); }}
-                    placeholder="관심 검색어 추가"
-                    className="px-2.5 py-1 rounded-full text-xs"
-                    style={{ border: `1px solid ${C.line}`, color: C.ink, width: 140 }}
-                  />
-                  <datalist id="cm29-kw-watch-list">
-                    {allKeywordCandidates(trend.perDay).map((c) => (<option key={c.key} value={c.keyword} />))}
-                  </datalist>
-                  <button onClick={addWatchKeyword} className="px-3 py-1 rounded-full text-xs font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>추가</button>
-                </div>
-                {!!watchError && <span className="text-[11px] font-medium" style={{ color: C.signal }}>{watchError}</span>}
+              <div className="flex items-stretch p-0.5 rounded-lg mb-2 self-start" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+                <button onClick={() => setTrendView("graph")} className="px-3 py-1 text-xs font-bold transition-all" style={{ background: trendView === "graph" ? C.ink : "transparent", color: trendView === "graph" ? C.white : C.mute, borderRadius: 6 }}>그래프</button>
+                <button onClick={() => setTrendView("table")} className="px-3 py-1 text-xs font-bold transition-all" style={{ background: trendView === "table" ? C.ink : "transparent", color: trendView === "table" ? C.white : C.mute, borderRadius: 6 }}>표</button>
               </div>
-              {!!watchList.length && (
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  {watchList.map((w) => (
-                    <span key={w.key} className="flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-full text-xs font-bold" style={{ background: C.indigoSoft, color: C.indigo }}>
-                      {w.keyword}
-                      <button onClick={() => removeWatchKeyword(w.key)} className="leading-none" style={{ color: C.indigo }}>×</button>
-                    </span>
-                  ))}
-                </div>
-              )}
               {trendView === "graph" ? (
                 <div className="flex-1 min-h-[200px]">
-                  <KeywordTrendGraph dates={trend.dates} rows={displayRows} rankMax={CM29_KEYWORD_TREND_TOP_N} />
+                  <KeywordTrendGraph dates={trend.dates} rows={trend.rows} rankMax={CM29_KEYWORD_TREND_TOP_N} />
                 </div>
               ) : (
                 <div className="flex-1 min-h-0 overflow-auto">
@@ -1156,7 +1158,7 @@ function Cm29PopularKeywordsPanel({ cm29Index, selectedDateKey }) {
                       </tr>
                     </thead>
                     <tbody>
-                      {displayRows.map((row) => (
+                      {trend.rows.map((row) => (
                         <tr key={row.key}>
                           <td className="py-1.5 pr-3 font-semibold whitespace-nowrap sticky left-0" style={{ color: C.ink, background: C.white, borderTop: `1px solid ${C.line}` }}>{row.keyword}</td>
                           {row.ranksByDay.map((rank, i) => (
@@ -1167,6 +1169,72 @@ function Cm29PopularKeywordsPanel({ cm29Index, selectedDateKey }) {
                               </div>
                             </td>
                           ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      ) : (
+        <div className="flex-1 min-h-0 flex flex-col">
+          {(trend.status === "idle" || trend.status === "loading") && (
+            <div className="flex items-center justify-center flex-1 text-xs font-medium" style={{ color: C.mute }}>불러오는 중...</div>
+          )}
+          {trend.status === "empty" && (
+            <div className="flex items-center justify-center flex-1 text-xs font-medium" style={{ color: C.mute }}>아직 쌓인 수집일이 없어요.</div>
+          )}
+          {trend.status === "error" && (
+            <div className="flex items-center justify-center flex-1 text-xs font-medium" style={{ color: C.mute }}>추이 데이터를 불러오지 못했어요.</div>
+          )}
+          {trend.status === "ready" && (
+            <>
+              <span className="text-xs font-medium mb-2" style={{ color: C.mute }}>관심 검색어 순위 (최근 {trend.dates.length}개 수집일{trend.dates.length < 7 ? ", 아직 7일치 미만" : ""})</span>
+              <div className="flex items-center gap-1.5 flex-wrap mb-2">
+                <input
+                  list="cm29-kw-watch-list"
+                  value={watchInput}
+                  onChange={(e) => { setWatchInput(e.target.value); setWatchError(""); }}
+                  onKeyDown={(e) => { if (e.key === "Enter") addWatchKeyword(); }}
+                  placeholder="관심 검색어 추가"
+                  className="px-2.5 py-1 rounded-full text-xs"
+                  style={{ border: `1px solid ${C.line}`, color: C.ink, width: 140 }}
+                />
+                <datalist id="cm29-kw-watch-list">
+                  {allKeywordCandidates(trend.perDay).map((c) => (<option key={c.key} value={c.keyword} />))}
+                </datalist>
+                <button onClick={addWatchKeyword} className="px-3 py-1 rounded-full text-xs font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>추가</button>
+                {!!watchError && <span className="text-[11px] font-medium" style={{ color: C.signal }}>{watchError}</span>}
+              </div>
+              {watchRows.length === 0 ? (
+                <div className="flex items-center justify-center flex-1 text-xs font-medium" style={{ background: C.paper, color: C.mute, minHeight: 160, borderRadius: 12 }}>추가한 관심 검색어가 없어요.</div>
+              ) : (
+                <div className="flex-1 min-h-0 overflow-auto">
+                  <table className="w-full text-xs border-collapse">
+                    <thead>
+                      <tr>
+                        <th className="text-left font-bold pb-2 pr-3 sticky left-0" style={{ color: C.mute, background: C.white }}>검색어</th>
+                        {trend.dates.map((d) => (<th key={d} className="text-center font-semibold pb-2 px-2 whitespace-nowrap" style={{ color: C.mute }}>{d.slice(5)}</th>))}
+                        <th className="pb-2"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {watchRows.map((row) => (
+                        <tr key={row.key}>
+                          <td className="py-1.5 pr-3 font-semibold whitespace-nowrap sticky left-0" style={{ color: C.ink, background: C.white, borderTop: `1px solid ${C.line}` }}>{row.keyword}</td>
+                          {row.ranksByDay.map((rank, i) => (
+                            <td key={i} className="text-center py-1.5 px-2 tabular-nums font-bold" style={{ color: rank ? C.ink : "#D8D6D0", borderTop: `1px solid ${C.line}` }}>
+                              <div className="flex flex-row items-center justify-center gap-1">
+                                <span>{rank ?? "-"}</span>
+                                <CompactDelta delta={row.deltasByDay[i]} />
+                              </div>
+                            </td>
+                          ))}
+                          <td className="py-1.5 pl-2" style={{ borderTop: `1px solid ${C.line}` }}>
+                            <button onClick={() => removeWatchKeyword(row.key)} className="text-xs font-bold" style={{ color: C.mute }}>×</button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
