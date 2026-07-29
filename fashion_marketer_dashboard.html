@@ -851,7 +851,71 @@ function BrandWatchModal({ brand, items, onClose }) {
 
 const RANK_FILTERS = [{ key: "all", label: "전체" }, { key: "rising", label: "급상승" }, { key: "new", label: "NEW" }];
 
-function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availableTimes, selectedTime, onSelectTime }) {
+/* 실제 LLM 호출 없이, 현재 보고 있는 랭킹 리스트(무신사/29CM 공통 상품 형태)를 데이터로 직접 집계해서
+   "가격대/세일/브랜드/순위변동" 요약 문장 3~4줄을 만든다. 카테고리·필터를 바꿔서 다른 리스트가 들어오면
+   그 리스트 기준으로 다시 계산된다. */
+function josaIGa(word) {
+  const last = (word || "").trim().slice(-1);
+  const code = last.charCodeAt(0);
+  if (code < 0xac00 || code > 0xd7a3) return "가";
+  return (code - 0xac00) % 28 !== 0 ? "이" : "가";
+}
+function buildCategoryInsights(items) {
+  if (!items || !items.length) return null;
+  const n = items.length;
+
+  const prices = items.map((it) => it.price).filter((p) => typeof p === "number" && p > 0);
+  const avgPrice = prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : null;
+  const bandCounts = new Map();
+  prices.forEach((p) => {
+    const band = Math.floor(p / 10000);
+    bandCounts.set(band, (bandCounts.get(band) || 0) + 1);
+  });
+  let modeBand = null, modeBandCount = 0;
+  bandCounts.forEach((count, band) => { if (count > modeBandCount) { modeBandCount = count; modeBand = band; } });
+
+  const onSale = items.filter((it) => typeof it.discountRatio === "number" && it.discountRatio > 0);
+  const saleRatio = Math.round((onSale.length / n) * 100);
+  const avgDiscount = onSale.length ? Math.round(onSale.reduce((a, b) => a + b.discountRatio, 0) / onSale.length) : 0;
+
+  const brandCounts = new Map();
+  items.forEach((it) => { if (it.brand) brandCounts.set(it.brand, (brandCounts.get(it.brand) || 0) + 1); });
+  let topBrand = null, topBrandCount = 0;
+  brandCounts.forEach((count, brand) => { if (count > topBrandCount) { topBrandCount = count; topBrand = brand; } });
+
+  const STOPWORDS = new Set(["세트", "패키지", "기획", "단독", "한정", "컬러", "color", "colors"]);
+  const wordCounts = new Map();
+  items.forEach((it) => {
+    (it.name || "").split(/[\s/_\-\[\]().,]+/).forEach((raw) => {
+      const w = raw.trim();
+      if (w.length < 2 || /^\d+$/.test(w) || STOPWORDS.has(w.toLowerCase())) return;
+      wordCounts.set(w, (wordCounts.get(w) || 0) + 1);
+    });
+  });
+  let topWord = null, topWordCount = 0;
+  wordCounts.forEach((count, word) => { if (count >= 3 && count > topWordCount) { topWordCount = count; topWord = word; } });
+
+  const newCount = items.filter((it) => it.delta === "NEW").length;
+  const risingCount = items.filter((it) => typeof it.delta === "number" && it.delta > 0).length;
+
+  const lines = [];
+  lines.push(`총 ${n}개 상품 중 ${onSale.length}개(${saleRatio}%)가 세일 중이고, 평균 할인율은 ${avgDiscount}%예요.`);
+  if (avgPrice !== null) {
+    const bandLabel = modeBand !== null ? (modeBand === 0 ? "1만원 미만" : `${modeBand}만원대`) : null;
+    lines.push(bandLabel
+      ? `평균 가격은 ${avgPrice.toLocaleString()}원이고, ${bandLabel} 상품이 ${modeBandCount}개(${Math.round((modeBandCount / n) * 100)}%)로 가장 많아요.`
+      : `평균 가격은 ${avgPrice.toLocaleString()}원이에요.`);
+  }
+  if (topBrand) {
+    lines.push(`${topBrand} 브랜드가 ${topBrandCount}개로 가장 많이 올라와 있어요${topWord ? `, "${topWord}"${josaIGa(topWord)} 들어간 상품명도 ${topWordCount}개 보여요` : ""}.`);
+  }
+  if (newCount || risingCount) {
+    lines.push(`신규 진입(NEW) ${newCount}개, 순위 상승 중인 상품 ${risingCount}개예요.`);
+  }
+  return lines;
+}
+
+function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availableTimes, selectedTime, onSelectTime, onActiveListChange }) {
   const [cat, setCat] = useState(CATEGORIES[0]);
   const [filter, setFilter] = useState("all");
   const [visibleCount, setVisibleCount] = useState(100);
@@ -863,6 +927,11 @@ function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availabl
   useEffect(() => { savePersistedList("fp_musinsa_brand_watch", brandWatchList); }, [brandWatchList]);
 
   const filteredList = useMemo(() => rankings?.[cat]?.[filter] || [], [rankings, cat, filter]);
+
+  useEffect(() => {
+    const filterLabel = RANK_FILTERS.find((f) => f.key === filter)?.label || filter;
+    onActiveListChange?.({ label: `${cat} · ${filterLabel}`, items: filteredList });
+  }, [filteredList, cat, filter]);
 
   // 브랜드 검색 후보/결과는 카테고리 구분 없이 "전체" 리스트 전체를 훑는다(브랜드 상품이 여러 카테고리에 흩어져 있을 수 있어서).
   const brandCandidates = useMemo(() => {
@@ -984,7 +1053,7 @@ function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availabl
 const CM29_LARGE_CATEGORIES = ["여성의류", "남성의류"];
 const CM29_PERIOD_FILTERS = [{ key: "실시간", label: "실시간" }, { key: "일간", label: "일간" }, { key: "주간", label: "주간" }, { key: "월간", label: "월간" }];
 
-function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, availableTimes, selectedTime, onSelectTime }) {
+function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, availableTimes, selectedTime, onSelectTime, onActiveListChange }) {
   const [largeCat, setLargeCat] = useState(CM29_LARGE_CATEGORIES[0]);
   const [subCat, setSubCat] = useState("전체");
   const [period, setPeriod] = useState("실시간");
@@ -1003,6 +1072,10 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
   }, [largeCat, subCats]);
 
   const filteredList = useMemo(() => rankings?.[largeCat]?.[subCat]?.[period] || [], [rankings, largeCat, subCat, period]);
+
+  useEffect(() => {
+    onActiveListChange?.({ label: `${largeCat} · ${subCat} · ${period}`, items: filteredList });
+  }, [filteredList, largeCat, subCat, period]);
 
   // 브랜드 검색은 현재 대분류+기간의 "전체" 서브카테고리(그 대분류의 모든 상품이 다 들어있는 목록)에서 찾는다.
   const brandPool = useMemo(() => rankings?.[largeCat]?.["전체"]?.[period] || [], [rankings, largeCat, period]);
@@ -1479,10 +1552,11 @@ const PAGE_META = {
   instagram: { title: "인스타그램", subtitle: "경쟁사 브랜드 마케팅 모니터링" },
 };
 
-function Sidebar({ active, onChange }) {
+function Sidebar({ active, onChange, activeCategoryInsight }) {
+  const insightLines = activeCategoryInsight ? buildCategoryInsights(activeCategoryInsight.items) : null;
   return (
     <>
-      <aside className="hidden lg:flex flex-col w-60 shrink-0 sticky top-0 h-screen py-5 px-3" style={{ background: C.white, borderRight: `1px solid ${C.line}` }}>
+      <aside className="hidden lg:flex flex-col w-60 shrink-0 sticky top-0 h-screen py-5 px-3 overflow-y-auto" style={{ background: C.white, borderRight: `1px solid ${C.line}` }}>
         <div className="flex items-center gap-2.5 px-2 mb-7">
           <div className="flex items-center justify-center rounded-xl shrink-0" style={{ width: 36, height: 36, background: C.ink }}>
             <span className="font-display text-white text-base font-bold">F</span>
@@ -1505,6 +1579,19 @@ function Sidebar({ active, onChange }) {
             );
           })}
         </div>
+        {!!insightLines && (
+          <div className="px-3 pt-5 mt-2" style={{ borderTop: `1px solid ${C.line}` }}>
+            <p className="mt-4 mb-2 text-[10.5px] font-bold tracking-wider" style={{ color: C.mute }}>AI 분석</p>
+            <p className="text-xs font-bold mb-2" style={{ color: C.ink }}>{activeCategoryInsight.label}</p>
+            <ol className="flex flex-col gap-2">
+              {insightLines.map((line, i) => (
+                <li key={i} className="text-[11.5px] leading-snug" style={{ color: C.mute }}>
+                  <span className="font-bold" style={{ color: C.ink }}>{i + 1}. </span>{line}
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
         <div className="mt-auto px-3 pt-4 text-[10.5px] leading-relaxed" style={{ color: C.mute, borderTop: `1px solid ${C.line}` }}>1단계 UI 프로토타입<br/>표시된 데이터는 목업(더미)입니다.</div>
       </aside>
       <nav className="flex lg:hidden gap-1.5 px-4 py-3 overflow-x-auto" style={{ background: C.white, borderBottom: `1px solid ${C.line}` }}>
@@ -1530,6 +1617,11 @@ function FashionMarketerDashboard() {
   const [musinsaDataSource, setMusinsaDataSource] = useState("mock");
   const [musinsaIndex, setMusinsaIndex] = useState(null); // { "YYYY-MM-DD": ["08-00", "17-00"] } | null(로딩 전)
   const [musinsaSelectedTime, setMusinsaSelectedTime] = useState(null);
+  const [activeCategoryInsight, setActiveCategoryInsight] = useState(null);
+
+  // 플랫폼(view)을 바꾸면 직전 플랫폼의 AI 분석이 잠깐 남아있지 않도록 비워준다 -
+  // 새 플랫폼의 랭킹 패널이 마운트되면서 곧바로 자기 데이터로 다시 채운다.
+  useEffect(() => { setActiveCategoryInsight(null); }, [view]);
 
   const musinsaDates = useMemo(() => (musinsaIndex ? Object.keys(musinsaIndex).sort() : []), [musinsaIndex]);
   const selectedDateKey = useMemo(() => formatDateKey(selectedDate), [selectedDate]);
@@ -1668,7 +1760,7 @@ function FashionMarketerDashboard() {
 
   return (
     <div className="min-h-screen w-full flex" style={{ background: C.paper }}>
-      <Sidebar active={view} onChange={setView} />
+      <Sidebar active={view} onChange={setView} activeCategoryInsight={activeCategoryInsight} />
       <div className="flex-1 min-w-0 flex flex-col">
         <header className="px-6 pt-6 pb-4">
           <div className="flex items-center justify-between flex-wrap gap-3">
@@ -1703,6 +1795,7 @@ function FashionMarketerDashboard() {
                 availableTimes={availableTimesForSelectedDate}
                 selectedTime={musinsaSelectedTime}
                 onSelectTime={(t) => loadMusinsaSnapshot(selectedDateKey, musinsaIndex?.[selectedDateKey] || [], t)}
+                onActiveListChange={setActiveCategoryInsight}
               />
             </>
           )}
@@ -1720,6 +1813,7 @@ function FashionMarketerDashboard() {
                 availableTimes={availableTimesForSelectedDateCm29}
                 selectedTime={cm29SelectedTime}
                 onSelectTime={(t) => loadCm29Snapshot(selectedDateKey, cm29Index?.[selectedDateKey] || [], t)}
+                onActiveListChange={setActiveCategoryInsight}
               />
             </>
           )}
