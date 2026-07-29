@@ -1019,10 +1019,10 @@ function buildKeywordMoverInsights(list) {
   const fallers = [...withDelta].filter((it) => it.delta < 0).sort((a, b) => a.delta - b.delta).slice(0, 5);
   const lines = [];
   if (risers.length) {
-    lines.push({ label: "가장 많이 오른 검색어:", detail: risers.map((it, i) => `${i + 1}위 ${it.keyword}(+${it.delta})`).join(", ") });
+    lines.push({ label: "가장 많이 오른 검색어:", detail: risers.map((it, i) => `${i + 1}위 ${it.keyword}(${it.rank + it.delta}위→${it.rank}위)`).join(", ") });
   }
   if (fallers.length) {
-    lines.push({ label: "가장 많이 내린 검색어:", detail: fallers.map((it, i) => `${i + 1}위 ${it.keyword}(${it.delta})`).join(", ") });
+    lines.push({ label: "가장 많이 내린 검색어:", detail: fallers.map((it, i) => `${i + 1}위 ${it.keyword}(${it.rank + it.delta}위→${it.rank}위)`).join(", ") });
   }
   return lines.length ? lines : null;
 }
