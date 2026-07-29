@@ -916,7 +916,7 @@ function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availabl
           <span className="text-xs font-medium whitespace-nowrap" style={{ color: C.mute }}>{filteredList.length}개 중 {Math.min(visibleCount, filteredList.length)}개 표시</span>
         </div>
       </div>
-      <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+      <div className="flex items-center justify-between gap-3 mb-2 flex-wrap">
         {!!availableTimes?.length && (
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 min-w-0">
             <span className="text-xs font-bold whitespace-nowrap shrink-0" style={{ color: C.mute }}>{selectedDateLabel}</span>
@@ -947,7 +947,7 @@ function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availabl
         </div>
       </div>
       {!!brandWatchList.length && (
-        <div className="flex flex-wrap gap-1.5 justify-end mb-3">
+        <div className="flex flex-wrap gap-1.5 justify-end mb-1">
           {brandWatchList.map((b) => (
             <span key={b} onClick={() => setOpenBrand(b)} className="flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-full text-xs font-bold cursor-pointer" style={{ background: C.indigoSoft, color: C.indigo }}>
               {b}
@@ -1056,7 +1056,7 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
           <span className="text-xs font-medium whitespace-nowrap" style={{ color: C.mute }}>{filteredList.length}개 중 {Math.min(visibleCount, filteredList.length)}개 표시</span>
         </div>
       </div>
-      <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+      <div className="flex items-center justify-between gap-3 mb-2 flex-wrap">
         {!!availableTimes?.length && (
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 min-w-0">
             <span className="text-xs font-bold whitespace-nowrap shrink-0" style={{ color: C.mute }}>{selectedDateLabel}</span>
@@ -1086,7 +1086,7 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
         </div>
       </div>
       {!!brandWatchList.length && (
-        <div className="flex flex-wrap gap-1.5 justify-end mb-3">
+        <div className="flex flex-wrap gap-1.5 justify-end mb-1">
           {brandWatchList.map((b) => (
             <span key={b} onClick={() => setOpenBrand(b)} className="flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-full text-xs font-bold cursor-pointer" style={{ background: C.indigoSoft, color: C.indigo }}>
               {b}
