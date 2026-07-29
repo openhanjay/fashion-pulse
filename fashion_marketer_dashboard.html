@@ -578,7 +578,7 @@ function KeywordRankingPanel({ dataSource, selectedDateLabel, musinsaIndex, sele
                   {list.map((item) => (
                     <a key={item.url || item.keyword} href={item.url || undefined} target="_blank" rel="noreferrer" className="flex items-center gap-2 py-1.5 text-xs" style={{ borderBottom: `1px solid ${C.line}`, breakInside: "avoid" }}>
                       <span className="w-5 shrink-0 font-bold tabular-nums text-right" style={{ color: C.mute }}>{item.rank}</span>
-                      <span className="flex-1 truncate font-semibold" style={{ color: C.ink }}>{item.keyword}</span>
+                      <span className="flex-1 truncate font-semibold" style={{ color: C.ink, fontSize: 14 }}>{item.keyword}</span>
                       <CompactDelta delta={item.delta} />
                     </a>
                   ))}
