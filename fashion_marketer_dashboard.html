@@ -929,14 +929,8 @@ function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availabl
           {!!brandError && <span className="text-[11px] font-medium whitespace-nowrap" style={{ color: C.signal }}>{brandError}</span>}
         </div>
       </div>
-      <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1">
-        {CATEGORIES.map((c) => {
-          const isActive = c === cat;
-          return (<button key={c} onClick={() => { setCat(c); setVisibleCount(12); }} className="px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors" style={{ background: isActive ? C.ink : C.paper, color: isActive ? C.white : C.mute }}>{c}</button>);
-        })}
-      </div>
       {!!brandWatchList.length && (
-        <div className="flex flex-wrap gap-1.5 mb-4">
+        <div className="flex flex-wrap gap-1.5 justify-end mb-3">
           {brandWatchList.map((b) => (
             <span key={b} onClick={() => setOpenBrand(b)} className="flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-full text-xs font-bold cursor-pointer" style={{ background: C.indigoSoft, color: C.indigo }}>
               {b}
@@ -945,6 +939,12 @@ function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availabl
           ))}
         </div>
       )}
+      <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1">
+        {CATEGORIES.map((c) => {
+          const isActive = c === cat;
+          return (<button key={c} onClick={() => { setCat(c); setVisibleCount(12); }} className="px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors" style={{ background: isActive ? C.ink : C.paper, color: isActive ? C.white : C.mute }}>{c}</button>);
+        })}
+      </div>
       {filteredList.length === 0 ? (
         <div className="flex items-center justify-center rounded-xl text-sm font-medium" style={{ height: 120, background: C.paper, color: C.mute }}>조건에 맞는 상품이 없어요. 다른 필터를 선택해보세요.</div>
       ) : (
@@ -1066,14 +1066,8 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
           {!!brandError && <span className="text-[11px] font-medium whitespace-nowrap" style={{ color: C.signal }}>{brandError}</span>}
         </div>
       </div>
-      <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1">
-        {subCats.map((sc) => {
-          const isActive = sc === subCat;
-          return (<button key={sc} onClick={() => { setSubCat(sc); setVisibleCount(12); }} className="px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors" style={{ background: isActive ? C.ink : C.paper, color: isActive ? C.white : C.mute }}>{sc}</button>);
-        })}
-      </div>
       {!!brandWatchList.length && (
-        <div className="flex flex-wrap gap-1.5 mb-4">
+        <div className="flex flex-wrap gap-1.5 justify-end mb-3">
           {brandWatchList.map((b) => (
             <span key={b} onClick={() => setOpenBrand(b)} className="flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-full text-xs font-bold cursor-pointer" style={{ background: C.indigoSoft, color: C.indigo }}>
               {b}
@@ -1082,6 +1076,12 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
           ))}
         </div>
       )}
+      <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1">
+        {subCats.map((sc) => {
+          const isActive = sc === subCat;
+          return (<button key={sc} onClick={() => { setSubCat(sc); setVisibleCount(12); }} className="px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors" style={{ background: isActive ? C.ink : C.paper, color: isActive ? C.white : C.mute }}>{sc}</button>);
+        })}
+      </div>
       {filteredList.length === 0 ? (
         <div className="flex items-center justify-center rounded-xl text-sm font-medium" style={{ height: 120, background: C.paper, color: C.mute }}>조건에 맞는 상품이 없어요. 다른 필터를 선택해보세요.</div>
       ) : (
