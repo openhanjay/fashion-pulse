@@ -341,7 +341,7 @@ function KeywordTrendGraph({ dates, rows, rankMax = 7 }) {
           : [present[0]?.i, present[present.length - 1]?.i].filter((v, i, arr) => v !== undefined && arr.indexOf(v) === i);
         return (
           <g key={row.key}>
-            {present.length > 1 && (<polyline points={present.map((p) => `${p.x},${p.y}`).join(" ")} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" opacity="0.85" />)}
+            {present.length > 1 && (<polyline points={present.map((p) => `${p.x},${p.y}`).join(" ")} fill="none" stroke={color} strokeWidth="1.2" strokeLinejoin="round" strokeLinecap="round" opacity="0.85" />)}
             {present.map((p, pi) => (<circle key={pi} cx={p.x} cy={p.y} r={p.ranked ? 3.2 : 3} fill={p.ranked ? color : C.white} stroke={color} strokeWidth={p.ranked ? 0 : 1.5} />))}
             {labelIdxs.map((idx) => {
               const delta = row.deltasByDay?.[idx];
