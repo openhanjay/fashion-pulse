@@ -474,21 +474,26 @@ async function loadKeywordWeekTrend(musinsaIndex, selectedDateKey) {
 
 /* 검색어 랭킹 패널 자체의 시간 선택(상품 랭킹 패널과 독립적)에 쓰는 로더. "평균"은 당일 평균 vs 전일 평균,
    특정 시각은 그 시각의 스냅샷에 이미 붙어있는 delta(스크랩 시점에 계산됨)를 그대로 사용한다. */
+/* validTimes: rawTimes 중 실제로 검색어(keywords) 데이터가 들어있는 시각만 골라서 같이 돌려준다.
+   (검색어 수집 기능이 나중에 추가된 날은 그 이전 시각 스냅샷엔 keywords 필드 자체가 없어서, 그 시각을
+   시간 선택 버튼에서 아예 빼기 위함.) */
 async function loadMusinsaKeywordSnapshot(musinsaIndex, dateKey, rawTimes, timeLabel) {
   const fetchOne = (dKey, rawTime) => fetch(`data/musinsa_${dKey}_${rawTime}.json`).then((res) => { if (!res.ok) throw new Error("no snapshot file"); return res.json(); });
   if (timeLabel === "평균") {
     const todaySnapshots = await Promise.all(rawTimes.map((t) => fetchOne(dateKey, t)));
+    const validTimes = rawTimes.filter((t, i) => !!todaySnapshots[i]?.keywords);
     const todayKeywordAvg = averageKeywordRankings(todaySnapshots);
     const priorDates = Object.keys(musinsaIndex || {}).filter((d) => d < dateKey).sort();
     const priorDateKey = priorDates[priorDates.length - 1];
-    if (!priorDateKey) return todayKeywordAvg;
+    if (!priorDateKey) return { data: todayKeywordAvg, validTimes };
     const priorTimes = musinsaIndex[priorDateKey] || [];
     const priorSnapshots = await Promise.all(priorTimes.map((t) => fetchOne(priorDateKey, t)));
     const priorKeywordAvg = averageKeywordRankings(priorSnapshots);
-    return attachAverageDelta({ keywords: todayKeywordAvg }, { keywords: priorKeywordAvg }, ["keywords"], ["all", "rising"]).keywords;
+    const data = attachAverageDelta({ keywords: todayKeywordAvg }, { keywords: priorKeywordAvg }, ["keywords"], ["all", "rising"]).keywords;
+    return { data, validTimes };
   }
   const data = await fetchOne(dateKey, timeLabel.replace(":", "-"));
-  return data.keywords || { all: [], rising: [] };
+  return { data: data.keywords || { all: [], rising: [] }, validTimes: null };
 }
 
 function KeywordRankingPanel({ dataSource, selectedDateLabel, musinsaIndex, selectedDateKey }) {
@@ -498,6 +503,7 @@ function KeywordRankingPanel({ dataSource, selectedDateLabel, musinsaIndex, sele
   const [trend, setTrend] = useState({ status: "idle" });
   const [kwTime, setKwTime] = useState("평균");
   const [kwData, setKwData] = useState({ all: [], rising: [] });
+  const [validKwTimes, setValidKwTimes] = useState([]);
   const [trendView, setTrendView] = useState("graph");
 
   useEffect(() => {
@@ -510,17 +516,16 @@ function KeywordRankingPanel({ dataSource, selectedDateLabel, musinsaIndex, sele
     return () => { cancelled = true; };
   }, [mode, musinsaIndex, selectedDateKey]);
 
-  const rawKwTimes = musinsaIndex?.[selectedDateKey] || [];
-  const availableKwTimes = rawKwTimes.length ? ["평균", ...rawKwTimes.map((t) => t.replace("-", ":"))] : [];
+  const availableKwTimes = validKwTimes.length ? ["평균", ...validKwTimes.map((t) => t.replace("-", ":"))] : [];
 
   useEffect(() => {
     if (mode !== "list" || !musinsaIndex || !selectedDateKey) return;
     const rawTimes = musinsaIndex[selectedDateKey] || [];
-    if (!rawTimes.length) { setKwData({ all: [], rising: [] }); return; }
+    if (!rawTimes.length) { setKwData({ all: [], rising: [] }); setValidKwTimes([]); return; }
     let cancelled = false;
     setKwTime("평균");
     loadMusinsaKeywordSnapshot(musinsaIndex, selectedDateKey, rawTimes, "평균")
-      .then((data) => { if (!cancelled) setKwData(data); })
+      .then(({ data, validTimes }) => { if (!cancelled) { setKwData(data); setValidKwTimes(validTimes || []); } })
       .catch(() => {});
     return () => { cancelled = true; };
   }, [mode, musinsaIndex, selectedDateKey]);
@@ -528,7 +533,7 @@ function KeywordRankingPanel({ dataSource, selectedDateLabel, musinsaIndex, sele
   const onSelectKwTime = (t) => {
     const rawTimes = musinsaIndex?.[selectedDateKey] || [];
     setKwTime(t);
-    loadMusinsaKeywordSnapshot(musinsaIndex, selectedDateKey, rawTimes, t).then(setKwData).catch(() => {});
+    loadMusinsaKeywordSnapshot(musinsaIndex, selectedDateKey, rawTimes, t).then(({ data }) => setKwData(data)).catch(() => {});
   };
 
   return (
@@ -866,18 +871,22 @@ async function loadCm29KeywordWeekTrend(cm29Index, selectedDateKey) {
 
 /* 검색어 랭킹 패널 자체의 시간 선택(상품 랭킹 패널과 독립적)에 쓰는 로더. "평균"은 당일 평균 vs 전일 평균,
    특정 시각은 그 시각의 스냅샷 vs 바로 직전 수집 시점을 비교해서 등락을 직접 계산한다
-   (29CM 인기 검색어는 스크래퍼가 delta를 안 붙여줌). */
+   (29CM 인기 검색어는 스크래퍼가 delta를 안 붙여줌).
+   validTimes: rawTimes 중 실제로 popularKeywords 데이터가 들어있는 시각만 골라서 같이 돌려준다
+   (인기 검색어 수집 기능이 나중에 추가된 날은 그 이전 시각 스냅샷엔 popularKeywords가 아예 없어서,
+   그 시각을 시간 선택 버튼에서 빼기 위함). */
 async function loadCm29KeywordSnapshot(cm29Index, dateKey, rawTimes, timeLabel) {
   const fetchOne = (dKey, rawTime) => fetch(`data/cm29_${dKey}_${rawTime}.json`).then((res) => { if (!res.ok) throw new Error("no snapshot file"); return res.json(); });
   if (timeLabel === "평균") {
     const todaySnapshots = await Promise.all(rawTimes.map((t) => fetchOne(dateKey, t)));
+    const validTimes = rawTimes.filter((t, i) => (todaySnapshots[i]?.popularKeywords || []).length > 0);
     const list = averageCm29PopularKeywords(todaySnapshots);
     const priorDates = Object.keys(cm29Index || {}).filter((d) => d < dateKey).sort();
     const priorDateKey = priorDates[priorDates.length - 1];
-    if (!priorDateKey) return { list, priorList: null };
+    if (!priorDateKey) return { list, priorList: null, validTimes };
     const priorTimes = cm29Index[priorDateKey] || [];
     const priorSnapshots = await Promise.all(priorTimes.map((t) => fetchOne(priorDateKey, t)));
-    return { list, priorList: averageCm29PopularKeywords(priorSnapshots) };
+    return { list, priorList: averageCm29PopularKeywords(priorSnapshots), validTimes };
   }
   const rawTime = timeLabel.replace(":", "-");
   const data = await fetchOne(dateKey, rawTime);
@@ -893,6 +902,7 @@ function Cm29PopularKeywordsPanel({ cm29Index, selectedDateKey }) {
   const [mode, setMode] = useState("list");
   const [kwTime, setKwTime] = useState("평균");
   const [snapshotData, setSnapshotData] = useState({ status: "idle", list: [], priorList: null });
+  const [validKwTimes, setValidKwTimes] = useState([]);
   const [trend, setTrend] = useState({ status: "idle" });
   const [trendView, setTrendView] = useState("graph");
 
@@ -901,18 +911,17 @@ function Cm29PopularKeywordsPanel({ cm29Index, selectedDateKey }) {
     [cm29Index]
   );
 
-  const rawKwTimes = cm29Index?.[selectedDateKey] || [];
-  const availableKwTimes = rawKwTimes.length ? ["평균", ...rawKwTimes.map((t) => t.replace("-", ":"))] : [];
+  const availableKwTimes = validKwTimes.length ? ["평균", ...validKwTimes.map((t) => t.replace("-", ":"))] : [];
 
   useEffect(() => {
     if (mode !== "list" || !cm29Index || !selectedDateKey) return;
     const rawTimes = cm29Index[selectedDateKey] || [];
-    if (!rawTimes.length) { setSnapshotData({ status: "empty", list: [], priorList: null }); return; }
+    if (!rawTimes.length) { setSnapshotData({ status: "empty", list: [], priorList: null }); setValidKwTimes([]); return; }
     let cancelled = false;
     setKwTime("평균");
     setSnapshotData({ status: "loading", list: [], priorList: null });
     loadCm29KeywordSnapshot(cm29Index, selectedDateKey, rawTimes, "평균")
-      .then(({ list, priorList }) => { if (!cancelled) setSnapshotData({ status: list.length ? "ready" : "empty", list, priorList }); })
+      .then(({ list, priorList, validTimes }) => { if (!cancelled) { setSnapshotData({ status: list.length ? "ready" : "empty", list, priorList }); setValidKwTimes(validTimes || []); } })
       .catch(() => { if (!cancelled) setSnapshotData({ status: "error", list: [], priorList: null }); });
     return () => { cancelled = true; };
   }, [mode, cm29Index, selectedDateKey]);
