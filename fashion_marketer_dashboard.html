@@ -1581,11 +1581,11 @@ function Sidebar({ active, onChange, activeCategoryInsight }) {
         </div>
         {!!insightLines && (
           <div className="px-3 pt-5 mt-2" style={{ borderTop: `1px solid ${C.line}` }}>
-            <p className="mt-4 mb-2 text-[10.5px] font-bold tracking-wider" style={{ color: C.mute }}>AI 분석</p>
-            <p className="text-xs font-bold mb-2" style={{ color: C.ink }}>{activeCategoryInsight.label}</p>
-            <ol className="flex flex-col gap-2">
+            <p className="mt-4 mb-2 text-xs font-bold tracking-wider" style={{ color: C.mute }}>AI 분석</p>
+            <p className="text-sm font-bold mb-2" style={{ color: C.ink }}>{activeCategoryInsight.label}</p>
+            <ol className="flex flex-col gap-2.5">
               {insightLines.map((line, i) => (
-                <li key={i} className="text-[11.5px] leading-snug" style={{ color: C.mute }}>
+                <li key={i} className="text-[13.5px] leading-snug" style={{ color: C.mute }}>
                   <span className="font-bold" style={{ color: C.ink }}>{i + 1}. </span>{line}
                 </li>
               ))}
