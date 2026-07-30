@@ -1109,7 +1109,6 @@ function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availabl
   const [filter, setFilter] = useState("all");
   const [visibleCount, setVisibleCount] = useState(100);
   const [brandInput, setBrandInput] = useState("");
-  const [brandError, setBrandError] = useState("");
   const [brandWatchList, setBrandWatchList] = useState(() => loadPersistedList("fp_musinsa_brand_watch"));
   const [openBrand, setOpenBrand] = useState(null);
 
@@ -1122,7 +1121,8 @@ function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availabl
     onActiveListChange?.({ label: `${cat} · ${filterLabel}`, categoryName: cat, items: filteredList });
   }, [filteredList, cat, filter]);
 
-  // 브랜드 검색 후보/결과는 카테고리 구분 없이 "전체" 리스트 전체를 훑는다(브랜드 상품이 여러 카테고리에 흩어져 있을 수 있어서).
+  // 자동완성 후보는 브랜드명만 모아두지만(카테고리 구분 없이 "전체" 리스트 전체를 훑음), 실제 검색은
+  // 브랜드명이 아니어도(상품명에 포함된 아무 단어여도) 되도록 addBrandWatch/openBrandItems에서 자유 입력을 허용한다.
   const brandCandidates = useMemo(() => {
     const set = new Set();
     CATEGORIES.forEach((c) => (rankings?.[c]?.all || []).forEach((item) => { if (item.brand) set.add(item.brand); }));
@@ -1132,25 +1132,27 @@ function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availabl
   const addBrandWatch = () => {
     const text = brandInput.trim();
     if (!text) return;
-    const match = brandCandidates.find((b) => b === text) || brandCandidates.find((b) => b.includes(text));
-    if (!match) { setBrandError("현재 데이터에서 찾을 수 없어요."); return; }
-    setBrandError("");
     setBrandInput("");
-    if (!brandWatchList.includes(match)) setBrandWatchList((prev) => [...prev, match]);
-    setOpenBrand(match);
+    if (!brandWatchList.includes(text)) setBrandWatchList((prev) => [...prev, text]);
+    setOpenBrand(text);
   };
   const removeBrandWatch = (b) => {
     setBrandWatchList((prev) => prev.filter((x) => x !== b));
     setOpenBrand((cur) => (cur === b ? null : cur));
   };
 
+  // 브랜드명뿐 아니라 상품명에 포함된 단어로도 찾을 수 있도록 브랜드/이름 둘 다에서 부분일치를 본다.
   // CATEGORIES 순서(전체 -> 상의 -> 아우터 -> ...)대로 묶어서 보여준다. 각 카테고리 안에서는 이미
   // rankings[c].all이 순위순으로 정렬돼 있으니 그대로 push하면 카테고리별로 순위순 그룹이 유지된다.
   const openBrandItems = useMemo(() => {
     if (!openBrand) return [];
+    const term = openBrand.toLowerCase();
     const items = [];
     CATEGORIES.forEach((c) => {
-      (rankings?.[c]?.all || []).forEach((item) => { if (item.brand === openBrand) items.push({ ...item, category: c }); });
+      (rankings?.[c]?.all || []).forEach((item) => {
+        const matches = (item.brand || "").toLowerCase().includes(term) || (item.name || "").toLowerCase().includes(term);
+        if (matches) items.push({ ...item, category: c });
+      });
     });
     return items;
   }, [rankings, openBrand]);
@@ -1191,9 +1193,9 @@ function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availabl
           <input
             list="musinsa-brand-watch-list"
             value={brandInput}
-            onChange={(e) => { setBrandInput(e.target.value); setBrandError(""); }}
+            onChange={(e) => setBrandInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") addBrandWatch(); }}
-            placeholder="브랜드 검색"
+            placeholder="브랜드/검색어"
             className="px-2.5 py-1 rounded-full text-xs"
             style={{ border: `1px solid ${C.line}`, color: C.ink, width: 140 }}
           />
@@ -1201,7 +1203,6 @@ function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availabl
             {brandCandidates.map((b) => (<option key={b} value={b} />))}
           </datalist>
           <button onClick={addBrandWatch} className="px-3 py-1 rounded-full text-xs font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>추가</button>
-          {!!brandError && <span className="text-[11px] font-medium whitespace-nowrap" style={{ color: C.signal }}>{brandError}</span>}
         </div>
       </div>
       <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
@@ -1248,7 +1249,6 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
   const [period, setPeriod] = useState("실시간");
   const [visibleCount, setVisibleCount] = useState(100);
   const [brandInput, setBrandInput] = useState("");
-  const [brandError, setBrandError] = useState("");
   const [brandWatchList, setBrandWatchList] = useState(() => loadPersistedList("fp_cm29_brand_watch"));
   const [openBrand, setOpenBrand] = useState(null);
 
@@ -1266,7 +1266,9 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
     onActiveListChange?.({ label: `${largeCat} · ${subCat} · ${period}`, categoryName: subCat, items: filteredList });
   }, [filteredList, largeCat, subCat, period]);
 
-  // 브랜드 검색은 현재 대분류+기간의 "전체" 서브카테고리(그 대분류의 모든 상품이 다 들어있는 목록)에서 찾는다.
+  // 검색 대상은 현재 대분류+기간의 "전체" 서브카테고리(그 대분류의 모든 상품이 다 들어있는 목록)에서 찾는다.
+  // 자동완성 후보는 브랜드명만 모아두지만, 실제 검색은 브랜드명이 아니어도(상품명에 포함된 아무 단어여도) 되도록
+  // addBrandWatch/openBrandItems에서 자유 입력을 허용한다.
   const brandPool = useMemo(() => rankings?.[largeCat]?.["전체"]?.[period] || [], [rankings, largeCat, period]);
   const brandCandidates = useMemo(() => {
     const set = new Set();
@@ -1277,21 +1279,22 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
   const addBrandWatch = () => {
     const text = brandInput.trim();
     if (!text) return;
-    const match = brandCandidates.find((b) => b === text) || brandCandidates.find((b) => b.includes(text));
-    if (!match) { setBrandError("현재 데이터에서 찾을 수 없어요."); return; }
-    setBrandError("");
     setBrandInput("");
-    if (!brandWatchList.includes(match)) setBrandWatchList((prev) => [...prev, match]);
-    setOpenBrand(match);
+    if (!brandWatchList.includes(text)) setBrandWatchList((prev) => [...prev, text]);
+    setOpenBrand(text);
   };
   const removeBrandWatch = (b) => {
     setBrandWatchList((prev) => prev.filter((x) => x !== b));
     setOpenBrand((cur) => (cur === b ? null : cur));
   };
 
+  // 브랜드명뿐 아니라 상품명에 포함된 단어로도 찾을 수 있도록 브랜드/이름 둘 다에서 부분일치를 본다.
   const openBrandItems = useMemo(() => {
     if (!openBrand) return [];
-    return brandPool.filter((item) => item.brand === openBrand).sort((a, b) => a.rank - b.rank);
+    const term = openBrand.toLowerCase();
+    return brandPool
+      .filter((item) => (item.brand || "").toLowerCase().includes(term) || (item.name || "").toLowerCase().includes(term))
+      .sort((a, b) => a.rank - b.rank);
   }, [brandPool, openBrand]);
 
   return (
@@ -1336,9 +1339,9 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
           <input
             list="cm29-brand-watch-list"
             value={brandInput}
-            onChange={(e) => { setBrandInput(e.target.value); setBrandError(""); }}
+            onChange={(e) => setBrandInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") addBrandWatch(); }}
-            placeholder="브랜드 검색"
+            placeholder="브랜드/검색어"
             className="px-2.5 py-1 rounded-full text-xs"
             style={{ border: `1px solid ${C.line}`, color: C.ink, width: 140 }}
           />
@@ -1346,7 +1349,6 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
             {brandCandidates.map((b) => (<option key={b} value={b} />))}
           </datalist>
           <button onClick={addBrandWatch} className="px-3 py-1 rounded-full text-xs font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>추가</button>
-          {!!brandError && <span className="text-[11px] font-medium whitespace-nowrap" style={{ color: C.signal }}>{brandError}</span>}
         </div>
       </div>
       <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
