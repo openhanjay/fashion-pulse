@@ -22,7 +22,7 @@
 <div id="root"></div>
 
 <script type="text/babel">
-const { useState, useMemo, useEffect, useRef } = React;
+const { useState, useMemo, useEffect } = React;
 
 /* =========================================================================
    COLOR / TYPE TOKENS
@@ -1827,15 +1827,16 @@ function FashionMarketerDashboard() {
   const [musinsaSelectedTime, setMusinsaSelectedTime] = useState(null);
   const [activeCategoryInsight, setActiveCategoryInsight] = useState(null);
 
-  // 플랫폼(view)을 실제로 바꿨을 때만 직전 플랫폼의 AI 분석을 비워준다 - 새 플랫폼의 랭킹 패널이
-  // 마운트되면서 곧바로 자기 데이터로 다시 채운다. (마운트 시점엔 건드리지 않아야 함: 마운트 때도
-  // 이 이펙트가 한 번 실행되는데, 그때 비워버리면 RankingPanel이 막 채워넣은 초기값을 지워버려서
-  // 페이지에 처음 들어왔을 때 "전체" 카테고리의 AI 분석이 안 보이는 버그가 생김.)
-  const prevViewRef = useRef(view);
-  useEffect(() => {
-    if (prevViewRef.current !== view) setActiveCategoryInsight(null);
-    prevViewRef.current = view;
-  }, [view]);
+  // 플랫폼 전환 시 AI 분석을 비우는 걸 별도 useEffect로 하면, 새 플랫폼의 랭킹 패널이 마운트되면서
+  // onActiveListChange로 새 값을 채워넣는 이펙트와 "같은 커밋의 이펙트 플러시" 안에서 경쟁하게 된다
+  // (자식 이펙트가 먼저 실행되고 그다음 부모 이펙트가 실행되는데, 부모 쪽에서 null로 비우는 게 나중에
+  // 실행되면 자식이 막 채워넣은 값을 덮어써버려서 AI 분석이 계속 안 보이는 버그가 생김). 그래서 view를
+  // 바꾸는 이 클릭 핸들러 안에서 동기적으로 같이 비워준다 - 그러면 그 이후로는 새로 마운트된 패널의
+  // 이펙트만 이 값을 건드리게 되어 경쟁이 없다.
+  const handleChangeView = (key) => {
+    setView(key);
+    setActiveCategoryInsight(null);
+  };
 
   const musinsaDates = useMemo(() => (musinsaIndex ? Object.keys(musinsaIndex).sort() : []), [musinsaIndex]);
   const selectedDateKey = useMemo(() => formatDateKey(selectedDate), [selectedDate]);
@@ -1974,7 +1975,7 @@ function FashionMarketerDashboard() {
 
   return (
     <div className="min-h-screen w-full flex" style={{ background: C.paper }}>
-      <Sidebar active={view} onChange={setView} activeCategoryInsight={activeCategoryInsight} />
+      <Sidebar active={view} onChange={handleChangeView} activeCategoryInsight={activeCategoryInsight} />
       <div className="flex-1 min-w-0 flex flex-col">
         <header className="px-6 pt-6 pb-4">
           <div className="flex items-center justify-between flex-wrap gap-3">
