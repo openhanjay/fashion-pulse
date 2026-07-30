@@ -1920,9 +1920,19 @@ function Sidebar({ active, onChange, activeCategoryInsight }) {
   );
 }
 
+const VIEW_KEYS = ["musinsa", "cm29", "instagram"];
+
 function FashionMarketerDashboard() {
   const [selectedDate, setSelectedDate] = useState(new Date(2026, 6, 20));
-  const [view, setView] = useState("musinsa");
+  // 새로고침해도 무신사로 안 돌아가고 보고 있던 탭 그대로 유지되도록 localStorage에서 복원.
+  const [view, setView] = useState(() => {
+    try {
+      const saved = localStorage.getItem("fp_view");
+      return VIEW_KEYS.includes(saved) ? saved : "musinsa";
+    } catch {
+      return "musinsa";
+    }
+  });
   const [musinsaRankings, setMusinsaRankings] = useState(MUSINSA_MOCK_RANKINGS);
   const [musinsaDataSource, setMusinsaDataSource] = useState("mock");
   const [musinsaIndex, setMusinsaIndex] = useState(null); // { "YYYY-MM-DD": ["08-00", "17-00"] } | null(로딩 전)
@@ -1938,6 +1948,9 @@ function FashionMarketerDashboard() {
   const handleChangeView = (key) => {
     setView(key);
     setActiveCategoryInsight(null);
+    try {
+      localStorage.setItem("fp_view", key);
+    } catch {}
   };
 
   const musinsaDates = useMemo(() => (musinsaIndex ? Object.keys(musinsaIndex).sort() : []), [musinsaIndex]);
