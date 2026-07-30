@@ -833,6 +833,13 @@ function ProductCard({ item, iconSeed }) {
 /* 브랜드 검색으로 추가한 브랜드의 현재 랭킹을 상품 카드(썸네일/이름/가격)로 보여주는 팝업.
    각 카드 위에 그 상품이 속한 카테고리 배지를 붙여서 어느 카테고리 몇 위인지 바로 보이게 한다. */
 function BrandWatchModal({ brand, items, onClose }) {
+  // 무신사 쪽(카테고리를 다 훑어서 만든 목록)은 item.category가 있으니 카테고리별로 묶어서 보여주고,
+  // 29CM 쪽(이미 하나의 서브카테고리 목록)처럼 category가 없으면 그냥 하나의 그리드로 보여준다.
+  const hasCategoryInfo = items.some((it) => it.category);
+  const groups = hasCategoryInfo
+    ? CATEGORIES.map((c) => ({ label: c, items: items.filter((it) => it.category === c) })).filter((g) => g.items.length > 0)
+    : [{ label: null, items }];
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(23,24,28,0.55)" }} onClick={onClose}>
       <div className="rounded-2xl w-full max-w-3xl max-h-[85vh] overflow-y-auto p-5" style={{ background: C.white }} onClick={(e) => e.stopPropagation()}>
@@ -843,11 +850,13 @@ function BrandWatchModal({ brand, items, onClose }) {
         {items.length === 0 ? (
           <div className="flex items-center justify-center rounded-xl text-sm font-medium" style={{ height: 120, background: C.paper, color: C.mute }}>현재 랭킹 안에 없어요.</div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {items.map((item, i) => (
-              <div key={`${item.category || ""}-${item.rank}-${i}`} className="flex flex-col gap-1.5">
-                {!!item.category && (<span className="text-[10px] font-semibold px-1.5 py-0.5 rounded self-start" style={{ background: C.indigoSoft, color: C.indigo }}>{item.category}</span>)}
-                <ProductCard item={item} iconSeed={item.rank * 7 + i} />
+          <div className="flex flex-col gap-5">
+            {groups.map((g, gi) => (
+              <div key={g.label || gi}>
+                {!!g.label && (<p className="text-sm font-bold mb-2" style={{ color: "#1E3A8A" }}>{g.label} ({g.items.length}개)</p>)}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {g.items.map((item, i) => (<ProductCard key={`${g.label || ""}-${item.rank}-${i}`} item={item} iconSeed={item.rank * 7 + i} />))}
+                </div>
               </div>
             ))}
           </div>
