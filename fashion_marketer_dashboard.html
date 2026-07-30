@@ -261,21 +261,14 @@ function averageCm29Rankings(snapshots) {
   return result;
 }
 
-const IG_BRANDS = [
-  { name: "VIVASTUDIO", handle: "@vivastudio_official", initials: "VS", color: "#17181C" },
-  { name: "COVERNAT", handle: "@covernat_official", initials: "CN", color: "#3E5C76" },
-  { name: "THISISNEVERTHAT", handle: "@thisisneverthat", initials: "TN", color: "#8A5A2E" },
-  { name: "ADER ERROR", handle: "@ader.error", initials: "AE", color: "#6B3FA0" },
-];
-
-const TIMELINE_EVENTS = [
-  { brand: IG_BRANDS[0], date: "2026.07.19", seasonOff: { active: true, period: "7.20 ~ 7.31" }, drop: "26 F/W 프리뷰 8월 초 공개 예정", issue: "시즌오프 최대 50% 세일 티저 게시 · 좋아요 전일 대비 +32%" },
-  { brand: IG_BRANDS[1], date: "2026.07.19", seasonOff: { active: false, period: null }, drop: "여름 리넨 캡슐 컬렉션 7.25 정오 출시", issue: "신제품 룩북 릴스 업로드 · 댓글에 '재입고 문의' 다수" },
-  { brand: IG_BRANDS[2], date: "2026.07.18", seasonOff: { active: false, period: null }, drop: "협업 라인 발표 미정", issue: "브랜드 창립 기념 아카이브 사진 게시, 팬 반응 우호적" },
-  { brand: IG_BRANDS[3], date: "2026.07.17", seasonOff: { active: true, period: "7.15 ~ 7.22" }, drop: "그래픽 티셔츠 신규 컬러 7.28 예정", issue: "세일 마지막 주 카운트다운 스토리 반복 게시" },
-  { brand: IG_BRANDS[0], date: "2026.07.16", seasonOff: { active: true, period: "7.20 ~ 7.31" }, drop: "26 F/W 프리뷰 8월 초 공개 예정", issue: "인플루언서 협업 착용샷 3건 동시 게시" },
-  { brand: IG_BRANDS[1], date: "2026.07.15", seasonOff: { active: false, period: null }, drop: "여름 리넨 캡슐 컬렉션 7.25 정오 출시", issue: "제작 비하인드 영상 업로드, 조회수 급상승" },
-];
+/* 인스타그램 URL(https://www.instagram.com/username/, @username, 그냥 username 등)에서 계정 아이디만 뽑아낸다. */
+function extractInstagramUsername(input) {
+  const trimmed = (input || "").trim();
+  if (!trimmed) return "";
+  const urlMatch = trimmed.match(/instagram\.com\/([^/?#]+)/i);
+  if (urlMatch) return urlMatch[1].replace(/^@/, "");
+  return trimmed.replace(/^@/, "").replace(/\/$/, "");
+}
 
 const LINE_PALETTE = [
   "#4338CA","#FF3B5C","#0F9D8C","#D97B0D","#7A45C9",
@@ -1704,7 +1697,57 @@ function Cm29PopularKeywordsPanel({ cm29Index, selectedDateKey }) {
   );
 }
 
-function InstagramTimeline() {
+/* 경쟁사 인스타그램 계정 관리 카드 하나(1행에 2개씩 배치됨). 아직 실제 수집 연동 전이라
+   게시물 자리는 플레이스홀더만 보여준다(다음 단계에서 Apify 연동 붙일 예정). */
+function InstagramBrandCard({ brand, onRemove }) {
+  return (
+    <div className="rounded-xl p-3 flex flex-col gap-2.5" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="flex items-center justify-center rounded-full text-[11px] font-black shrink-0" style={{ width: 28, height: 28, background: C.ink, color: C.white }}>
+            {(brand.name || brand.username || "?").slice(0, 1).toUpperCase()}
+          </span>
+          <div className="min-w-0">
+            <p className="text-xs font-bold truncate" style={{ color: C.ink }}>{brand.name}</p>
+            <a href={brand.url} target="_blank" rel="noreferrer" className="text-[10.5px] truncate block" style={{ color: C.mute }}>@{brand.username}</a>
+          </div>
+        </div>
+        <button onClick={onRemove} className="text-xs font-bold shrink-0" style={{ color: C.mute }}>×</button>
+      </div>
+      <div className="flex items-center justify-center rounded-lg text-[11px] font-medium text-center px-2" style={{ height: 68, background: C.white, color: C.mute, border: `1px dashed ${C.line}` }}>
+        아직 수집된 게시물이 없어요
+      </div>
+    </div>
+  );
+}
+
+function InstagramMonitoringPanel() {
+  const [brands, setBrands] = useState(() => loadPersistedList("fp_ig_brands"));
+  const [adding, setAdding] = useState(false);
+  const [urlInput, setUrlInput] = useState("");
+  const [nameInput, setNameInput] = useState("");
+
+  useEffect(() => { savePersistedList("fp_ig_brands", brands); }, [brands]);
+
+  const previewUsername = extractInstagramUsername(urlInput);
+
+  const addBrand = () => {
+    const url = urlInput.trim();
+    if (!url) return;
+    const username = extractInstagramUsername(url);
+    const name = nameInput.trim() || username;
+    setBrands((prev) => [...prev, { id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, name, url, username }]);
+    setUrlInput("");
+    setNameInput("");
+    setAdding(false);
+  };
+  const cancelAdd = () => {
+    setAdding(false);
+    setUrlInput("");
+    setNameInput("");
+  };
+  const removeBrand = (id) => setBrands((prev) => prev.filter((b) => b.id !== id));
+
   return (
     <div className="rounded-2xl p-5" style={{ background: C.white, border: `1px solid ${C.line}` }}>
       <div className="flex items-center justify-between mb-4">
@@ -1712,34 +1755,44 @@ function InstagramTimeline() {
           <Camera size={16} color={C.indigo} />
           <h2 className="text-base font-bold" style={{ color: C.ink }}>경쟁사 인스타그램 모니터링</h2>
         </div>
-        <span className="text-xs font-medium" style={{ color: C.mute }}>4개 브랜드 · 자동 수집</span>
+        <span className="text-xs font-medium" style={{ color: C.mute }}>{brands.length}개 브랜드</span>
       </div>
-      <div className="relative pl-5">
-        <div className="absolute left-[7px] top-1 bottom-1 w-px" style={{ background: C.line }} />
-        <div className="flex flex-col gap-4">
-          {TIMELINE_EVENTS.map((ev, i) => (
-            <div key={i} className="relative">
-              <span className="absolute -left-5 top-1.5 rounded-full" style={{ width: 9, height: 9, background: ev.brand.color, border: `2px solid ${C.white}` }} />
-              <div className="rounded-xl p-3" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="flex items-center justify-center rounded-full text-[10px] font-black" style={{ width: 24, height: 24, background: ev.brand.color, color: C.white }}>{ev.brand.initials}</span>
-                    <div>
-                      <p className="text-xs font-bold leading-none" style={{ color: C.ink }}>{ev.brand.name}</p>
-                      <p className="text-[10.5px]" style={{ color: C.mute }}>{ev.brand.handle}</p>
-                    </div>
-                  </div>
-                  <span className="text-[10.5px] font-semibold tabular-nums" style={{ color: C.mute }}>{ev.date}</span>
-                </div>
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  {ev.seasonOff.active && (<span className="text-[10.5px] font-bold px-2 py-0.5 rounded-full" style={{ background: C.signalSoft, color: C.signal }}>시즌오프 · {ev.seasonOff.period}</span>)}
-                  <span className="text-[10.5px] font-bold px-2 py-0.5 rounded-full" style={{ background: C.indigoSoft, color: C.indigo }}>Drop · {ev.drop}</span>
-                </div>
-                <p className="text-[12.5px] leading-snug" style={{ color: C.ink }}>{ev.issue}</p>
-              </div>
+      <div className="grid grid-cols-2 gap-3">
+        {brands.map((b) => (<InstagramBrandCard key={b.id} brand={b} onRemove={() => removeBrand(b.id)} />))}
+        {adding ? (
+          <div className="rounded-xl p-3 flex flex-col gap-2" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+            <input
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") addBrand(); }}
+              placeholder="인스타그램 URL"
+              autoFocus
+              className="px-2.5 py-1.5 rounded-lg text-xs"
+              style={{ border: `1px solid ${C.line}`, color: C.ink, background: C.white }}
+            />
+            {!!urlInput && (<span className="text-[10.5px] font-medium" style={{ color: C.mute }}>아이디: @{previewUsername || "-"}</span>)}
+            <input
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") addBrand(); }}
+              placeholder="브랜드명 (자유 입력)"
+              className="px-2.5 py-1.5 rounded-lg text-xs"
+              style={{ border: `1px solid ${C.line}`, color: C.ink, background: C.white }}
+            />
+            <div className="flex items-center gap-1.5 justify-end">
+              <button onClick={cancelAdd} className="px-3 py-1 rounded-full text-xs font-bold" style={{ color: C.mute }}>취소</button>
+              <button onClick={addBrand} className="px-3 py-1 rounded-full text-xs font-bold" style={{ background: C.ink, color: C.white }}>추가</button>
             </div>
-          ))}
-        </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => setAdding(true)}
+            className="rounded-xl flex items-center justify-center gap-1.5 text-sm font-bold transition-colors"
+            style={{ minHeight: 108, background: C.paper, border: `1px dashed ${C.line}`, color: C.mute }}
+          >
+            + 브랜드 추가
+          </button>
+        )}
       </div>
     </div>
   );
@@ -2043,7 +2096,7 @@ function FashionMarketerDashboard() {
               />
             </>
           )}
-          {view === "instagram" && <InstagramTimeline />}
+          {view === "instagram" && <InstagramMonitoringPanel />}
         </main>
         <footer className="text-center text-[11px] py-4" style={{ color: C.mute }}>ⓘ 무신사 랭킹은 {musinsaDataSource === "live" ? `${panelDateLabel} ${musinsaSelectedTime} 수집분(실시간 데이터)` : "수집 파일을 찾지 못해 표시 중인 샘플(목업) 데이터"}입니다. 29CM 및 키워드/인스타그램 지표는 목업(더미) 데이터입니다.</footer>
       </div>
