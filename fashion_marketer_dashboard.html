@@ -1708,7 +1708,7 @@ function InstagramBrandCard({ brand, onRemove, onEdit }) {
             {(brand.name || brand.username || "?").slice(0, 1).toUpperCase()}
           </span>
           <div className="min-w-0">
-            <p className="text-xs font-bold truncate" style={{ color: C.ink }}>{brand.name}</p>
+            <p className="text-sm font-bold truncate" style={{ color: C.ink }}>{brand.name}</p>
             <a href={brand.url} target="_blank" rel="noreferrer" className="text-[10.5px] truncate block" style={{ color: C.mute }}>@{brand.username}</a>
           </div>
         </div>
