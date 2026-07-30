@@ -6,7 +6,7 @@
  * 아무나 계속 눌러서 도배하지 못하도록, KV에 짧은 TTL로 "최근 실행됨" 표시를 남겨
  * 쿨다운(1시간) 동안은 재요청을 막는다.
  *
- * 08:00/17:00 KST 자동 스크랩도 (GitHub Actions 자체 cron 대신) 이 Worker의 Cron Trigger가 맡는다.
+ * 08:00/13:00/18:00/23:00 KST 자동 스크랩도 (GitHub Actions 자체 cron 대신) 이 Worker의 Cron Trigger가 맡는다.
  * GitHub Actions의 예약 실행은 부하가 많을 때 몇십 분씩 늦어질 수 있는데, Cloudflare Cron Trigger가
  * 훨씬 시각을 잘 지키기 때문. wrangler.toml의 [triggers] crons 참고.
  */
@@ -66,7 +66,7 @@ export default {
     return json({ ok: false, message: "요청이 실패했어요.", detail }, 502);
   },
 
-  // 08:00 / 17:00 KST 예약 실행 (wrangler.toml [triggers] crons 참고). 쿨다운 여부와 무관하게 항상 실행하고,
+  // 08:00 / 13:00 / 18:00 / 23:00 KST 예약 실행 (wrangler.toml [triggers] crons 참고). 쿨다운 여부와 무관하게 항상 실행하고,
   // 성공하면 쿨다운 락을 남겨서 직후의 수동 버튼 클릭으로 인한 중복 스크랩을 막는다.
   async scheduled(event, env, ctx) {
     ctx.waitUntil(

@@ -1,7 +1,7 @@
 name: Scrape rankings
 
 on:
-  # 08:00/17:00 KST 예약 실행은 Cloudflare Worker(worker/index.js의 scheduled 핸들러,
+  # 08:00/13:00/18:00/23:00 KST 예약 실행은 Cloudflare Worker(worker/index.js의 scheduled 핸들러,
   # wrangler.toml [triggers] crons)가 workflow_dispatch로 대신 트리거한다.
   # GitHub Actions 자체 cron은 부하가 많을 때 지연이 커서 쓰지 않음.
   workflow_dispatch: {}
