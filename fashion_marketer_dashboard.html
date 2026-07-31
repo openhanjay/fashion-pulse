@@ -581,14 +581,15 @@ function WeekAverageModal({ initialWeekStart, musinsaIndex, availableDates, onCl
 }
 
 /* 29CM판 WeekAverageModal. 29CM은 대분류(여성의류/남성의류) > 서브카테고리 > 기간(실시간/일간/주간/월간)
-   3단계 구조라서 무신사 쪽 카테고리 탭 하나 대신 이 3가지를 각각 탭으로 골라야 한다. 나머지 동작
-   (지난주/다음주 이동, 전주 대비 변동 계산)은 WeekAverageModal과 동일. */
+   3단계 구조라서 무신사 쪽 카테고리 탭 하나 대신 이 3가지를 각각 탭으로 골라야 한다. 대분류 탭 옆에
+   "인기검색어" 탭도 붙여서 그 주의 평균 인기 검색어(TOP10, 전주 대비 변동 포함)도 볼 수 있다.
+   나머지 동작(지난주/다음주 이동, 전주 대비 변동 계산)은 WeekAverageModal과 동일. */
 function Cm29WeekAverageModal({ initialWeekStart, cm29Index, availableDates, onClose }) {
   const [weekStart, setWeekStart] = useState(initialWeekStart);
   const [largeCat, setLargeCat] = useState(CM29_LARGE_CATEGORIES[0]);
   const [subCat, setSubCat] = useState("전체");
   const [period, setPeriod] = useState("실시간");
-  const [data, setData] = useState(null); // null=로딩중, {}=데이터 없음, {...}=평균 랭킹
+  const [data, setData] = useState(null); // null=로딩중, {}=데이터 없음, { products, keywords }=평균 랭킹
 
   const weekEnd = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + 6);
   const label = `${formatDotDate(weekStart)} ~ ${formatDotDate(weekEnd)}`;
@@ -597,46 +598,59 @@ function Cm29WeekAverageModal({ initialWeekStart, cm29Index, availableDates, onC
   useEffect(() => {
     setData(null);
     const fetchOne = (dKey, rawTime) => fetch(`data/cm29_${dKey}_${rawTime}.json`).then((res) => { if (!res.ok) throw new Error("no snapshot file"); return res.json(); });
-    // 무신사판과 동일한 이유로, 하루치를 먼저 averageCm29Rankings로 평균 내 "그날의 평균"을 만들고,
-    // 그 날짜별 평균들끼리는 결측일(그 주 안에서 등장 안 한 날)을 순위밖(101위)으로 처리해서 다시
-    // 평균 낸다 - 그래야 하루만 반짝 1위로 새로 올라온 상품이 주간 평균에서 과하게 앞서지 않는다.
-    const fetchWeekAvg = (ws) => {
+    // 무신사판과 동일한 이유로, 하루치를 먼저 averageCm29Rankings/averageCm29PopularKeywords로 평균 내
+    // "그날의 평균"을 만들고, 그 날짜별 평균들끼리는 결측일(그 주 안에서 등장 안 한 날)을 순위밖으로
+    // 처리해서 다시 평균 낸다 - 그래야 하루만 반짝 1위로 새로 올라온 상품/검색어가 주간 평균에서
+    // 과하게 앞서지 않는다.
+    const fetchWeekBundle = (ws) => {
       const dateKeys = weekDateKeysOf(ws).filter((k) => availableDates.includes(k));
       if (!dateKeys.length) return Promise.resolve(null);
       return Promise.all(
-        dateKeys.map((dKey) => Promise.all((cm29Index[dKey] || []).map((t) => fetchOne(dKey, t))).then((daySnapshots) => averageCm29Rankings(daySnapshots)))
-      ).then((dailyAverages) => {
-        const result = {};
+        dateKeys.map((dKey) => Promise.all((cm29Index[dKey] || []).map((t) => fetchOne(dKey, t))).then((daySnapshots) => ({
+          products: averageCm29Rankings(daySnapshots),
+          keywords: averageCm29PopularKeywords(daySnapshots),
+        })))
+      ).then((dailyBundles) => {
+        const products = {};
         const largeCats = new Set();
-        dailyAverages.forEach((d) => Object.keys(d || {}).forEach((k) => largeCats.add(k)));
-        largeCats.forEach((largeCat) => {
-          result[largeCat] = {};
+        dailyBundles.forEach((b) => Object.keys(b.products || {}).forEach((k) => largeCats.add(k)));
+        largeCats.forEach((lc) => {
+          products[lc] = {};
           const subCats = new Set();
-          dailyAverages.forEach((d) => Object.keys(d?.[largeCat] || {}).forEach((k) => subCats.add(k)));
-          subCats.forEach((subCat) => {
-            result[largeCat][subCat] = {};
+          dailyBundles.forEach((b) => Object.keys(b.products?.[lc] || {}).forEach((k) => subCats.add(k)));
+          subCats.forEach((sc) => {
+            products[lc][sc] = {};
             const periods = new Set();
-            dailyAverages.forEach((d) => Object.keys(d?.[largeCat]?.[subCat] || {}).forEach((k) => periods.add(k)));
-            periods.forEach((period) => {
-              const dailyLists = dailyAverages.map((d) => d?.[largeCat]?.[subCat]?.[period] || []);
+            dailyBundles.forEach((b) => Object.keys(b.products?.[lc]?.[sc] || {}).forEach((k) => periods.add(k)));
+            periods.forEach((p) => {
+              const dailyLists = dailyBundles.map((b) => b.products?.[lc]?.[sc]?.[p] || []);
               const merged = averageWithAbsencePenalty(dailyLists, (item) => item.url || `${item.brand}__${item.name}`, 101);
-              result[largeCat][subCat][period] = merged.slice(0, 100).map((item, idx) => ({ ...item, rank: idx + 1 }));
+              products[lc][sc][p] = merged.slice(0, 100).map((item, idx) => ({ ...item, rank: idx + 1 }));
             });
           });
         });
-        return result;
+        const keywordDailyLists = dailyBundles.map((b) => b.keywords);
+        const mergedKeywords = averageWithAbsencePenalty(keywordDailyLists, (item) => item.keyword, 11);
+        const keywords = mergedKeywords.slice(0, 10).map((item, idx) => ({ ...item, rank: idx + 1 }));
+        return { products, keywords };
       });
     };
     const priorWeekStart = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() - 7);
-    Promise.all([fetchWeekAvg(weekStart), fetchWeekAvg(priorWeekStart)])
+    Promise.all([fetchWeekBundle(weekStart), fetchWeekBundle(priorWeekStart)])
       .then(([thisWeek, priorWeek]) => {
         if (!thisWeek) { setData({}); return; }
         if (priorWeek) {
-          Object.keys(thisWeek).forEach((lc) => {
-            const subCats = Object.keys(thisWeek[lc]);
+          Object.keys(thisWeek.products).forEach((lc) => {
+            const subCats = Object.keys(thisWeek.products[lc]);
             const periodsSet = new Set();
-            subCats.forEach((sc) => Object.keys(thisWeek[lc][sc] || {}).forEach((p) => periodsSet.add(p)));
-            attachAverageDelta(thisWeek[lc], priorWeek[lc] || {}, subCats, [...periodsSet]);
+            subCats.forEach((sc) => Object.keys(thisWeek.products[lc][sc] || {}).forEach((p) => periodsSet.add(p)));
+            attachAverageDelta(thisWeek.products[lc], priorWeek.products[lc] || {}, subCats, [...periodsSet]);
+          });
+          // 인기 검색어는 url이 없어서 attachAverageDelta(url 매칭)를 못 쓰고, 검색어 문자열로 직접 매칭한다
+          // (Cm29PopularKeywordsPanel의 delta 계산과 동일한 방식).
+          thisWeek.keywords = thisWeek.keywords.map((item) => {
+            const priorIdx = priorWeek.keywords.findIndex((p) => p.keyword === item.keyword);
+            return { ...item, delta: priorIdx === -1 ? "NEW" : priorWeek.keywords[priorIdx].rank - item.rank };
           });
         }
         setData(thisWeek);
@@ -645,18 +659,20 @@ function Cm29WeekAverageModal({ initialWeekStart, cm29Index, availableDates, onC
   }, [weekStart, cm29Index, availableDates]);
 
   const isEmpty = data && Object.keys(data).length === 0;
-  const subCats = useMemo(() => Object.keys(data?.[largeCat] || {}), [data, largeCat]);
+  const subCats = useMemo(() => Object.keys(data?.products?.[largeCat] || {}), [data, largeCat]);
   useEffect(() => {
     if (subCats.length && !subCats.includes(subCat)) setSubCat(subCats[0]);
   }, [largeCat, subCats]);
-  const list = data ? (data?.[largeCat]?.[subCat]?.[period] || []) : null;
+  const showKeywords = largeCat === "인기검색어";
+  const list = data && !isEmpty ? (showKeywords ? (data.keywords || []) : (data.products?.[largeCat]?.[subCat]?.[period] || [])) : null;
+  const topTabs = [...CM29_LARGE_CATEGORIES, "인기검색어"];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(23,24,28,0.55)" }} onClick={onClose}>
       <div className="rounded-2xl w-full max-w-6xl max-h-[92vh] overflow-y-auto p-6" style={{ background: C.white }} onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-lg font-bold" style={{ color: C.ink }}>29CM 주간 평균 랭킹 TOP100</h3>
+            <h3 className="text-lg font-bold" style={{ color: C.ink }}>29CM 주간 평균 랭킹</h3>
             <div className="flex items-center gap-2 mt-1">
               <button onClick={() => setWeekStart(new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() - 7))} className="px-2 py-1 rounded-md text-xs font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>‹ 지난주</button>
               <p className="text-sm font-medium" style={{ color: C.mute }}>{label}</p>
@@ -668,26 +684,44 @@ function Cm29WeekAverageModal({ initialWeekStart, cm29Index, availableDates, onC
         {data && !isEmpty && (
           <div className="flex flex-col gap-2 mb-4">
             <div className="flex flex-wrap gap-1.5">
-              {CM29_LARGE_CATEGORIES.map((lc) => (
+              {topTabs.map((lc) => (
                 <button key={lc} onClick={() => setLargeCat(lc)} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: largeCat === lc ? C.ink : C.paper, color: largeCat === lc ? C.white : C.ink, border: `1px solid ${largeCat === lc ? C.ink : C.line}` }}>{lc}</button>
               ))}
             </div>
-            <div className="flex flex-wrap gap-1.5">
-              {subCats.map((sc) => (
-                <button key={sc} onClick={() => setSubCat(sc)} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: subCat === sc ? C.ink : C.paper, color: subCat === sc ? C.white : C.ink, border: `1px solid ${subCat === sc ? C.ink : C.line}` }}>{sc}</button>
-              ))}
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {CM29_PERIOD_FILTERS.map((p) => (
-                <button key={p.key} onClick={() => setPeriod(p.key)} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: period === p.key ? C.ink : C.paper, color: period === p.key ? C.white : C.ink, border: `1px solid ${period === p.key ? C.ink : C.line}` }}>{p.label}</button>
-              ))}
-            </div>
+            {!showKeywords && (
+              <>
+                <div className="flex flex-wrap gap-1.5">
+                  {subCats.map((sc) => (
+                    <button key={sc} onClick={() => setSubCat(sc)} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: subCat === sc ? C.ink : C.paper, color: subCat === sc ? C.white : C.ink, border: `1px solid ${subCat === sc ? C.ink : C.line}` }}>{sc}</button>
+                  ))}
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {CM29_PERIOD_FILTERS.map((p) => (
+                    <button key={p.key} onClick={() => setPeriod(p.key)} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: period === p.key ? C.ink : C.paper, color: period === p.key ? C.white : C.ink, border: `1px solid ${period === p.key ? C.ink : C.line}` }}>{p.label}</button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         )}
         {!data ? (
           <div className="flex items-center justify-center rounded-xl text-sm font-medium" style={{ height: 160, background: C.paper, color: C.mute }}>불러오는 중...</div>
         ) : isEmpty || list.length === 0 ? (
           <div className="flex items-center justify-center rounded-xl text-sm font-medium" style={{ height: 160, background: C.paper, color: C.mute }}>이 주에는 수집된 데이터가 없어요.</div>
+        ) : showKeywords ? (
+          <div className="flex flex-col gap-2">
+            {[list.slice(0, 5), list.slice(5, 10)].map((rowList, ri) => (
+              <div key={ri} className="grid grid-cols-5 gap-2">
+                {rowList.map((item) => (
+                  <div key={item.keyword} className="flex flex-col items-center gap-1 py-2 px-1 rounded-xl text-center" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+                    <span className="text-xs font-bold tabular-nums" style={{ color: C.mute }}>{item.rank}</span>
+                    <span className="text-sm font-semibold truncate w-full" style={{ color: C.ink }}>{item.keyword}</span>
+                    <CompactDelta delta={item.delta} />
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
             {list.map((item, i) => (<ProductCard key={item.url || `${largeCat}-${subCat}-${period}-${i}`} item={item} iconSeed={item.rank * 7 + i} />))}
