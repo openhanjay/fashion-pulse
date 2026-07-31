@@ -399,16 +399,13 @@ function MiniCalendar({ selected, onSelect, availableDates, onConfirmWeek }) {
       <div className="flex flex-col gap-1 flex-1">
         {weeks.map((week, wi) => {
           const firstDayIdx = week.findIndex((d) => d !== null);
-          let weekLabel = null, weekDateKeysWithData = [];
+          let weekStart = null, weekHasData = false;
           if (firstDayIdx !== -1) {
             const anchor = new Date(year, month, week[firstDayIdx]);
-            const weekStart = new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate() - anchor.getDay());
+            weekStart = new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate() - anchor.getDay());
             const weekDateKeys = Array.from({ length: 7 }, (_, i) => formatDateKey(new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + i)));
-            const weekEnd = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + 6);
-            weekLabel = `${formatDotDate(weekStart)} ~ ${formatDotDate(weekEnd)}`;
-            weekDateKeysWithData = isLive ? weekDateKeys.filter((k) => availableDates.includes(k)) : [];
+            weekHasData = isLive && weekDateKeys.some((k) => availableDates.includes(k));
           }
-          const weekHasData = weekDateKeysWithData.length > 0;
           return (
             <div key={wi} className="flex items-center gap-1">
               <div className="grid grid-cols-7 gap-y-1 flex-1">
@@ -430,7 +427,7 @@ function MiniCalendar({ selected, onSelect, availableDates, onConfirmWeek }) {
               {!!onConfirmWeek && (
                 <button
                   disabled={!weekHasData}
-                  onClick={() => onConfirmWeek({ label: weekLabel, dateKeys: weekDateKeysWithData })}
+                  onClick={() => onConfirmWeek(weekStart)}
                   className="shrink-0 rounded-md text-[10px] font-bold"
                   style={{ width: 34, height: 22, background: weekHasData ? C.ink : C.paper, color: weekHasData ? C.white : "#C9C7C0", border: `1px solid ${weekHasData ? C.ink : C.line}`, cursor: weekHasData ? "pointer" : "not-allowed" }}
                 >확인</button>
@@ -447,22 +444,57 @@ function MiniCalendar({ selected, onSelect, availableDates, onConfirmWeek }) {
   );
 }
 
-/* MiniCalendar의 주(week) 단위 "확인" 버튼을 눌렀을 때, 그 주에 실제 수집 데이터가 있던 날들만 모아
-   평균 낸 TOP150 랭킹을 보여주는 팝업. 상품 수가 많아서(카테고리당 최대 150개) 카테고리 탭으로 나눠 보여준다. */
-function WeekAverageModal({ label, data, onClose }) {
+/* MiniCalendar의 주(week) 단위 "확인" 버튼을 눌렀을 때 뜨는 팝업. 그 주(일~토)에 실제 수집 데이터가 있던
+   날들의 모든 시각 스냅샷을 모아 평균 낸 TOP150 랭킹을, 카테고리 탭으로 나눠 보여준다. 팝업 안에서
+   지난주/다음주 버튼으로 계속 이동할 수 있고, 그 직전 주(마찬가지로 평균)와 비교한 순위 변동(delta)도
+   함께 계산해서 상품 카드에 그대로 표시한다(전주 데이터가 아직 없으면 변동 없이 순위만 보여줌). */
+function WeekAverageModal({ initialWeekStart, musinsaIndex, availableDates, onClose }) {
+  const [weekStart, setWeekStart] = useState(initialWeekStart);
   const [cat, setCat] = useState("전체");
+  const [data, setData] = useState(null); // null=로딩중, {}=데이터 없음, {...}=평균 랭킹
+
+  const weekEnd = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + 6);
+  const label = `${formatDotDate(weekStart)} ~ ${formatDotDate(weekEnd)}`;
+  const weekDateKeysOf = (ws) => Array.from({ length: 7 }, (_, i) => formatDateKey(new Date(ws.getFullYear(), ws.getMonth(), ws.getDate() + i)));
+
+  useEffect(() => {
+    setData(null);
+    setCat("전체");
+    const fetchOne = (dKey, rawTime) => fetch(`data/musinsa_${dKey}_${rawTime}.json`).then((res) => { if (!res.ok) throw new Error("no snapshot file"); return res.json(); });
+    const fetchWeekAvg = (ws) => {
+      const dateKeys = weekDateKeysOf(ws).filter((k) => availableDates.includes(k));
+      if (!dateKeys.length) return Promise.resolve(null);
+      const fetches = dateKeys.flatMap((dKey) => (musinsaIndex[dKey] || []).map((t) => fetchOne(dKey, t)));
+      return Promise.all(fetches).then((snapshots) => averageRankings(snapshots));
+    };
+    const priorWeekStart = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() - 7);
+    Promise.all([fetchWeekAvg(weekStart), fetchWeekAvg(priorWeekStart)])
+      .then(([thisWeek, priorWeek]) => {
+        if (!thisWeek) { setData({}); return; }
+        if (priorWeek) attachAverageDelta(thisWeek, priorWeek, CATEGORIES, ["all", "rising", "new"]);
+        setData(thisWeek);
+      })
+      .catch(() => setData({}));
+  }, [weekStart, musinsaIndex, availableDates]);
+
   const list = data ? (data[cat]?.all || []) : null;
+  const isEmpty = data && Object.keys(data).length === 0;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(23,24,28,0.55)" }} onClick={onClose}>
-      <div className="rounded-2xl w-full max-w-3xl max-h-[85vh] overflow-y-auto p-5" style={{ background: C.white }} onClick={(e) => e.stopPropagation()}>
+      <div className="rounded-2xl w-full max-w-6xl max-h-[92vh] overflow-y-auto p-6" style={{ background: C.white }} onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-base font-bold" style={{ color: C.ink }}>주간 평균 랭킹 TOP150</h3>
-            <p className="text-xs font-medium mt-0.5" style={{ color: C.mute }}>{label}</p>
+            <h3 className="text-lg font-bold" style={{ color: C.ink }}>주간 평균 랭킹 TOP150</h3>
+            <div className="flex items-center gap-2 mt-1">
+              <button onClick={() => setWeekStart(new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() - 7))} className="px-2 py-1 rounded-md text-xs font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>‹ 지난주</button>
+              <p className="text-sm font-medium" style={{ color: C.mute }}>{label}</p>
+              <button onClick={() => setWeekStart(new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + 7))} className="px-2 py-1 rounded-md text-xs font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>다음주 ›</button>
+            </div>
           </div>
           <button onClick={onClose} className="text-sm font-bold px-2 py-1 rounded-full" style={{ color: C.mute }}>×</button>
         </div>
-        {data && (
+        {data && !isEmpty && (
           <div className="flex flex-wrap gap-1.5 mb-4">
             {CATEGORIES.map((c) => (
               <button key={c} onClick={() => setCat(c)} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: cat === c ? C.ink : C.paper, color: cat === c ? C.white : C.ink, border: `1px solid ${cat === c ? C.ink : C.line}` }}>{c}</button>
@@ -470,11 +502,11 @@ function WeekAverageModal({ label, data, onClose }) {
           </div>
         )}
         {!data ? (
-          <div className="flex items-center justify-center rounded-xl text-sm font-medium" style={{ height: 120, background: C.paper, color: C.mute }}>불러오는 중...</div>
-        ) : list.length === 0 ? (
-          <div className="flex items-center justify-center rounded-xl text-sm font-medium" style={{ height: 120, background: C.paper, color: C.mute }}>표시할 상품이 없어요.</div>
+          <div className="flex items-center justify-center rounded-xl text-sm font-medium" style={{ height: 160, background: C.paper, color: C.mute }}>불러오는 중...</div>
+        ) : isEmpty || list.length === 0 ? (
+          <div className="flex items-center justify-center rounded-xl text-sm font-medium" style={{ height: 160, background: C.paper, color: C.mute }}>이 주에는 수집된 데이터가 없어요.</div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
             {list.map((item, i) => (<ProductCard key={item.url || `${cat}-${i}`} item={item} iconSeed={item.rank * 7 + i} />))}
           </div>
         )}
@@ -2162,18 +2194,9 @@ function FashionMarketerDashboard() {
     return candidates.sort().slice(-1)[0];
   }, [musinsaDates, musinsaIndex, cm29Dates, cm29Index]);
 
-  // 데이터 조회 캘린더의 주(week) "확인" 버튼: 그 주에 데이터가 있는 날들의 모든 수집 시각 스냅샷을 모아
-  // averageRankings로 TOP150 평균을 내서 팝업으로 보여준다. data가 null인 동안은 "불러오는 중" 표시.
-  const [weekAvg, setWeekAvg] = useState(null); // { label, data: null(로딩중) | {...} } | null(닫힘)
-  const confirmMusinsaWeekAverage = ({ label, dateKeys }) => {
-    if (!dateKeys.length || !musinsaIndex) return;
-    setWeekAvg({ label, data: null });
-    const fetchOne = (dKey, rawTime) => fetch(`data/musinsa_${dKey}_${rawTime}.json`).then((res) => { if (!res.ok) throw new Error("no snapshot file"); return res.json(); });
-    const fetches = dateKeys.flatMap((dKey) => (musinsaIndex[dKey] || []).map((t) => fetchOne(dKey, t)));
-    Promise.all(fetches)
-      .then((snapshots) => setWeekAvg({ label, data: averageRankings(snapshots) }))
-      .catch(() => setWeekAvg(null));
-  };
+  // 데이터 조회 캘린더의 주(week) "확인" 버튼: 클릭한 주의 시작일(일요일)만 들고 있으면, 실제 데이터
+  // 조회/평균/이전 주 대비 변동 계산은 전부 WeekAverageModal 안에서 처리한다(팝업 내 지난주/다음주 이동 포함).
+  const [weekAvgStart, setWeekAvgStart] = useState(null); // Date | null(닫힘)
 
   const meta = PAGE_META[view];
 
@@ -2205,7 +2228,7 @@ function FashionMarketerDashboard() {
             <>
               <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-5 items-stretch">
                 <KeywordRankingPanel dataSource={musinsaDataSource} selectedDateLabel={panelDateLabel} musinsaIndex={musinsaIndex} selectedDateKey={selectedDateKey} />
-                <MiniCalendar selected={selectedDate} onSelect={setSelectedDate} availableDates={musinsaDates} onConfirmWeek={confirmMusinsaWeekAverage} />
+                <MiniCalendar selected={selectedDate} onSelect={setSelectedDate} availableDates={musinsaDates} onConfirmWeek={setWeekAvgStart} />
               </div>
               <RankingPanel
                 rankings={musinsaRankings}
@@ -2241,7 +2264,7 @@ function FashionMarketerDashboard() {
         </main>
         <footer className="text-center text-[11px] py-4" style={{ color: C.mute }}>ⓘ 무신사 랭킹은 {musinsaDataSource === "live" ? `${panelDateLabel} ${musinsaSelectedTime} 수집분(실시간 데이터)` : "수집 파일을 찾지 못해 표시 중인 샘플(목업) 데이터"}입니다. 29CM 및 키워드/인스타그램 지표는 목업(더미) 데이터입니다.</footer>
       </div>
-      {!!weekAvg && (<WeekAverageModal label={weekAvg.label} data={weekAvg.data} onClose={() => setWeekAvg(null)} />)}
+      {!!weekAvgStart && (<WeekAverageModal initialWeekStart={weekAvgStart} musinsaIndex={musinsaIndex} availableDates={musinsaDates} onClose={() => setWeekAvgStart(null)} />)}
     </div>
   );
 }
