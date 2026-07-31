@@ -394,7 +394,7 @@ function MiniCalendar({ selected, onSelect, availableDates, onConfirmWeek }) {
         <div className="grid grid-cols-7 gap-y-1 text-center flex-1">
           {["일","월","화","수","목","금","토"].map((w) => (<span key={w} className="text-[11px] font-semibold" style={{ color: C.mute }}>{w}</span>))}
         </div>
-        {!!onConfirmWeek && <div className="shrink-0" style={{ width: 34 }} />}
+        {!!onConfirmWeek && <div className="shrink-0" style={{ width: 42 }} />}
       </div>
       <div className="flex flex-col gap-1 flex-1">
         {weeks.map((week, wi) => {
@@ -428,9 +428,9 @@ function MiniCalendar({ selected, onSelect, availableDates, onConfirmWeek }) {
                 <button
                   disabled={!weekHasData}
                   onClick={() => onConfirmWeek(weekStart)}
-                  className="shrink-0 rounded-md text-[10px] font-bold"
-                  style={{ width: 34, height: 22, background: weekHasData ? C.ink : C.paper, color: weekHasData ? C.white : "#C9C7C0", border: `1px solid ${weekHasData ? C.ink : C.line}`, cursor: weekHasData ? "pointer" : "not-allowed" }}
-                >확인</button>
+                  className="shrink-0 rounded-md text-[9px] font-bold"
+                  style={{ width: 42, height: 22, background: weekHasData ? C.ink : C.paper, color: weekHasData ? C.white : "#C9C7C0", border: `1px solid ${weekHasData ? C.ink : C.line}`, cursor: weekHasData ? "pointer" : "not-allowed" }}
+                >주 평균</button>
               )}
             </div>
           );
@@ -442,6 +442,30 @@ function MiniCalendar({ selected, onSelect, availableDates, onConfirmWeek }) {
       </div>
     </div>
   );
+}
+
+/* 주간 평균 팝업 전용: 그 주에 데이터가 있는 날짜들(dailyLists, 하루 1개씩) 기준으로 평균을 낸다.
+   등장한 날만 평균에 넣는 게 아니라, 그 주 안에서 등장하지 '않은' 날은 penaltyRank(그 랭킹의
+   추적 범위 바로 밖 순위)로 계산해 넣는다 - 그래야 오늘 하루만 반짝 1위로 새로 올라온 상품이
+   일주일 내내 꾸준히 중위권이었던 상품보다 주간 평균에서 앞서는 일이 없다. */
+function averageWithAbsencePenalty(dailyLists, keyFn, penaltyRank) {
+  const totalDays = dailyLists.length;
+  const merged = new Map();
+  dailyLists.forEach((list) => {
+    list.forEach((item) => {
+      const key = keyFn(item);
+      const existing = merged.get(key);
+      if (existing) { existing.sumRank += item.rank; existing.count += 1; existing.latest = item; }
+      else merged.set(key, { sumRank: item.rank, count: 1, latest: item });
+    });
+  });
+  return [...merged.values()]
+    .map((v) => {
+      const missingDays = totalDays - v.count;
+      const { delta, ...rest } = v.latest;
+      return { ...rest, avgRank: (v.sumRank + missingDays * penaltyRank) / totalDays };
+    })
+    .sort((a, b) => a.avgRank - b.avgRank);
 }
 
 const WEEK_MODAL_TABS = [...CATEGORIES, "검색어"];
@@ -476,10 +500,24 @@ function WeekAverageModal({ initialWeekStart, musinsaIndex, availableDates, onCl
           products: averageRankings(daySnapshots),
           keywords: averageKeywordRankings(daySnapshots),
         })))
-      ).then((dailyBundles) => ({
-        products: averageRankings(dailyBundles.map((b) => b.products)),
-        keywords: averageKeywordRankings(dailyBundles.map((b) => ({ keywords: b.keywords }))),
-      }));
+      ).then((dailyBundles) => {
+        const products = {};
+        CATEGORIES.forEach((c) => {
+          products[c] = {};
+          ["all", "rising", "new"].forEach((filterKey) => {
+            const dailyLists = dailyBundles.map((b) => b.products[c]?.[filterKey] || []);
+            const merged = averageWithAbsencePenalty(dailyLists, (item) => item.url || `${item.brand}__${item.name}`, 151);
+            products[c][filterKey] = merged.slice(0, 150).map((item, idx) => ({ ...item, rank: idx + 1 }));
+          });
+        });
+        const keywords = {};
+        ["all", "rising"].forEach((filterKey) => {
+          const dailyLists = dailyBundles.map((b) => b.keywords[filterKey] || []);
+          const merged = averageWithAbsencePenalty(dailyLists, (item) => item.url || item.keyword, 101);
+          keywords[filterKey] = merged.slice(0, 100).map((item, idx) => ({ ...item, rank: idx + 1 }));
+        });
+        return { products, keywords };
+      });
     };
     const priorWeekStart = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() - 7);
     Promise.all([fetchWeekBundle(weekStart), fetchWeekBundle(priorWeekStart)])
@@ -559,14 +597,35 @@ function Cm29WeekAverageModal({ initialWeekStart, cm29Index, availableDates, onC
   useEffect(() => {
     setData(null);
     const fetchOne = (dKey, rawTime) => fetch(`data/cm29_${dKey}_${rawTime}.json`).then((res) => { if (!res.ok) throw new Error("no snapshot file"); return res.json(); });
-    // 무신사판과 동일한 이유로, 하루치를 먼저 averageCm29Rankings로 평균 내 "그날의 평균"을 만들고
-    // 그 날짜별 평균들끼리 다시 평균 내서 수집 횟수가 많은 날(최근 날짜)이 더 크게 반영되지 않게 한다.
+    // 무신사판과 동일한 이유로, 하루치를 먼저 averageCm29Rankings로 평균 내 "그날의 평균"을 만들고,
+    // 그 날짜별 평균들끼리는 결측일(그 주 안에서 등장 안 한 날)을 순위밖(101위)으로 처리해서 다시
+    // 평균 낸다 - 그래야 하루만 반짝 1위로 새로 올라온 상품이 주간 평균에서 과하게 앞서지 않는다.
     const fetchWeekAvg = (ws) => {
       const dateKeys = weekDateKeysOf(ws).filter((k) => availableDates.includes(k));
       if (!dateKeys.length) return Promise.resolve(null);
       return Promise.all(
         dateKeys.map((dKey) => Promise.all((cm29Index[dKey] || []).map((t) => fetchOne(dKey, t))).then((daySnapshots) => averageCm29Rankings(daySnapshots)))
-      ).then((dailyAverages) => averageCm29Rankings(dailyAverages));
+      ).then((dailyAverages) => {
+        const result = {};
+        const largeCats = new Set();
+        dailyAverages.forEach((d) => Object.keys(d || {}).forEach((k) => largeCats.add(k)));
+        largeCats.forEach((largeCat) => {
+          result[largeCat] = {};
+          const subCats = new Set();
+          dailyAverages.forEach((d) => Object.keys(d?.[largeCat] || {}).forEach((k) => subCats.add(k)));
+          subCats.forEach((subCat) => {
+            result[largeCat][subCat] = {};
+            const periods = new Set();
+            dailyAverages.forEach((d) => Object.keys(d?.[largeCat]?.[subCat] || {}).forEach((k) => periods.add(k)));
+            periods.forEach((period) => {
+              const dailyLists = dailyAverages.map((d) => d?.[largeCat]?.[subCat]?.[period] || []);
+              const merged = averageWithAbsencePenalty(dailyLists, (item) => item.url || `${item.brand}__${item.name}`, 101);
+              result[largeCat][subCat][period] = merged.slice(0, 100).map((item, idx) => ({ ...item, rank: idx + 1 }));
+            });
+          });
+        });
+        return result;
+      });
     };
     const priorWeekStart = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() - 7);
     Promise.all([fetchWeekAvg(weekStart), fetchWeekAvg(priorWeekStart)])
@@ -2344,7 +2403,7 @@ function FashionMarketerDashboard() {
                 </button>
               </div>
               {!!lastScrapedLabel && (<span className="text-[12px] mt-1" style={{ color: C.mute }}>마지막 수집: {lastScrapedLabel}</span>)}
-              {(view === "musinsa" || view === "cm29") && !!lastScrapedLabel && (<span className="text-[11px] mt-0.5" style={{ color: C.mute }}>데이터 조회 캘린더의 확인 버튼으로 그 주의 평균 랭킹을 볼 수 있어요</span>)}
+              {(view === "musinsa" || view === "cm29") && !!lastScrapedLabel && (<span className="text-[11px] mt-0.5" style={{ color: C.mute }}>데이터 조회 캘린더의 주 평균 버튼으로 그 주의 평균 랭킹을 볼 수 있어요</span>)}
             </div>
           </div>
         </header>
