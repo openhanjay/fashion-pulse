@@ -581,17 +581,16 @@ function WeekAverageModal({ initialWeekStart, musinsaIndex, availableDates, onCl
 }
 
 /* 29CM판 WeekAverageModal. 29CM은 대분류(여성의류/남성의류) > 서브카테고리 > 기간(실시간/일간/주간/월간)
-   3단계 구조라서 무신사 쪽 카테고리 탭 하나 대신 이 3가지를 각각 탭으로 골라야 한다. 우측 상단의
-   "인기검색어" 버튼을 누르면 그 주의 평균 인기 검색어(TOP10, 전주 대비 변동 포함)가 작은 팝오버로
-   떠서, 상품 랭킹을 가리지 않고 같이 볼 수 있다. 나머지 동작(지난주/다음주 이동, 전주 대비 변동
-   계산)은 WeekAverageModal과 동일. */
+   3단계 구조라서 무신사 쪽 카테고리 탭 하나 대신 이 3가지를 각각 탭으로 골라야 한다. 우측 상단에는
+   그 주의 평균 인기 검색어(TOP10, 전주 대비 변동 포함)를 작은 박스로 항상 띄워둔다(글씨 크기를
+   줄여서 팝업 헤더 한켠에 들어가게 함). 나머지 동작(지난주/다음주 이동, 전주 대비 변동 계산)은
+   WeekAverageModal과 동일. */
 function Cm29WeekAverageModal({ initialWeekStart, cm29Index, availableDates, onClose }) {
   const [weekStart, setWeekStart] = useState(initialWeekStart);
   const [largeCat, setLargeCat] = useState(CM29_LARGE_CATEGORIES[0]);
   const [subCat, setSubCat] = useState("전체");
   const [period, setPeriod] = useState("실시간");
   const [data, setData] = useState(null); // null=로딩중, {}=데이터 없음, { products, keywords }=평균 랭킹
-  const [showKeywordPopover, setShowKeywordPopover] = useState(false);
 
   const weekEnd = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + 6);
   const label = `${formatDotDate(weekStart)} ~ ${formatDotDate(weekEnd)}`;
@@ -670,8 +669,8 @@ function Cm29WeekAverageModal({ initialWeekStart, cm29Index, availableDates, onC
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(23,24,28,0.55)" }} onClick={onClose}>
-      <div className="rounded-2xl w-full max-w-6xl max-h-[92vh] overflow-y-auto p-6" style={{ background: C.white }} onClick={(e) => { e.stopPropagation(); setShowKeywordPopover(false); }}>
-        <div className="flex items-center justify-between mb-4">
+      <div className="rounded-2xl w-full max-w-6xl max-h-[92vh] overflow-y-auto p-6" style={{ background: C.white }} onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-start justify-between mb-4 gap-3">
           <div>
             <h3 className="text-lg font-bold" style={{ color: C.ink }}>29CM 주간 평균 랭킹</h3>
             <div className="flex items-center gap-2 mt-1">
@@ -680,33 +679,25 @@ function Cm29WeekAverageModal({ initialWeekStart, cm29Index, availableDates, onC
               <button onClick={() => setWeekStart(new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + 7))} className="px-2 py-1 rounded-md text-xs font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>다음주 ›</button>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-start gap-3 shrink-0">
             {data && !isEmpty && (
-              <div className="relative">
-                <button
-                  onClick={(e) => { e.stopPropagation(); setShowKeywordPopover((v) => !v); }}
-                  className="px-3 py-1.5 rounded-full text-xs font-bold"
-                  style={{ background: showKeywordPopover ? C.ink : C.paper, color: showKeywordPopover ? C.white : C.ink, border: `1px solid ${showKeywordPopover ? C.ink : C.line}` }}
-                >인기검색어</button>
-                {showKeywordPopover && (
-                  <div onClick={(e) => e.stopPropagation()} className="absolute right-0 top-full mt-2 z-10 rounded-xl p-3 shadow-lg" style={{ background: C.white, border: `1px solid ${C.line}`, width: 420 }}>
-                    {keywordList.length === 0 ? (
-                      <div className="flex items-center justify-center rounded-lg text-xs font-medium" style={{ height: 90, background: C.paper, color: C.mute }}>인기 검색어 데이터가 없어요.</div>
-                    ) : (
-                      <div className="flex flex-col gap-2">
-                        {[keywordList.slice(0, 5), keywordList.slice(5, 10)].map((rowList, ri) => (
-                          <div key={ri} className="grid grid-cols-5 gap-2">
-                            {rowList.map((item) => (
-                              <div key={item.keyword} className="flex flex-col items-center gap-1 py-2 px-1 rounded-xl text-center" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
-                                <span className="text-xs font-bold tabular-nums" style={{ color: C.mute }}>{item.rank}</span>
-                                <span className="text-sm font-semibold truncate w-full" style={{ color: C.ink }}>{item.keyword}</span>
-                                <CompactDelta delta={item.delta} />
-                              </div>
-                            ))}
+              <div className="rounded-xl p-2" style={{ background: C.paper, border: `1px solid ${C.line}`, width: 340 }}>
+                <p className="text-[9px] font-bold mb-1" style={{ color: C.mute }}>인기검색어</p>
+                {keywordList.length === 0 ? (
+                  <div className="flex items-center justify-center rounded-lg text-[10px] font-medium" style={{ height: 60, background: C.white, color: C.mute }}>데이터 없어요.</div>
+                ) : (
+                  <div className="flex flex-col gap-1">
+                    {[keywordList.slice(0, 5), keywordList.slice(5, 10)].map((rowList, ri) => (
+                      <div key={ri} className="grid grid-cols-5 gap-1">
+                        {rowList.map((item) => (
+                          <div key={item.keyword} className="flex flex-col items-center gap-0.5 py-1 px-0.5 rounded-lg text-center" style={{ background: C.white, border: `1px solid ${C.line}` }}>
+                            <span className="text-[11px] font-bold tabular-nums" style={{ color: C.mute }}>{item.rank}</span>
+                            <span className="text-[13px] font-semibold truncate w-full" style={{ color: C.ink }}>{item.keyword}</span>
+                            <CompactDelta delta={item.delta} />
                           </div>
                         ))}
                       </div>
-                    )}
+                    ))}
                   </div>
                 )}
               </div>
