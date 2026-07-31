@@ -461,11 +461,16 @@ function WeekAverageModal({ initialWeekStart, musinsaIndex, availableDates, onCl
     setData(null);
     setCat("전체");
     const fetchOne = (dKey, rawTime) => fetch(`data/musinsa_${dKey}_${rawTime}.json`).then((res) => { if (!res.ok) throw new Error("no snapshot file"); return res.json(); });
+    // 하루 수집 횟수가 날마다 다를 수 있어서(2회 -> 4회로 늘어난 것처럼) 모든 스냅샷을 그냥 한꺼번에
+    // 평균 내면 수집이 더 잦은 날(주로 최근 날짜)이 더 크게 반영돼버린다. 그래서 먼저 하루치를
+    // averageRankings로 평균 내 "그날의 평균"을 만들고, 그 날짜별 평균들끼리 다시 한 번 평균 내서
+    // 그 주 안에서 각 날짜가 동일한 비중을 갖게 한다.
     const fetchWeekAvg = (ws) => {
       const dateKeys = weekDateKeysOf(ws).filter((k) => availableDates.includes(k));
       if (!dateKeys.length) return Promise.resolve(null);
-      const fetches = dateKeys.flatMap((dKey) => (musinsaIndex[dKey] || []).map((t) => fetchOne(dKey, t)));
-      return Promise.all(fetches).then((snapshots) => averageRankings(snapshots));
+      return Promise.all(
+        dateKeys.map((dKey) => Promise.all((musinsaIndex[dKey] || []).map((t) => fetchOne(dKey, t))).then((daySnapshots) => averageRankings(daySnapshots)))
+      ).then((dailyAverages) => averageRankings(dailyAverages));
     };
     const priorWeekStart = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() - 7);
     Promise.all([fetchWeekAvg(weekStart), fetchWeekAvg(priorWeekStart)])
@@ -532,11 +537,14 @@ function Cm29WeekAverageModal({ initialWeekStart, cm29Index, availableDates, onC
   useEffect(() => {
     setData(null);
     const fetchOne = (dKey, rawTime) => fetch(`data/cm29_${dKey}_${rawTime}.json`).then((res) => { if (!res.ok) throw new Error("no snapshot file"); return res.json(); });
+    // 무신사판과 동일한 이유로, 하루치를 먼저 averageCm29Rankings로 평균 내 "그날의 평균"을 만들고
+    // 그 날짜별 평균들끼리 다시 평균 내서 수집 횟수가 많은 날(최근 날짜)이 더 크게 반영되지 않게 한다.
     const fetchWeekAvg = (ws) => {
       const dateKeys = weekDateKeysOf(ws).filter((k) => availableDates.includes(k));
       if (!dateKeys.length) return Promise.resolve(null);
-      const fetches = dateKeys.flatMap((dKey) => (cm29Index[dKey] || []).map((t) => fetchOne(dKey, t)));
-      return Promise.all(fetches).then((snapshots) => averageCm29Rankings(snapshots));
+      return Promise.all(
+        dateKeys.map((dKey) => Promise.all((cm29Index[dKey] || []).map((t) => fetchOne(dKey, t))).then((daySnapshots) => averageCm29Rankings(daySnapshots)))
+      ).then((dailyAverages) => averageCm29Rankings(dailyAverages));
     };
     const priorWeekStart = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() - 7);
     Promise.all([fetchWeekAvg(weekStart), fetchWeekAvg(priorWeekStart)])
