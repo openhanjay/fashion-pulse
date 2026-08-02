@@ -362,7 +362,14 @@ function formatDotDate(d) {
    그 주에 실제 수집 데이터가 있는 날짜들만 모아 { label: "주 시작~끝", dateKeys } 형태로 넘겨준다.
    데이터가 하나도 없는 주는 버튼이 비활성화된다. */
 function MiniCalendar({ selected, onSelect, availableDates, onConfirmWeek }) {
-  const [cursor, setCursor] = useState(new Date(2026, 6, 1));
+  const [cursor, setCursor] = useState(() => new Date(selected.getFullYear(), selected.getMonth(), 1));
+  // selected는 처음엔 임시 기본값이었다가 실제 수집 인덱스를 불러온 뒤 최신 날짜로 바뀌는데(예: 7월 ->
+  // 8월), 그때 cursor는 그대로 있어서 달력이 이전 달에 멈춰 있는 문제가 있었다. selected가 바뀔 때마다
+  // 그 달로 자동으로 넘어가도록 동기화한다(사용자가 수동으로 달만 넘겨보는 동안엔 selected 자체가
+  // 안 바뀌니 이 효과가 끼어들지 않는다).
+  useEffect(() => {
+    setCursor(new Date(selected.getFullYear(), selected.getMonth(), 1));
+  }, [selected]);
   const year = cursor.getFullYear();
   const month = cursor.getMonth();
   const firstWeekday = new Date(year, month, 1).getDay();
