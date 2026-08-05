@@ -58,6 +58,9 @@ function seeded(seed) {
   return x - Math.floor(x);
 }
 
+// 스크랩 트리거/인스타그램 계정 관리를 대신 처리해주는 Cloudflare Worker 주소.
+const WORKER_BASE_URL = "https://fashion-pulse-scrape-trigger.rankinginsta.workers.dev";
+
 /* ============================== 더미 데이터 ============================== */
 const CATEGORIES = ["전체", "상의", "아우터", "바지", "원피스", "가방", "모자"];
 
@@ -2091,33 +2094,81 @@ function InstagramBrandForm({ urlInput, nameInput, onUrlChange, onNameChange, on
   );
 }
 
+// 인스타그램 계정 목록에 add/edit/remove를 Worker에 요청해서 저장소(data/ig_accounts.json)에 직접 커밋시킨다.
+// 성공하면 Worker가 돌려주는 최신 accounts 배열을 그대로 쓴다(따로 다시 fetch할 필요 없음).
+function requestIgAccountsChange(payload) {
+  return fetch(`${WORKER_BASE_URL}/instagram-accounts`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  }).then((res) => res.json().then((data) => ({ ok: res.ok && data.ok, data })));
+}
+
 function InstagramMonitoringPanel() {
-  const [brands, setBrands] = useState(() => loadPersistedList("fp_ig_brands"));
+  const [brands, setBrands] = useState([]);
+  const [loaded, setLoaded] = useState(false);
   const [mode, setMode] = useState(null); // null | "add" | { type: "edit", id }
   const [urlInput, setUrlInput] = useState("");
   const [nameInput, setNameInput] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
-  useEffect(() => { savePersistedList("fp_ig_brands", brands); }, [brands]);
+  // 브랜드 목록은 이제 브라우저가 아니라 저장소의 data/ig_accounts.json이 원본이라, 페이지를 열 때마다
+  // 거기서 불러온다. 예전에 localStorage로 추가해뒀던 브랜드가 남아있으면(이 기능을 Worker 연동 전에
+  // 써봤던 경우) 한 번만 그 목록을 저장소로 옮겨준 뒤 localStorage는 지운다.
+  useEffect(() => {
+    fetch("data/ig_accounts.json")
+      .then((res) => (res.ok ? res.json() : []))
+      .then(async (remote) => {
+        const list = Array.isArray(remote) ? remote : [];
+        const legacy = loadPersistedList("fp_ig_brands");
+        if (list.length === 0 && legacy.length > 0) {
+          let migrated = list;
+          for (const b of legacy) {
+            const res = await requestIgAccountsChange({ action: "add", account: { name: b.name, username: b.username, url: b.url } });
+            if (res.ok) migrated = res.data.accounts;
+          }
+          savePersistedList("fp_ig_brands", []);
+          setBrands(migrated);
+        } else {
+          setBrands(list);
+        }
+        setLoaded(true);
+      })
+      .catch(() => setLoaded(true));
+  }, []);
 
-  const startAdd = () => { setMode("add"); setUrlInput(""); setNameInput(""); };
-  const startEdit = (brand) => { setMode({ type: "edit", id: brand.id }); setUrlInput(brand.url); setNameInput(brand.name); };
-  const cancelForm = () => { setMode(null); setUrlInput(""); setNameInput(""); };
+  const startAdd = () => { setMode("add"); setUrlInput(""); setNameInput(""); setErrorMsg(""); };
+  const startEdit = (brand) => { setMode({ type: "edit", id: brand.id }); setUrlInput(brand.url); setNameInput(brand.name); setErrorMsg(""); };
+  const cancelForm = () => { setMode(null); setUrlInput(""); setNameInput(""); setErrorMsg(""); };
 
   const submitForm = () => {
     const url = urlInput.trim();
-    if (!url) return;
+    if (!url || saving) return;
     const username = extractInstagramUsername(url);
     const name = nameInput.trim() || username;
-    if (mode && mode.type === "edit") {
-      setBrands((prev) => prev.map((b) => (b.id === mode.id ? { ...b, name, url, username } : b)));
-    } else {
-      setBrands((prev) => [...prev, { id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, name, url, username }]);
-    }
-    cancelForm();
+    setSaving(true);
+    setErrorMsg("");
+    const payload = mode && mode.type === "edit"
+      ? { action: "edit", account: { id: mode.id, name, url, username } }
+      : { action: "add", account: { name, url, username } };
+    requestIgAccountsChange(payload)
+      .then(({ ok, data }) => {
+        setSaving(false);
+        if (!ok) { setErrorMsg(data.message || "저장하지 못했어요."); return; }
+        setBrands(data.accounts);
+        cancelForm();
+      })
+      .catch(() => { setSaving(false); setErrorMsg("저장하지 못했어요."); });
   };
   const removeBrand = (id) => {
-    setBrands((prev) => prev.filter((b) => b.id !== id));
-    if (mode && mode.type === "edit" && mode.id === id) cancelForm();
+    requestIgAccountsChange({ action: "remove", id })
+      .then(({ ok, data }) => {
+        if (!ok) { setErrorMsg(data.message || "삭제하지 못했어요."); return; }
+        setBrands(data.accounts);
+        if (mode && mode.type === "edit" && mode.id === id) cancelForm();
+      })
+      .catch(() => setErrorMsg("삭제하지 못했어요."));
   };
 
   const editingId = mode && mode.type === "edit" ? mode.id : null;
@@ -2129,45 +2180,52 @@ function InstagramMonitoringPanel() {
           <Camera size={16} color={C.indigo} />
           <h2 className="text-base font-bold" style={{ color: C.ink }}>경쟁사 인스타그램 모니터링</h2>
         </div>
-        <span className="text-xs font-medium" style={{ color: C.mute }}>{brands.length}개 브랜드</span>
+        <div className="flex items-center gap-2">
+          {!!errorMsg && (<span className="text-xs font-semibold" style={{ color: C.signal }}>{errorMsg}</span>)}
+          <span className="text-xs font-medium" style={{ color: C.mute }}>{brands.length}개 브랜드</span>
+        </div>
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        {brands.map((b) => (
-          editingId === b.id ? (
+      {!loaded ? (
+        <div className="flex items-center justify-center rounded-xl text-xs font-medium" style={{ height: 108, background: C.paper, color: C.mute }}>불러오는 중...</div>
+      ) : (
+        <div className="grid grid-cols-2 gap-3">
+          {brands.map((b) => (
+            editingId === b.id ? (
+              <InstagramBrandForm
+                key={b.id}
+                urlInput={urlInput}
+                nameInput={nameInput}
+                onUrlChange={setUrlInput}
+                onNameChange={setNameInput}
+                onSubmit={submitForm}
+                onCancel={cancelForm}
+                submitLabel={saving ? "저장 중..." : "저장"}
+              />
+            ) : (
+              <InstagramBrandCard key={b.id} brand={b} onRemove={() => removeBrand(b.id)} onEdit={() => startEdit(b)} />
+            )
+          ))}
+          {mode === "add" ? (
             <InstagramBrandForm
-              key={b.id}
               urlInput={urlInput}
               nameInput={nameInput}
               onUrlChange={setUrlInput}
               onNameChange={setNameInput}
               onSubmit={submitForm}
               onCancel={cancelForm}
-              submitLabel="저장"
+              submitLabel={saving ? "추가 중..." : "추가"}
             />
           ) : (
-            <InstagramBrandCard key={b.id} brand={b} onRemove={() => removeBrand(b.id)} onEdit={() => startEdit(b)} />
-          )
-        ))}
-        {mode === "add" ? (
-          <InstagramBrandForm
-            urlInput={urlInput}
-            nameInput={nameInput}
-            onUrlChange={setUrlInput}
-            onNameChange={setNameInput}
-            onSubmit={submitForm}
-            onCancel={cancelForm}
-            submitLabel="추가"
-          />
-        ) : (
-          <button
-            onClick={startAdd}
-            className="rounded-xl flex items-center justify-center gap-1.5 text-sm font-bold transition-colors"
-            style={{ minHeight: 108, background: C.paper, border: `1px dashed ${C.line}`, color: C.mute }}
-          >
-            + 브랜드 추가
-          </button>
-        )}
-      </div>
+            <button
+              onClick={startAdd}
+              className="rounded-xl flex items-center justify-center gap-1.5 text-sm font-bold transition-colors"
+              style={{ minHeight: 108, background: C.paper, border: `1px dashed ${C.line}`, color: C.mute }}
+            >
+              + 브랜드 추가
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -2398,7 +2456,7 @@ function FashionMarketerDashboard() {
 
   const triggerScrape = () => {
     setScrapeStatus({ state: "loading", message: "" });
-    fetch("https://fashion-pulse-scrape-trigger.rankinginsta.workers.dev", { method: "POST" })
+    fetch(WORKER_BASE_URL, { method: "POST" })
       .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
       .then(({ ok, data }) => {
         setScrapeStatus({ state: ok && data.ok ? "success" : "error", message: data.message || "요청 실패" });
