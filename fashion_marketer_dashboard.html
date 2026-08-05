@@ -488,6 +488,8 @@ function WeekAverageModal({ initialWeekStart, musinsaIndex, availableDates, onCl
   const [weekStart, setWeekStart] = useState(initialWeekStart);
   const [cat, setCat] = useState("전체");
   const [data, setData] = useState(null); // null=로딩중, {}=데이터 없음, { products, keywords }=평균 랭킹
+  const [searchInput, setSearchInput] = useState("");
+  const [searchResult, setSearchResult] = useState(null); // { term, items } | null
 
   const weekEnd = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + 6);
   const label = `${formatDotDate(weekStart)} ~ ${formatDotDate(weekEnd)}`;
@@ -545,6 +547,20 @@ function WeekAverageModal({ initialWeekStart, musinsaIndex, availableDates, onCl
   const isEmpty = data && Object.keys(data).length === 0;
   const list = data && !isEmpty ? (cat === "검색어" ? (data.keywords?.all || []) : (data.products?.[cat]?.all || [])) : null;
 
+  // 브랜드명이든 상품명에 들어간 단어든, 이 주의 평균 랭킹(TOP150) 전체 카테고리를 훑어서 찾아준다.
+  const runSearch = () => {
+    const term = searchInput.trim().toLowerCase();
+    if (!term || !data || isEmpty) return;
+    const items = [];
+    CATEGORIES.forEach((c) => {
+      (data.products?.[c]?.all || []).forEach((item) => {
+        const matches = (item.brand || "").toLowerCase().includes(term) || (item.name || "").toLowerCase().includes(term);
+        if (matches) items.push({ ...item, category: c });
+      });
+    });
+    setSearchResult({ term: searchInput.trim(), items });
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(23,24,28,0.55)" }} onClick={onClose}>
       <div className="rounded-2xl w-full max-w-6xl max-h-[92vh] overflow-y-auto p-6" style={{ background: C.white }} onClick={(e) => e.stopPropagation()}>
@@ -557,7 +573,22 @@ function WeekAverageModal({ initialWeekStart, musinsaIndex, availableDates, onCl
               <button onClick={() => setWeekStart(new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + 7))} className="px-2 py-1 rounded-md text-xs font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>다음주 ›</button>
             </div>
           </div>
-          <button onClick={onClose} className="text-sm font-bold px-2 py-1 rounded-full" style={{ color: C.mute }}>×</button>
+          <div className="flex items-center gap-2">
+            {data && !isEmpty && (
+              <div className="flex items-center gap-1.5">
+                <input
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") runSearch(); }}
+                  placeholder="브랜드/검색어"
+                  className="px-2.5 py-1 rounded-full text-xs"
+                  style={{ border: `1px solid ${C.line}`, color: C.ink, width: 130 }}
+                />
+                <button onClick={runSearch} className="px-3 py-1 rounded-full text-xs font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>검색</button>
+              </div>
+            )}
+            <button onClick={onClose} className="text-sm font-bold px-2 py-1 rounded-full" style={{ color: C.mute }}>×</button>
+          </div>
         </div>
         {data && !isEmpty && (
           <div className="flex flex-wrap gap-1.5 mb-4">
@@ -586,6 +617,7 @@ function WeekAverageModal({ initialWeekStart, musinsaIndex, availableDates, onCl
           </div>
         )}
       </div>
+      {!!searchResult && (<BrandWatchModal brand={searchResult.term} items={searchResult.items} onClose={() => setSearchResult(null)} />)}
     </div>
   );
 }
@@ -601,6 +633,8 @@ function Cm29WeekAverageModal({ initialWeekStart, cm29Index, availableDates, onC
   const [subCat, setSubCat] = useState("전체");
   const [period, setPeriod] = useState("실시간");
   const [data, setData] = useState(null); // null=로딩중, {}=데이터 없음, { products, keywords }=평균 랭킹
+  const [searchInput, setSearchInput] = useState("");
+  const [searchResult, setSearchResult] = useState(null); // { term, items } | null
 
   const weekEnd = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + 6);
   const label = `${formatDotDate(weekStart)} ~ ${formatDotDate(weekEnd)}`;
@@ -677,6 +711,16 @@ function Cm29WeekAverageModal({ initialWeekStart, cm29Index, availableDates, onC
   const list = data && !isEmpty ? (data.products?.[largeCat]?.[subCat]?.[period] || []) : null;
   const keywordList = data && !isEmpty ? (data.keywords || []) : [];
 
+  // Cm29RankingPanel의 브랜드 검색과 동일하게, 현재 대분류의 "전체" 서브카테고리 + 현재 기간 안에서
+  // 브랜드명/상품명에 포함된 단어로 찾는다.
+  const runSearch = () => {
+    const term = searchInput.trim().toLowerCase();
+    if (!term || !data || isEmpty) return;
+    const pool = data.products?.[largeCat]?.["전체"]?.[period] || [];
+    const items = pool.filter((item) => (item.brand || "").toLowerCase().includes(term) || (item.name || "").toLowerCase().includes(term));
+    setSearchResult({ term: searchInput.trim(), items });
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(23,24,28,0.55)" }} onClick={onClose}>
       <div className="relative rounded-2xl w-full max-w-6xl max-h-[92vh] overflow-y-auto p-6" style={{ background: C.white }} onClick={(e) => e.stopPropagation()}>
@@ -730,6 +774,17 @@ function Cm29WeekAverageModal({ initialWeekStart, cm29Index, availableDates, onC
                 <button key={p.key} onClick={() => setPeriod(p.key)} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: period === p.key ? C.ink : C.paper, color: period === p.key ? C.white : C.ink, border: `1px solid ${period === p.key ? C.ink : C.line}` }}>{p.label}</button>
               ))}
             </div>
+            <div className="flex items-center gap-1.5">
+              <input
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") runSearch(); }}
+                placeholder="브랜드/검색어"
+                className="px-2.5 py-1 rounded-full text-xs"
+                style={{ border: `1px solid ${C.line}`, color: C.ink, width: 130 }}
+              />
+              <button onClick={runSearch} className="px-3 py-1 rounded-full text-xs font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>검색</button>
+            </div>
           </div>
         )}
         {!data ? (
@@ -742,6 +797,7 @@ function Cm29WeekAverageModal({ initialWeekStart, cm29Index, availableDates, onC
           </div>
         )}
       </div>
+      {!!searchResult && (<BrandWatchModal brand={searchResult.term} items={searchResult.items} onClose={() => setSearchResult(null)} />)}
     </div>
   );
 }
