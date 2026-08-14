@@ -1,0 +1,39 @@
+name: Scrape instagram
+
+on:
+  # 하루 1회, 09:00 KST(=00:00 UTC)에 실행. 상품 랭킹과 달리 순위 추이가 아니라 최근 게시물
+  # 스냅샷만 필요해서 정확한 타이밍이 중요하지 않아, Cloudflare Worker 없이 GitHub Actions
+  # 자체 cron을 그대로 사용한다.
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run instagram scraper
+        env:
+          APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+        run: node scrape_instagram.js
+
+      - name: Commit and push new data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/instagram/
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: instagram snapshot"
+            git push
+          else
+            echo "no data changes"
+          fi
