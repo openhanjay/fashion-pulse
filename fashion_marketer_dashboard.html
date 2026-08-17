@@ -2092,16 +2092,38 @@ function Cm29PopularKeywordsPanel({ cm29Index, selectedDateKey }) {
   );
 }
 
-/* 경쟁사 인스타그램 계정 관리 카드 하나(1행에 2개씩 배치됨). 아직 실제 수집 연동 전이라
-   게시물 자리는 플레이스홀더만 보여준다(다음 단계에서 Apify 연동 붙일 예정). */
+/* 경쟁사 인스타그램 계정 관리 카드 하나(1행에 2개씩 배치됨). scrape_instagram.js가 매일 갱신하는
+   data/instagram/{username}.json을 불러와서 프로필 사진 + 최근 게시물 썸네일을 보여준다.
+   그 계정이 아직 한 번도 수집된 적 없으면(파일 자체가 없으면) 기존처럼 플레이스홀더를 보여준다. */
 function InstagramBrandCard({ brand, onRemove, onEdit }) {
+  const [snapshot, setSnapshot] = useState(undefined); // undefined=불러오는 중, null=수집 이력 없음, {...}=최신 스냅샷
+  const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setSnapshot(undefined);
+    setImgError(false);
+    fetch(`data/instagram/${brand.username}.json`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => { if (!cancelled) setSnapshot(data); })
+      .catch(() => { if (!cancelled) setSnapshot(null); });
+    return () => { cancelled = true; };
+  }, [brand.username]);
+
+  const hasProfilePic = !!snapshot?.profilePicUrl && !imgError;
+  const fetchedAtLabel = snapshot?.fetchedAt ? snapshot.fetchedAt.slice(0, 16).replace("T", " ") : "";
+
   return (
     <div className="rounded-xl p-3 flex flex-col gap-2.5" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="flex items-center justify-center rounded-full text-[11px] font-black shrink-0" style={{ width: 28, height: 28, background: C.ink, color: C.white }}>
-            {(brand.name || brand.username || "?").slice(0, 1).toUpperCase()}
-          </span>
+          {hasProfilePic ? (
+            <img src={snapshot.profilePicUrl} onError={() => setImgError(true)} alt={brand.username} loading="lazy" className="rounded-full shrink-0 object-cover" style={{ width: 28, height: 28 }} />
+          ) : (
+            <span className="flex items-center justify-center rounded-full text-[11px] font-black shrink-0" style={{ width: 28, height: 28, background: C.ink, color: C.white }}>
+              {(brand.name || brand.username || "?").slice(0, 1).toUpperCase()}
+            </span>
+          )}
           <div className="min-w-0">
             <p className="text-sm font-bold truncate" style={{ color: C.ink }}>{brand.name}</p>
             <a href={brand.url} target="_blank" rel="noreferrer" className="text-[10.5px] truncate block" style={{ color: C.mute }}>@{brand.username}</a>
@@ -2112,9 +2134,26 @@ function InstagramBrandCard({ brand, onRemove, onEdit }) {
           <button onClick={onRemove} className="text-xs font-bold" style={{ color: C.mute }}>×</button>
         </div>
       </div>
-      <div className="flex items-center justify-center rounded-lg text-[11px] font-medium text-center px-2" style={{ height: 68, background: C.white, color: C.mute, border: `1px dashed ${C.line}` }}>
-        아직 수집된 게시물이 없어요
-      </div>
+      {snapshot === undefined ? (
+        <div className="flex items-center justify-center rounded-lg text-[11px] font-medium text-center px-2" style={{ height: 68, background: C.white, color: C.mute, border: `1px dashed ${C.line}` }}>불러오는 중...</div>
+      ) : !snapshot || !snapshot.posts?.length ? (
+        <div className="flex items-center justify-center rounded-lg text-[11px] font-medium text-center px-2" style={{ height: 68, background: C.white, color: C.mute, border: `1px dashed ${C.line}` }}>아직 수집된 게시물이 없어요</div>
+      ) : (
+        <>
+          <div className="grid grid-cols-4 gap-1">
+            {snapshot.posts.slice(0, 4).map((post) => (
+              <a key={post.url} href={post.url} target="_blank" rel="noreferrer" className="rounded-md overflow-hidden aspect-square flex items-center justify-center" style={{ background: C.white }}>
+                {post.displayUrl ? (
+                  <img src={post.displayUrl} alt="" loading="lazy" className="w-full h-full object-cover" />
+                ) : (
+                  <Camera size={16} color={C.mute} />
+                )}
+              </a>
+            ))}
+          </div>
+          {!!fetchedAtLabel && (<p className="text-[10px]" style={{ color: C.mute }}>최근 수집: {fetchedAtLabel}</p>)}
+        </>
+      )}
     </div>
   );
 }
