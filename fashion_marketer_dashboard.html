@@ -2098,11 +2098,13 @@ function Cm29PopularKeywordsPanel({ cm29Index, selectedDateKey }) {
 function InstagramBrandCard({ brand, onRemove, onEdit }) {
   const [snapshot, setSnapshot] = useState(undefined); // undefined=불러오는 중, null=수집 이력 없음, {...}=최신 스냅샷
   const [imgError, setImgError] = useState(false);
+  const [postImgErrors, setPostImgErrors] = useState({}); // 게시물 썸네일별 로드 실패 여부 (index -> true)
 
   useEffect(() => {
     let cancelled = false;
     setSnapshot(undefined);
     setImgError(false);
+    setPostImgErrors({});
     fetch(`data/instagram/${brand.username}.json`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => { if (!cancelled) setSnapshot(data); })
@@ -2118,7 +2120,7 @@ function InstagramBrandCard({ brand, onRemove, onEdit }) {
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           {hasProfilePic ? (
-            <img src={snapshot.profilePicUrl} onError={() => setImgError(true)} alt={brand.username} loading="lazy" className="rounded-full shrink-0 object-cover" style={{ width: 28, height: 28 }} />
+            <img src={snapshot.profilePicUrl} onError={() => setImgError(true)} referrerPolicy="no-referrer" alt={brand.username} loading="lazy" className="rounded-full shrink-0 object-cover" style={{ width: 28, height: 28 }} />
           ) : (
             <span className="flex items-center justify-center rounded-full text-[11px] font-black shrink-0" style={{ width: 28, height: 28, background: C.ink, color: C.white }}>
               {(brand.name || brand.username || "?").slice(0, 1).toUpperCase()}
@@ -2141,10 +2143,17 @@ function InstagramBrandCard({ brand, onRemove, onEdit }) {
       ) : (
         <>
           <div className="grid grid-cols-4 gap-1">
-            {snapshot.posts.slice(0, 4).map((post) => (
+            {snapshot.posts.slice(0, 4).map((post, i) => (
               <a key={post.url} href={post.url} target="_blank" rel="noreferrer" className="rounded-md overflow-hidden aspect-square flex items-center justify-center" style={{ background: C.white }}>
-                {post.displayUrl ? (
-                  <img src={post.displayUrl} alt="" loading="lazy" className="w-full h-full object-cover" />
+                {post.displayUrl && !postImgErrors[i] ? (
+                  <img
+                    src={post.displayUrl}
+                    alt=""
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                    onError={() => setPostImgErrors((prev) => ({ ...prev, [i]: true }))}
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <Camera size={16} color={C.mute} />
                 )}
