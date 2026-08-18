@@ -19,9 +19,11 @@
 const OWNER = "openhanjay";
 const REPO = "fashion-pulse";
 const WORKFLOW_FILE = "scrape.yml";
+const INSTAGRAM_WORKFLOW_FILE = "scrape_instagram.yml";
 const IG_ACCOUNTS_PATH = "data/ig_accounts.json";
 const ALLOWED_ORIGIN = "https://openhanjay.github.io";
 const COOLDOWN_SECONDS = 3600;
+const INSTAGRAM_COOLDOWN_SECONDS = 300; // 브랜드 추가/수정마다 매번 전체 계정을 다시 스크랩하니, 짧게라도 도배 방지
 
 function corsHeaders() {
   return {
@@ -57,12 +59,29 @@ function ghHeaders(env) {
   };
 }
 
-async function dispatchWorkflow(env) {
-  return fetch(`https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/${WORKFLOW_FILE}/dispatches`, {
+async function dispatchWorkflow(env, workflowFile = WORKFLOW_FILE) {
+  return fetch(`https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/${workflowFile}/dispatches`, {
     method: "POST",
     headers: ghHeaders(env),
     body: JSON.stringify({ ref: "main" }),
   });
+}
+
+// 브랜드 추가/수정 시 다음날 예약 실행을 기다리지 않고 바로 인스타 스크랩을 돌려준다.
+// 계정 하나만 새로 긁는 게 아니라 목록 전체를 다시 스크랩하는 구조라, 짧은 쿨다운으로
+// 연속 추가 시 매번 트리거되는 걸 막는다. 저장 자체(계정 목록 커밋)는 이 트리거 성패와 무관하게
+// 이미 끝난 뒤라, 실패해도 조용히 무시한다(다음날 예약 실행이 어차피 한 번 더 돈다).
+async function triggerInstagramScrape(env) {
+  try {
+    const cooling = await env.RATE_LIMIT_KV.get("lastInstagramTriggeredAt");
+    if (cooling) return;
+    const res = await dispatchWorkflow(env, INSTAGRAM_WORKFLOW_FILE);
+    if (res.status === 204) {
+      await env.RATE_LIMIT_KV.put("lastInstagramTriggeredAt", String(Date.now()), { expirationTtl: INSTAGRAM_COOLDOWN_SECONDS });
+    }
+  } catch (err) {
+    console.error("instagram scrape trigger failed:", err);
+  }
 }
 
 // 현재 ig_accounts.json 내용(배열)과 sha를 읽어온다. 파일이 아직 없으면(404) 빈 배열 + sha 없음으로 취급.
@@ -130,6 +149,7 @@ async function handleIgAccounts(request, env) {
     }
 
     await writeIgAccounts(env, nextAccounts, sha, message);
+    if (action === "add" || action === "edit") await triggerInstagramScrape(env);
     return json({ ok: true, accounts: nextAccounts });
   } catch (err) {
     return json({ ok: false, message: "저장소에 반영하지 못했어요.", detail: String(err) }, 502);
