@@ -1,0 +1,44 @@
+{
+  "username": "teket_com",
+  "name": "TEKET",
+  "profilePicUrl": "data/instagram/images/teket_com/profile.jpg",
+  "fetchedAt": "2026-08-18T16:26:44+09:00",
+  "posts": [
+    {
+      "url": "https://www.instagram.com/p/DcKmS78j8V5/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/teket_com/post_0.jpg",
+      "caption": "Plan 18. Inside Curve\n• \nDifferent angles, different views ◐\n• \nRelease Info\n1st Release -  Check It Out Now ⤴\n• \nwww.te-ket.com",
+      "likesCount": -1,
+      "commentsCount": 0,
+      "timestamp": "2026-08-18T03:00:01.000Z"
+    },
+    {
+      "url": "https://www.instagram.com/p/DcC34dglGZM/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/teket_com/post_1.jpg",
+      "caption": "Plan 18. Inside Curve\n• \n◉Unseen Open Button Tee\n◉Scene Hooded Zip-Up\n◉Twist Layered L/S\n◉Convex Three-Quarter Parachute Pants\n• \nRelease Info\n1st Release -  Check It Out Now ⤴\n• \nwww.te-ket.com",
+      "likesCount": -1,
+      "commentsCount": 0,
+      "timestamp": "2026-08-15T03:00:02.000Z"
+    },
+    {
+      "url": "https://www.instagram.com/p/DcBqdu4FOmE/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/teket_com/post_2.jpg",
+      "caption": "Plan 18. Inside Curve ↙ ◉ ↗\n ▰  Gift With Purchase ▰\nDifferent perspectives, different views \n•\nwww.te-ket.com\n• \nTeket Store \n1F, 39, Seongji 1-gil, Mapo-gu, Seoul\n• \nTeket Centum Store\nB2F, 35 Centum nam-daero, Haeundae-gu, Busan.",
+      "likesCount": -1,
+      "commentsCount": 0,
+      "timestamp": "2026-08-14T15:44:02.000Z"
+    },
+    {
+      "url": "https://www.instagram.com/p/DcBF6PJkdws/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/teket_com/post_3.jpg",
+      "caption": "26AW - Plan 18. Inside Curve\n◉Available Now ◉\n• \nRelease Info\n1st Release -  Check It Out Now ⤴\n•\nwww.te-ket.com",
+      "likesCount": -1,
+      "commentsCount": 0,
+      "timestamp": "2026-08-14T10:24:37.000Z"
+    }
+  ]
+}

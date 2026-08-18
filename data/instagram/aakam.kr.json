@@ -2,14 +2,14 @@
   "username": "aakam.kr",
   "name": "AAKAM",
   "profilePicUrl": "data/instagram/images/aakam.kr/profile.jpg",
-  "fetchedAt": "2026-08-18T15:32:32+09:00",
+  "fetchedAt": "2026-08-18T16:26:44+09:00",
   "posts": [
     {
       "url": "https://www.instagram.com/p/DcF3kkqEWo7/",
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/aakam.kr/post_0.jpg",
       "caption": "AAKAM 26FW-1\nRelease — 08.19(Wed)\n\n#aakam #아캄",
-      "likesCount": 739,
+      "likesCount": 742,
       "commentsCount": 0,
       "timestamp": "2026-08-16T06:55:02.000Z"
     },
@@ -18,7 +18,7 @@
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/aakam.kr/post_1.jpg",
       "caption": "AAKAM 26FW-1\nRelease — 08.19 (Wed)\n\n#aakam #아캄",
-      "likesCount": 2076,
+      "likesCount": 2081,
       "commentsCount": 1,
       "timestamp": "2026-08-15T08:26:14.000Z"
     },
@@ -36,7 +36,7 @@
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/aakam.kr/post_3.jpg",
       "caption": "AAKAM FW-1 Visual Campaign 🌪️\n\n08.19 (Wed) Release\n\n#aakam #아캄",
-      "likesCount": 904,
+      "likesCount": 905,
       "commentsCount": 0,
       "timestamp": "2026-08-13T10:49:37.000Z"
     }
