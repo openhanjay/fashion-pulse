@@ -156,9 +156,36 @@ async function localizeImages(username, profilePicUrl, posts) {
   return { localProfilePicUrl, localPosts };
 }
 
+// 대시보드에서 계정을 삭제해도 data/instagram/{username}.json이나 이미지 폴더는 자동으로
+// 안 지워지고 남는데(그때는 그 계정을 다시 수집하지 않으니까), 여기서 지금 계정 목록에
+// 없는 파일/폴더를 매 실행마다 정리해서 저장소에 죽은 데이터가 안 쌓이게 한다.
+function removeOrphanedFiles(accounts) {
+  const validUsernames = new Set(accounts.map((a) => a.username));
+  if (fs.existsSync(IG_DATA_DIR)) {
+    fs.readdirSync(IG_DATA_DIR)
+      .filter((f) => f.endsWith(".json"))
+      .forEach((f) => {
+        const username = f.slice(0, -".json".length);
+        if (!validUsernames.has(username)) {
+          fs.rmSync(path.join(IG_DATA_DIR, f), { force: true });
+          console.log(`정리: 삭제된 계정의 남은 파일 제거 (${f})`);
+        }
+      });
+  }
+  if (fs.existsSync(IG_IMAGES_DIR)) {
+    fs.readdirSync(IG_IMAGES_DIR).forEach((username) => {
+      if (!validUsernames.has(username)) {
+        fs.rmSync(path.join(IG_IMAGES_DIR, username), { recursive: true, force: true });
+        console.log(`정리: 삭제된 계정의 남은 이미지 폴더 제거 (${username})`);
+      }
+    });
+  }
+}
+
 async function main() {
   if (!APIFY_TOKEN) throw new Error("APIFY_TOKEN 환경변수가 없어요.");
   const accounts = readAccounts();
+  removeOrphanedFiles(accounts);
   if (accounts.length === 0) {
     console.log("등록된 인스타그램 계정이 없어요. data/ig_accounts.json을 확인하세요.");
     return;
