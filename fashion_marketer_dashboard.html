@@ -2152,7 +2152,7 @@ function InstagramBrandCard({ brand, onRemove, onEdit }) {
                     loading="lazy"
                     referrerPolicy="no-referrer"
                     onError={() => setPostImgErrors((prev) => ({ ...prev, [i]: true }))}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                   />
                 ) : (
                   <Camera size={16} color={C.mute} />
