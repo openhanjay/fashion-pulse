@@ -1,0 +1,44 @@
+{
+  "username": "kiimuir",
+  "name": "kiimuir",
+  "profilePicUrl": "data/instagram/images/kiimuir/profile.jpg",
+  "fetchedAt": "2026-08-19T11:51:42+09:00",
+  "posts": [
+    {
+      "url": "https://www.instagram.com/p/Db2pclLgf93/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/kiimuir/post_0.jpg",
+      "caption": "𝙉𝙀𝙒 𝙄𝙉 : 𝟮𝟲 𝙁𝘼𝙇𝙇 𝘾𝙊𝙇𝙇𝙀𝘾𝙏𝙄𝙊𝙉\n\n서로 다른 실루엣과 디테일이 만들어내는 키뮤어만의 새로운 스타일.\n\n다양한 아이템과 스타일링으로 구성한 26 FALL 컬렉션을 지금 바로 만나보세요.",
+      "likesCount": -1,
+      "commentsCount": 0,
+      "timestamp": "2026-08-10T09:03:29.000Z"
+    },
+    {
+      "url": "https://www.instagram.com/p/DbsXlm5AQ7R/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/kiimuir/post_1.jpg",
+      "caption": "𝗞𝗜𝗜𝗠𝗨𝗜𝗥 𝟮𝟬𝟮𝟲 𝗙𝗔𝗟𝗟 𝗣𝗥𝗘𝗩𝗜𝗘𝗪\n\n익숙한 일상을 새로운 감각으로 채우는 키뮤어의 이번 시즌을 담았습니다.\n\n곧 다가올 26 FALL 컬렉션을 기대해주세요.",
+      "likesCount": -1,
+      "commentsCount": 0,
+      "timestamp": "2026-08-06T09:15:02.000Z"
+    },
+    {
+      "url": "https://www.instagram.com/p/Dbc6jpqAV_t/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/kiimuir/post_2.jpg",
+      "caption": "𝗞𝗜𝗜𝗠𝗨𝗜𝗥 𝟮𝟬𝟮𝟲 𝗙𝗔𝗟𝗟 — 𝗙𝗜𝗥𝗦𝗧 𝗟𝗢𝗢𝗞\n새로운 계절을 준비하는 키뮤어의 시선.\n키뮤어의 2026 FALL 컬렉션을 미리 만나보세요.\n\n𝘊𝘰𝘮𝘪𝘯𝘨 𝘚𝘰𝘰𝘯...",
+      "likesCount": -1,
+      "commentsCount": 0,
+      "timestamp": "2026-07-31T09:12:45.000Z"
+    },
+    {
+      "url": "https://www.instagram.com/p/DbScUQEAbjX/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/kiimuir/post_3.jpg",
+      "caption": "𝗘𝘃𝗲𝗿𝘆𝗱𝗮𝘆 𝗞𝗜𝗜𝗠𝗨𝗜𝗥 𝘄𝗲𝗮𝗿\n월요일부터 일요일까지, 매일 다른 무드로 완성한 키뮤어 스타일링.\n\n일주일 내내 자연스럽게 손이 가는 키뮤어의 데일리 아이템을 만나보세요.",
+      "likesCount": -1,
+      "commentsCount": 0,
+      "timestamp": "2026-07-27T07:36:06.000Z"
+    }
+  ]
+}

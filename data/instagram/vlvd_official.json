@@ -2,7 +2,7 @@
   "username": "vlvd_official",
   "name": "VIVA LA VIDA",
   "profilePicUrl": "data/instagram/images/vlvd_official/profile.jpg",
-  "fetchedAt": "2026-08-18T16:26:44+09:00",
+  "fetchedAt": "2026-08-19T11:51:42+09:00",
   "posts": [
     {
       "url": "https://www.instagram.com/p/DcAGnmuGMrq/",
@@ -23,22 +23,22 @@
       "timestamp": "2026-08-11T02:04:43.000Z"
     },
     {
-      "url": "https://www.instagram.com/p/Dbo2FIAgeUN/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/vlvd_official/post_2.jpg",
-      "caption": "폭염주의🚨\n휴가에 컬러 포인트를 낼 수 있는 Best 3 반팔 티셔츠를 소개합니다.\n\n⊹ Triad 반팔 티셔츠\n⊹ 배색 롤업 반팔 티셔츠\n⊹ Movement 반팔 티셔츠\n\nVLVD.kr, MUSINSA, 29CM\n공식 웹사이트(VLVD.kr)와 무신사,29cm에서 만나보실 수 있습니다.",
-      "likesCount": 5,
-      "commentsCount": 0,
-      "timestamp": "2026-08-05T00:24:31.000Z"
-    },
-    {
       "url": "https://www.instagram.com/p/Dbj6d2YGOD8/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/vlvd_official/post_3.jpg",
+      "displayUrl": "data/instagram/images/vlvd_official/post_2.jpg",
       "caption": "𝐇𝐎𝐓 𝐒𝐔𝐌𝐌𝐄𝐑 𝐒𝐀𝐋𝐄\n\n비바라비다 공식 홈페이지에서 한여름 세일이 진행됩니다.\n최대 60% 할인된 가격으로 제품을 만나보세요.\n\n* 8/1 (sat) - 8/19 (wed)",
       "likesCount": 7,
       "commentsCount": 0,
       "timestamp": "2026-08-03T02:26:39.000Z"
+    },
+    {
+      "url": "https://www.instagram.com/p/DbXHjrfClxX/",
+      "type": "Video",
+      "displayUrl": "data/instagram/images/vlvd_official/post_3.jpg",
+      "caption": "이번 휴가의 주인공은 너야📸\n\n▪️리뷰 이벤트\n\n상품 : 비바라비다 자사몰 쿠폰 5만원(1명)\n기간 : 07.29(수)~09.01(화)\n\n[참여 방법]\n1. 댓글에 함께할 친구 태그 @친구, 게시물 좋아요!\n2. 비바라비다 제품을 착용한 피드나 릴스에vlvd_official태그하기\n3. 태그한 게시물에 ”OUR YOUTH VIVA LA VIDA“라고 남겨주면 참여 완료!\n\n아..! 브랜드 계정 팔로우 해놓으면 당첨 확률이 올라가고 결과를 확인할 수 있어요..!\n\n+\nOUR YOUTH는 \"우리들의 청춘\", \"함께 기억하고 싶은 추억\"이라는 뜻을 가진 비바라비다의 26SS시즌 슬로건이에요 ⭐",
+      "likesCount": 21,
+      "commentsCount": 0,
+      "timestamp": "2026-07-29T03:12:02.000Z"
     }
   ]
 }

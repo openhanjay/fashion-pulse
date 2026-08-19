@@ -1,0 +1,44 @@
+{
+  "username": "videojockey_official",
+  "name": "Vidiojockey",
+  "profilePicUrl": "data/instagram/images/videojockey_official/profile.jpg",
+  "fetchedAt": "2026-08-19T11:51:42+09:00",
+  "posts": [
+    {
+      "url": "https://www.instagram.com/p/Dbmuv_CmT6h/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/videojockey_official/post_0.jpg",
+      "caption": "26SS ⟢GOGOGO⟢ T-SHIRTS\n\n° WHITE\n\n° YELLOW\n\nvideojockey.co.kr\n#videojockey #비디오자키",
+      "likesCount": -1,
+      "commentsCount": 0,
+      "timestamp": "2026-08-04T04:41:59.000Z"
+    },
+    {
+      "url": "https://www.instagram.com/p/DbU-ocKqEkS/",
+      "type": "Video",
+      "displayUrl": "data/instagram/images/videojockey_official/post_1.jpg",
+      "caption": "VIVI OOTD 👕‧₊\n\nvideojockey.co.kr\n#videojockey #비디오자키",
+      "likesCount": -1,
+      "commentsCount": 0,
+      "timestamp": "2026-07-28T07:18:05.000Z"
+    },
+    {
+      "url": "https://www.instagram.com/p/DbM2lsYmRcT/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/videojockey_official/post_2.jpg",
+      "caption": "26SS VIVI T-SHIRTS ⁎*⑅♡\n\n° Deep Brown\n\n° White\n\n° Mint\n\n° Charcoal\n\n° Navy\n\nvideojockey.co.kr\n#videojockey #비디오자키",
+      "likesCount": -1,
+      "commentsCount": 0,
+      "timestamp": "2026-07-25T03:30:01.000Z"
+    },
+    {
+      "url": "https://www.instagram.com/p/Da61ohREtQr/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/videojockey_official/post_3.jpg",
+      "caption": "📁귀여운 티셔츠를 모아모아 𛰙᭜𖫴𖫰𖫱𖫳𖫲𖫲𖫳𖫴𖫰𖫱꛰ ᭜𖫴𖫰𖫱𖫳𖫲𖫲𖫳𖫴𖫰𖫱꛰ಣ\n\nvideojockey.co.kr\n#videojockey #비디오자키",
+      "likesCount": -1,
+      "commentsCount": 0,
+      "timestamp": "2026-07-18T03:35:33.000Z"
+    }
+  ]
+}

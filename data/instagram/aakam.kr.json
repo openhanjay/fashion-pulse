@@ -2,43 +2,43 @@
   "username": "aakam.kr",
   "name": "AAKAM",
   "profilePicUrl": "data/instagram/images/aakam.kr/profile.jpg",
-  "fetchedAt": "2026-08-18T16:26:44+09:00",
+  "fetchedAt": "2026-08-19T11:51:42+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DcLlFnnk6rn/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/aakam.kr/post_0.jpg",
+      "caption": "AAKAM 26FW-1\nRelease — 08.19 (Wed)\n\n#aakam #아캄",
+      "likesCount": 696,
+      "commentsCount": 0,
+      "timestamp": "2026-08-18T12:09:27.000Z"
+    },
     {
       "url": "https://www.instagram.com/p/DcF3kkqEWo7/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/aakam.kr/post_0.jpg",
+      "displayUrl": "data/instagram/images/aakam.kr/post_1.jpg",
       "caption": "AAKAM 26FW-1\nRelease — 08.19(Wed)\n\n#aakam #아캄",
-      "likesCount": 742,
+      "likesCount": 773,
       "commentsCount": 0,
       "timestamp": "2026-08-16T06:55:02.000Z"
     },
     {
       "url": "https://www.instagram.com/p/DcDdKDsEYuh/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/aakam.kr/post_1.jpg",
+      "displayUrl": "data/instagram/images/aakam.kr/post_2.jpg",
       "caption": "AAKAM 26FW-1\nRelease — 08.19 (Wed)\n\n#aakam #아캄",
-      "likesCount": 2081,
+      "likesCount": 2149,
       "commentsCount": 1,
       "timestamp": "2026-08-15T08:26:14.000Z"
     },
     {
       "url": "https://www.instagram.com/p/DcA9bnRRmx6/",
       "type": "Video",
-      "displayUrl": "data/instagram/images/aakam.kr/post_2.jpg",
+      "displayUrl": "data/instagram/images/aakam.kr/post_3.jpg",
       "caption": "+AAKAM NEW FLAGSHIP STORE+\n\n2026.08.22(SAT)\n\nGRAND OPENING SOON 🔜🏠\n\n#aakam #아캄",
-      "likesCount": 710,
+      "likesCount": 717,
       "commentsCount": 3,
       "timestamp": "2026-08-14T09:11:01.000Z"
-    },
-    {
-      "url": "https://www.instagram.com/p/Db-j-hTkyGC/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/aakam.kr/post_3.jpg",
-      "caption": "AAKAM FW-1 Visual Campaign 🌪️\n\n08.19 (Wed) Release\n\n#aakam #아캄",
-      "likesCount": 905,
-      "commentsCount": 0,
-      "timestamp": "2026-08-13T10:49:37.000Z"
     }
   ]
 }
