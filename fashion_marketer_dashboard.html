@@ -2340,6 +2340,34 @@ function InstagramMonitoringPanel() {
 
   const editingId = mode && mode.type === "edit" ? mode.id : null;
 
+  // 등록된 브랜드 전체의 최근 게시물을 모아서, 지금 전체적으로 어떤 콘텐츠 방향이 많은지
+  // 카드 하나하나가 아니라 전체 기준으로도 보여준다(각 카드도 각자 자기 게시물을 따로
+  // fetch하지만, 이 목적을 위해 여기서 한 번 더 가볍게 모아온다).
+  const [allPosts, setAllPosts] = useState([]);
+  useEffect(() => {
+    if (!loaded || brands.length === 0) { setAllPosts([]); return; }
+    let cancelled = false;
+    Promise.all(
+      brands.map((b) =>
+        fetch(`data/instagram/${b.username}.json`)
+          .then((res) => (res.ok ? res.json() : null))
+          .then((data) => data?.posts || [])
+          .catch(() => [])
+      )
+    ).then((lists) => { if (!cancelled) setAllPosts(lists.flat()); });
+    return () => { cancelled = true; };
+  }, [loaded, brands]);
+
+  const overallDirection = useMemo(() => {
+    if (allPosts.length === 0) return null;
+    const counts = new Map();
+    allPosts.forEach((p) => {
+      const label = classifyPostContent(p.caption);
+      counts.set(label, (counts.get(label) || 0) + 1);
+    });
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]);
+  }, [allPosts]);
+
   return (
     <div className="rounded-2xl p-5" style={{ background: C.white, border: `1px solid ${C.line}` }}>
       <div className="flex items-center justify-between mb-4">
@@ -2352,6 +2380,16 @@ function InstagramMonitoringPanel() {
           <span className="text-xs font-medium" style={{ color: C.mute }}>{brands.length}개 브랜드</span>
         </div>
       </div>
+      {!!overallDirection && (
+        <div className="rounded-xl p-3.5 mb-4" style={{ background: C.indigoSoft, border: `1px solid ${C.indigo}` }}>
+          <p className="text-sm font-bold mb-1.5" style={{ color: C.indigo }}>요즘 경쟁사들 전체 콘텐츠 방향 (게시물 {allPosts.length}개 기준)</p>
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
+            {overallDirection.map(([label, count], i) => (
+              <span key={label} className="text-sm font-semibold" style={{ color: C.ink }}>{i + 1}. {label} <span style={{ color: C.mute }}>({count}개)</span></span>
+            ))}
+          </div>
+        </div>
+      )}
       {!loaded ? (
         <div className="flex items-center justify-center rounded-xl text-xs font-medium" style={{ height: 108, background: C.paper, color: C.mute }}>불러오는 중...</div>
       ) : (
