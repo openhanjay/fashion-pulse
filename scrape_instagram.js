@@ -30,7 +30,11 @@ const ACTOR = "apify~instagram-scraper";
 const APIFY_URL = `https://api.apify.com/v2/acts/${ACTOR}/run-sync-get-dataset-items?token=${APIFY_TOKEN}`;
 
 const POSTS_PER_ACCOUNT = 4; // 계정당 최종적으로 남길 게시물 개수 (대시보드에 4개씩 보여주는 것과 맞춤)
-const FETCH_POOL_SIZE = 10; // 고정 게시물을 제외하고도 POSTS_PER_ACCOUNT개가 남도록, 넉넉히 더 가져와서 그중에서 고른다
+// Apify 비용은 이 값(실제로 가져오는 결과 개수)에 비례해서 매겨진다(POSTS_PER_ACCOUNT를 줄이는 건
+// 비용에 영향 없음 - 이미 다 받아온 다음에 우리 쪽에서 골라내는 것뿐이라서). 고정(핀) 게시물이
+// 화면 순서상 앞쪽 몇 자리를 차지하고 있어도 실제로 최근 게시물 4개를 놓치지 않고 다시 정렬해
+// 골라내려면 4보다 넉넉하게 가져와야 해서, 최소한의 여유(6)만 두고 비용을 줄인다.
+const FETCH_POOL_SIZE = 6;
 const REQUEST_DELAY_MS = 2000; // 계정 사이 딜레이 (Apify 동시 실행 부하 방지)
 const DATA_DIR = path.join(__dirname, "data");
 const IG_ACCOUNTS_FILE = path.join(DATA_DIR, "ig_accounts.json");
@@ -90,18 +94,18 @@ function mapPost(item) {
 }
 
 // 인스타그램 프로필 화면은 고정(핀)한 게시물을 맨 위에 먼저 보여주고 그다음 최신순으로 나열하는데,
-// Apify도 그 화면 순서 그대로 넘겨준다. "최근 날짜순 N개"를 원하니, 고정 게시물을 넉넉히 걸러내고도
-// N개가 남도록 FETCH_POOL_SIZE만큼 넉넉히 가져온 다음, 고정 게시물을 빼고 날짜 내림차순으로 정렬해서
-// 앞에서 N개만 취한다.
+// Apify도 그 화면 순서 그대로 넘겨준다. 고정 게시물이라고 무조건 빼는 게 아니라, 고정이든 아니든
+// 날짜 내림차순으로 다시 정렬해서 앞에서 N개를 취한다 - 그러면 고정 게시물이 실제로도 최근 것이면
+// 자연스럽게 포함되고, 오래된 고정 게시물이면(최신 게시물이 N개 이상 더 있는 한) 자연스럽게 밀려난다.
+// 화면 순서상 고정 게시물이 앞자리를 차지해서 정렬 전 후보 자체가 부족해지지 않도록,
+// N개보다 넉넉하게(FETCH_POOL_SIZE) 가져온 다음 정렬한다.
 async function fetchPosts(accountUrl) {
   const items = await callApify({
     directUrls: [accountUrl],
     resultsType: "posts",
     resultsLimit: FETCH_POOL_SIZE,
   });
-  const sorted = items
-    .filter((item) => !item.isPinned)
-    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  const sorted = [...items].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   return sorted.slice(0, POSTS_PER_ACCOUNT).map(mapPost);
 }
 
