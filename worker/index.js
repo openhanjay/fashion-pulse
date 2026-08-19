@@ -10,10 +10,10 @@
  * GitHub Actions의 예약 실행은 부하가 많을 때 몇십 분씩 늦어질 수 있는데, Cloudflare Cron Trigger가
  * 훨씬 시각을 잘 지키기 때문. wrangler.toml의 [triggers] crons 참고.
  *
- * /instagram-accounts 경로는 인스타그램 모니터링 브랜드 목록(data/ig_accounts.json)을
- * GitHub Contents API로 직접 커밋해주는 역할. 대시보드가 브랜드를 추가/수정/삭제하면
- * localStorage가 아니라 이 엔드포인트를 호출해서 저장소 파일 자체를 갱신하고,
- * 그래야 서버 쪽 스크래퍼(scrape_instagram.js)도 같은 목록을 보고 수집할 수 있다.
+ * /instagram-accounts 경로는 인스타그램 모니터링 브랜드 목록(data/ig_accounts.json)을,
+ * /watch-lists 경로는 무신사/29CM의 관심 브랜드·검색어 목록(data/musinsa_brand_watch.json,
+ * data/cm29_brand_watch.json)을 GitHub Contents API로 직접 커밋해준다. 이렇게 저장소 파일에
+ * 직접 반영해야 localStorage와 달리 다른 기기/브라우저에서 들어가도 같은 목록이 보인다.
  */
 
 const OWNER = "openhanjay";
@@ -21,6 +21,10 @@ const REPO = "fashion-pulse";
 const WORKFLOW_FILE = "scrape.yml";
 const INSTAGRAM_WORKFLOW_FILE = "scrape_instagram.yml";
 const IG_ACCOUNTS_PATH = "data/ig_accounts.json";
+const WATCH_LIST_PATHS = {
+  musinsa: "data/musinsa_brand_watch.json",
+  cm29: "data/cm29_brand_watch.json",
+};
 const ALLOWED_ORIGIN = "https://openhanjay.github.io";
 const COOLDOWN_SECONDS = 3600;
 const INSTAGRAM_COOLDOWN_SECONDS = 300; // 브랜드 추가/수정마다 매번 전체 계정을 다시 스크랩하니, 짧게라도 도배 방지
@@ -84,36 +88,69 @@ async function triggerInstagramScrape(env) {
   }
 }
 
-// 현재 ig_accounts.json 내용(배열)과 sha를 읽어온다. 파일이 아직 없으면(404) 빈 배열 + sha 없음으로 취급.
-async function readIgAccounts(env) {
-  const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${IG_ACCOUNTS_PATH}`, {
+// filePath의 현재 내용(JSON 배열)과 sha를 읽어온다. 파일이 아직 없으면(404) 빈 배열 + sha 없음으로 취급.
+async function readJsonArrayFile(env, filePath) {
+  const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${filePath}`, {
     headers: ghHeaders(env),
   });
-  if (res.status === 404) return { accounts: [], sha: null };
+  if (res.status === 404) return { list: [], sha: null };
   if (!res.ok) throw new Error(`GitHub read failed: ${res.status}`);
   const data = await res.json();
-  const accounts = JSON.parse(b64DecodeUnicode(data.content.replace(/\n/g, "")));
-  return { accounts: Array.isArray(accounts) ? accounts : [], sha: data.sha };
+  const list = JSON.parse(b64DecodeUnicode(data.content.replace(/\n/g, "")));
+  return { list: Array.isArray(list) ? list : [], sha: data.sha };
 }
 
-async function putIgAccounts(env, accounts, sha, message) {
-  const body = { message, content: b64EncodeUnicode(JSON.stringify(accounts, null, 2)), ...(sha ? { sha } : {}) };
-  return fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${IG_ACCOUNTS_PATH}`, {
+async function putJsonArrayFile(env, filePath, list, sha, message) {
+  const body = { message, content: b64EncodeUnicode(JSON.stringify(list, null, 2)), ...(sha ? { sha } : {}) };
+  return fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${filePath}`, {
     method: "PUT",
     headers: ghHeaders(env),
     body: JSON.stringify(body),
   });
 }
 
-// 새 accounts 배열을 커밋한다. sha가 어긋나서 409가 나면(동시 수정 충돌) 최신 sha로 한 번만 재시도.
-async function writeIgAccounts(env, accounts, sha, message) {
-  let res = await putIgAccounts(env, accounts, sha, message);
+// 새 배열을 커밋한다. sha가 어긋나서 409가 나면(동시 수정 충돌) 최신 sha로 한 번만 재시도.
+async function writeJsonArrayFile(env, filePath, list, sha, message) {
+  let res = await putJsonArrayFile(env, filePath, list, sha, message);
   if (res.status === 409) {
-    const latest = await readIgAccounts(env);
-    res = await putIgAccounts(env, accounts, latest.sha, message);
+    const latest = await readJsonArrayFile(env, filePath);
+    res = await putJsonArrayFile(env, filePath, list, latest.sha, message);
   }
   if (!res.ok) throw new Error(`GitHub write failed: ${res.status} ${await res.text()}`);
   return res.json();
+}
+
+async function readIgAccounts(env) {
+  const { list, sha } = await readJsonArrayFile(env, IG_ACCOUNTS_PATH);
+  return { accounts: list, sha };
+}
+function writeIgAccounts(env, accounts, sha, message) {
+  return writeJsonArrayFile(env, IG_ACCOUNTS_PATH, accounts, sha, message);
+}
+
+async function handleWatchList(request, env) {
+  let payload;
+  try {
+    payload = await request.json();
+  } catch {
+    return json({ ok: false, message: "잘못된 요청이에요." }, 400);
+  }
+  const { list, action, value } = payload || {};
+  const filePath = WATCH_LIST_PATHS[list];
+  if (!filePath) return json({ ok: false, message: "알 수 없는 목록이에요." }, 400);
+  if (!["add", "remove"].includes(action) || !value) return json({ ok: false, message: "잘못된 요청이에요." }, 400);
+
+  try {
+    const { list: current, sha } = await readJsonArrayFile(env, filePath);
+    const next = action === "add"
+      ? (current.includes(value) ? current : [...current, value])
+      : current.filter((v) => v !== value);
+    const message = `chore: ${list} 관심 브랜드/검색어 ${action === "add" ? "추가" : "삭제"} (${value})`;
+    await writeJsonArrayFile(env, filePath, next, sha, message);
+    return json({ ok: true, list: next });
+  } catch (err) {
+    return json({ ok: false, message: "저장소에 반영하지 못했어요.", detail: String(err) }, 502);
+  }
 }
 
 async function handleIgAccounts(request, env) {
@@ -163,6 +200,7 @@ export default {
 
     const url = new URL(request.url);
     if (url.pathname === "/instagram-accounts") return handleIgAccounts(request, env);
+    if (url.pathname === "/watch-lists") return handleWatchList(request, env);
 
     const cooling = await env.RATE_LIMIT_KV.get("lastTriggeredAt");
     if (cooling) {
