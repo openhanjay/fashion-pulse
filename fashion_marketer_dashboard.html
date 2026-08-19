@@ -309,6 +309,25 @@ function summarizeContentDirection(posts) {
   return `요즘 콘텐츠 방향: "${topLabel}" 위주 (최근 ${posts.length}개 중 ${topCount}개)`;
 }
 
+/* 경쟁사 전체의 콘텐츠 분류 순위(ranked: [[라벨, 개수], ...] 개수 내림차순)를 보고,
+   "다들 많이 하는 방향(따라가면 무난함)"과 "상대적으로 적은 방향(차별화 기회)"을 같이 짚어주는
+   추천 문장을 만든다. "브랜드 소식/기타"는 특정 키워드에 안 걸린 것들을 모아둔 그릇일 뿐이라
+   "이 방향을 따라가라"고 추천할 실체가 없어서 제외하고, 실제 콘텐츠 유형들 중에서만 고른다.
+   실제 AI 판단이 아니라 통계(가장 많은 것/가장 적거나 아예 없는 것)일 뿐이라 절대적인 정답이
+   아니라 참고용 힌트라는 뉘앙스로 문장을 구성한다. */
+function buildContentRecommendation(ranked, totalPosts) {
+  if (!ranked || ranked.length === 0 || totalPosts === 0) return "";
+  const realLabels = IG_CONTENT_BUCKETS.map((b) => b.label);
+  const realRanked = ranked.filter(([label]) => realLabels.includes(label));
+  if (realRanked.length === 0) return "";
+  const [topLabel, topCount] = realRanked[0];
+  const topShare = Math.round((topCount / totalPosts) * 100);
+  const seenLabels = new Set(realRanked.map(([label]) => label));
+  const untouched = realLabels.filter((label) => !seenLabels.has(label));
+  const leastLabel = untouched.length > 0 ? untouched[0] : realRanked[realRanked.length - 1][0];
+  return `추천: 지금은 "${topLabel}" 콘텐츠가 가장 많아요(전체의 ${topShare}%) - 이 흐름을 따라가면 무난하고, 반대로 "${leastLabel}" 쪽은 상대적으로 적어서 차별화 포인트로 노려볼 만해요. (통계 기반 참고용 힌트예요)`;
+}
+
 const LINE_PALETTE = [
   "#4338CA","#FF3B5C","#0F9D8C","#D97B0D","#7A45C9",
   "#0E7AC4","#B8862F","#C0378A","#3E8E3E","#555555",
@@ -2383,11 +2402,12 @@ function InstagramMonitoringPanel() {
       {!!overallDirection && (
         <div className="rounded-xl p-3.5 mb-4" style={{ background: C.indigoSoft, border: `1px solid ${C.indigo}` }}>
           <p className="text-sm font-bold mb-1.5" style={{ color: C.indigo }}>요즘 경쟁사들 전체 콘텐츠 방향 (게시물 {allPosts.length}개 기준)</p>
-          <div className="flex flex-wrap gap-x-4 gap-y-1">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 mb-2">
             {overallDirection.map(([label, count], i) => (
               <span key={label} className="text-sm font-semibold" style={{ color: C.ink }}>{i + 1}. {label} <span style={{ color: C.mute }}>({count}개)</span></span>
             ))}
           </div>
+          <p className="text-sm" style={{ color: C.ink }}>{buildContentRecommendation(overallDirection, allPosts.length)}</p>
         </div>
       )}
       {!loaded ? (
