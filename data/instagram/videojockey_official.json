@@ -2,12 +2,21 @@
   "username": "videojockey_official",
   "name": "Vidiojockey",
   "profilePicUrl": "data/instagram/images/videojockey_official/profile.jpg",
-  "fetchedAt": "2026-08-19T11:51:42+09:00",
+  "fetchedAt": "2026-08-19T17:04:42+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/Db45prLGf9M/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/videojockey_official/post_0.jpg",
+      "caption": "CLEARANCE SALE ꜝ🩵︎⬞♪\n\n26년 여름 마지막 세일을\n최대 30% 상품 쿠폰 + 10% 장바구니 쿠폰까지!\n\n오직 무신사에서 만나보세요.\n\n°  26.08.10(MON) - 26.08.20(THU)",
+      "likesCount": -1,
+      "commentsCount": 0,
+      "timestamp": "2026-08-11T06:03:34.000Z"
+    },
     {
       "url": "https://www.instagram.com/p/Dbmuv_CmT6h/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/post_0.jpg",
+      "displayUrl": "data/instagram/images/videojockey_official/post_1.jpg",
       "caption": "26SS ⟢GOGOGO⟢ T-SHIRTS\n\n° WHITE\n\n° YELLOW\n\nvideojockey.co.kr\n#videojockey #비디오자키",
       "likesCount": -1,
       "commentsCount": 0,
@@ -16,7 +25,7 @@
     {
       "url": "https://www.instagram.com/p/DbU-ocKqEkS/",
       "type": "Video",
-      "displayUrl": "data/instagram/images/videojockey_official/post_1.jpg",
+      "displayUrl": "data/instagram/images/videojockey_official/post_2.jpg",
       "caption": "VIVI OOTD 👕‧₊\n\nvideojockey.co.kr\n#videojockey #비디오자키",
       "likesCount": -1,
       "commentsCount": 0,
@@ -25,20 +34,11 @@
     {
       "url": "https://www.instagram.com/p/DbM2lsYmRcT/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/post_2.jpg",
+      "displayUrl": "data/instagram/images/videojockey_official/post_3.jpg",
       "caption": "26SS VIVI T-SHIRTS ⁎*⑅♡\n\n° Deep Brown\n\n° White\n\n° Mint\n\n° Charcoal\n\n° Navy\n\nvideojockey.co.kr\n#videojockey #비디오자키",
       "likesCount": -1,
       "commentsCount": 0,
       "timestamp": "2026-07-25T03:30:01.000Z"
-    },
-    {
-      "url": "https://www.instagram.com/p/Da61ohREtQr/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/post_3.jpg",
-      "caption": "📁귀여운 티셔츠를 모아모아 𛰙᭜𖫴𖫰𖫱𖫳𖫲𖫲𖫳𖫴𖫰𖫱꛰ ᭜𖫴𖫰𖫱𖫳𖫲𖫲𖫳𖫴𖫰𖫱꛰ಣ\n\nvideojockey.co.kr\n#videojockey #비디오자키",
-      "likesCount": -1,
-      "commentsCount": 0,
-      "timestamp": "2026-07-18T03:35:33.000Z"
     }
   ]
 }

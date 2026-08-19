@@ -2,12 +2,21 @@
   "username": "teket_com",
   "name": "TEKET",
   "profilePicUrl": "data/instagram/images/teket_com/profile.jpg",
-  "fetchedAt": "2026-08-19T11:51:42+09:00",
+  "fetchedAt": "2026-08-19T17:04:42+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DcNLfFRkfBu/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/teket_com/post_0.jpg",
+      "caption": "Plan 18. Inside Curve 𖦹\n• \nRelease Info\n1st Release -  Check It Out Now ⤴\n• \nwww.te-ket.com",
+      "likesCount": -1,
+      "commentsCount": 1,
+      "timestamp": "2026-08-19T03:04:13.000Z"
+    },
     {
       "url": "https://www.instagram.com/p/DcLPa_jEbpE/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/teket_com/post_0.jpg",
+      "displayUrl": "data/instagram/images/teket_com/post_1.jpg",
       "caption": "Plan 18. Inside Curve 𖦹\n• \n◉Incur Rain Jacket _ Light Blue / Khaki\n• \nRelease Info\n1st Release -  Check It Out Now ⤴\n• \nwww.te-ket.com",
       "likesCount": -1,
       "commentsCount": 0,
@@ -16,7 +25,7 @@
     {
       "url": "https://www.instagram.com/p/DcKmS78j8V5/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/teket_com/post_1.jpg",
+      "displayUrl": "data/instagram/images/teket_com/post_2.jpg",
       "caption": "Plan 18. Inside Curve\n• \nDifferent angles, different views ◐\n• \nRelease Info\n1st Release -  Check It Out Now ⤴\n• \nwww.te-ket.com",
       "likesCount": -1,
       "commentsCount": 0,
@@ -25,20 +34,11 @@
     {
       "url": "https://www.instagram.com/p/DcC34dglGZM/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/teket_com/post_2.jpg",
+      "displayUrl": "data/instagram/images/teket_com/post_3.jpg",
       "caption": "Plan 18. Inside Curve\n• \n◉Unseen Open Button Tee\n◉Scene Hooded Zip-Up\n◉Twist Layered L/S\n◉Convex Three-Quarter Parachute Pants\n• \nRelease Info\n1st Release -  Check It Out Now ⤴\n• \nwww.te-ket.com",
       "likesCount": -1,
       "commentsCount": 0,
       "timestamp": "2026-08-15T03:00:02.000Z"
-    },
-    {
-      "url": "https://www.instagram.com/p/DcBqdu4FOmE/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/teket_com/post_3.jpg",
-      "caption": "Plan 18. Inside Curve ↙ ◉ ↗\n ▰  Gift With Purchase ▰\nDifferent perspectives, different views \n•\nwww.te-ket.com\n• \nTeket Store \n1F, 39, Seongji 1-gil, Mapo-gu, Seoul\n• \nTeket Centum Store\nB2F, 35 Centum nam-daero, Haeundae-gu, Busan.",
-      "likesCount": -1,
-      "commentsCount": 0,
-      "timestamp": "2026-08-14T15:44:02.000Z"
     }
   ]
 }
