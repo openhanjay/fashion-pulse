@@ -33,7 +33,17 @@ jobs:
           git add data/instagram/
           if ! git diff --cached --quiet; then
             git commit -m "chore: instagram snapshot"
-            git push
+            # 예약 실행과 계정 추가 즉시 트리거가 초 단위로 겹치면 push가 거절될 수 있어서,
+            # 거절되면 최신 내용을 rebase로 받아온 뒤 다시 시도한다(최대 5번).
+            for i in 1 2 3 4 5; do
+              if git push; then
+                exit 0
+              fi
+              echo "push 거절됨, rebase 후 재시도 ($i/5)"
+              git pull --rebase origin main
+            done
+            echo "push를 여러 번 재시도했지만 실패했어요."
+            exit 1
           else
             echo "no data changes"
           fi
