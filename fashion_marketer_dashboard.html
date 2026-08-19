@@ -2208,25 +2208,38 @@ function requestIgAccountsChange(payload) {
   }).then((res) => res.json().then((data) => ({ ok: res.ok && data.ok, data })));
 }
 
+const IG_ACCOUNTS_CACHE_KEY = "fp_ig_accounts_cache";
+
+// 방금 추가/수정한 계정이 남아있는지 확인한다(캐시에 있는 게 fetch 결과엔 없으면 아직 최신이 아닌 것).
+function isStaleAccountsList(fetchedList, cachedList) {
+  return cachedList.some((cached) => !fetchedList.some((f) => f.id === cached.id));
+}
+
 function InstagramMonitoringPanel() {
-  const [brands, setBrands] = useState([]);
-  const [loaded, setLoaded] = useState(false);
+  // data/ig_accounts.json이 원본이지만, GitHub Pages 배포/캐시가 몇 분 늦게 반영될 때가 있어서
+  // 방금 추가한 브랜드를 새로고침하자마자 fetch하면 아직 예전(그 브랜드가 없는) 버전을 받아와서
+  // "새로고침하면 방금 추가한 게 사라지는" 것처럼 보이는 문제가 있었다. 그래서 add/edit/remove에
+  // 성공할 때마다 그 결과를 localStorage에도 같이 캐시해두고, 페이지를 열 때는 그 캐시를 먼저
+  // 보여준 다음(깜빡임 없이 바로 표시), 저장소에서 새로 받아온 목록이 캐시에 있는 걸 다 포함하고
+  // 있을 때만(=진짜 최신일 때만) 그걸로 교체한다. 캐시에는 있는데 fetch 결과엔 없는(아직 반영 안 된)
+  // 경우엔 캐시를 그대로 유지해서 방금 한 변경이 사라져 보이지 않게 한다.
+  const [brands, setBrands] = useState(() => loadPersistedList(IG_ACCOUNTS_CACHE_KEY));
+  const [loaded, setLoaded] = useState(() => loadPersistedList(IG_ACCOUNTS_CACHE_KEY).length > 0);
   const [mode, setMode] = useState(null); // null | "add" | { type: "edit", id }
   const [urlInput, setUrlInput] = useState("");
   const [nameInput, setNameInput] = useState("");
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // 브랜드 목록은 이제 브라우저가 아니라 저장소의 data/ig_accounts.json이 원본이라, 페이지를 열 때마다
-  // 거기서 불러온다. 예전에 localStorage로 추가해뒀던 브랜드가 남아있으면(이 기능을 Worker 연동 전에
-  // 써봤던 경우) 한 번만 그 목록을 저장소로 옮겨준 뒤 localStorage는 지운다.
   useEffect(() => {
-    fetch("data/ig_accounts.json")
+    fetch(`data/ig_accounts.json?t=${Date.now()}`) // 쿼리스트링을 매번 바꿔서 브라우저 캐시를 우회
       .then((res) => (res.ok ? res.json() : []))
       .then(async (remote) => {
         const list = Array.isArray(remote) ? remote : [];
         const legacy = loadPersistedList("fp_ig_brands");
         if (list.length === 0 && legacy.length > 0) {
+          // 예전에 localStorage로만 추가해뒀던 브랜드가 남아있으면(Worker 연동 전에 써봤던 경우)
+          // 한 번만 그 목록을 저장소로 옮겨준 뒤 localStorage는 지운다.
           let migrated = list;
           for (const b of legacy) {
             const res = await requestIgAccountsChange({ action: "add", account: { name: b.name, username: b.username, url: b.url } });
@@ -2234,12 +2247,15 @@ function InstagramMonitoringPanel() {
           }
           savePersistedList("fp_ig_brands", []);
           setBrands(migrated);
-        } else {
+          savePersistedList(IG_ACCOUNTS_CACHE_KEY, migrated);
+        } else if (!isStaleAccountsList(list, brands)) {
           setBrands(list);
+          savePersistedList(IG_ACCOUNTS_CACHE_KEY, list);
         }
         setLoaded(true);
       })
       .catch(() => setLoaded(true));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const startAdd = () => { setMode("add"); setUrlInput(""); setNameInput(""); setErrorMsg(""); };
@@ -2261,6 +2277,7 @@ function InstagramMonitoringPanel() {
         setSaving(false);
         if (!ok) { setErrorMsg(data.message || "저장하지 못했어요."); return; }
         setBrands(data.accounts);
+        savePersistedList(IG_ACCOUNTS_CACHE_KEY, data.accounts);
         cancelForm();
       })
       .catch(() => { setSaving(false); setErrorMsg("저장하지 못했어요."); });
@@ -2270,6 +2287,7 @@ function InstagramMonitoringPanel() {
       .then(({ ok, data }) => {
         if (!ok) { setErrorMsg(data.message || "삭제하지 못했어요."); return; }
         setBrands(data.accounts);
+        savePersistedList(IG_ACCOUNTS_CACHE_KEY, data.accounts);
         if (mode && mode.type === "edit" && mode.id === id) cancelForm();
       })
       .catch(() => setErrorMsg("삭제하지 못했어요."));
