@@ -2195,11 +2195,16 @@ function InstagramBrandCard({ brand, onRemove, onEdit }) {
                     <Camera size={16} color={C.mute} />
                   )}
                 </div>
-                {!!post.caption && (<p className="text-[9.5px] leading-tight" style={{ color: C.mute }}>{captionPreview(post.caption)}</p>)}
+                {!!post.caption && (
+                  <>
+                    <p className="text-[11px] font-bold leading-tight" style={{ color: C.indigo }}>{classifyPostContent(post.caption)}</p>
+                    <p className="text-[11px] leading-snug" style={{ color: C.mute }}>{captionPreview(post.caption)}</p>
+                  </>
+                )}
               </a>
             ))}
           </div>
-          <p className="text-[10.5px] font-semibold" style={{ color: C.indigo }}>{summarizeContentDirection(snapshot.posts)}</p>
+          <p className="text-sm font-semibold" style={{ color: C.indigo }}>{summarizeContentDirection(snapshot.posts)}</p>
           {!!fetchedAtLabel && (<p className="text-[10px]" style={{ color: C.mute }}>최근 수집: {fetchedAtLabel}</p>)}
         </>
       )}
