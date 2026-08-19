@@ -273,6 +273,42 @@ function extractInstagramUsername(input) {
   return trimmed.replace(/^@/, "").replace(/\/$/, "");
 }
 
+/* 게시물 캡션 미리보기: 첫 줄만 뽑아서 너무 길면 잘라준다(카드 썸네일 밑에 짧게 보여주는 용도). */
+function captionPreview(caption, maxLen = 32) {
+  const firstLine = (caption || "").split("\n").map((s) => s.trim()).find((s) => s.length > 0) || "";
+  return firstLine.length > maxLen ? `${firstLine.slice(0, maxLen)}…` : firstLine;
+}
+
+/* 캡션에 어떤 키워드가 들어있는지로 그 게시물이 대략 어떤 성격의 콘텐츠인지 분류한다(실제 AI 분석이
+   아니라 키워드 매칭 - 무신사/29CM AI 분석과 같은 통계/규칙 기반 방식). 우선순위 순서대로 검사해서
+   먼저 걸리는 것으로 정한다. */
+// "쿠폰"이 순수 할인 코드로도 쓰이지만 리뷰 이벤트 경품으로도 흔히 등장하는 것처럼, 버킷 간
+// 키워드가 겹칠 수 있어서 순서(신상 -> 후기/체험 이벤트 -> 할인 -> 스타일링)가 중요하다 -
+// "리뷰 이벤트" 같은 명확한 신호를 할인 버킷보다 먼저 검사해서 잘못 분류되지 않게 한다.
+const IG_CONTENT_BUCKETS = [
+  { label: "신상/컬렉션 홍보", keywords: ["new", "collection", "신상", "컬렉션", "drop", "발매", "launch", "출시"] },
+  { label: "후기/체험 이벤트", keywords: ["리뷰", "review", "당첨", "참여", "체험단"] },
+  { label: "할인/프로모션", keywords: ["sale", "할인", "쿠폰", "coupon", "세일", "특가"] },
+  { label: "스타일링/코디 제안", keywords: ["코디", "스타일링", "styling", "look", "룩", "착용", "ootd", "추천"] },
+];
+function classifyPostContent(caption) {
+  const text = (caption || "").toLowerCase();
+  const hit = IG_CONTENT_BUCKETS.find((bucket) => bucket.keywords.some((k) => text.includes(k)));
+  return hit ? hit.label : "브랜드 소식/기타";
+}
+
+/* 최근 게시물들을 분류해서 가장 많이 겹치는 콘텐츠 방향 한 줄을 만들어준다. */
+function summarizeContentDirection(posts) {
+  if (!posts || posts.length === 0) return "";
+  const counts = new Map();
+  posts.forEach((p) => {
+    const label = classifyPostContent(p.caption);
+    counts.set(label, (counts.get(label) || 0) + 1);
+  });
+  const [topLabel, topCount] = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+  return `요즘 콘텐츠 방향: "${topLabel}" 위주 (최근 ${posts.length}개 중 ${topCount}개)`;
+}
+
 const LINE_PALETTE = [
   "#4338CA","#FF3B5C","#0F9D8C","#D97B0D","#7A45C9",
   "#0E7AC4","#B8862F","#C0378A","#3E8E3E","#555555",
@@ -2144,22 +2180,26 @@ function InstagramBrandCard({ brand, onRemove, onEdit }) {
         <>
           <div className="grid grid-cols-4 gap-1">
             {snapshot.posts.slice(0, 4).map((post, i) => (
-              <a key={post.url} href={post.url} target="_blank" rel="noreferrer" className="rounded-md overflow-hidden aspect-square flex items-center justify-center" style={{ background: C.white }}>
-                {post.displayUrl && !postImgErrors[i] ? (
-                  <img
-                    src={post.displayUrl}
-                    alt=""
-                    loading="lazy"
-                    referrerPolicy="no-referrer"
-                    onError={() => setPostImgErrors((prev) => ({ ...prev, [i]: true }))}
-                    className="w-full h-full object-contain"
-                  />
-                ) : (
-                  <Camera size={16} color={C.mute} />
-                )}
+              <a key={post.url} href={post.url} target="_blank" rel="noreferrer" className="flex flex-col gap-0.5">
+                <div className="rounded-md overflow-hidden aspect-square flex items-center justify-center" style={{ background: C.white }}>
+                  {post.displayUrl && !postImgErrors[i] ? (
+                    <img
+                      src={post.displayUrl}
+                      alt=""
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                      onError={() => setPostImgErrors((prev) => ({ ...prev, [i]: true }))}
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <Camera size={16} color={C.mute} />
+                  )}
+                </div>
+                {!!post.caption && (<p className="text-[9.5px] leading-tight" style={{ color: C.mute }}>{captionPreview(post.caption)}</p>)}
               </a>
             ))}
           </div>
+          <p className="text-[10.5px] font-semibold" style={{ color: C.indigo }}>{summarizeContentDirection(snapshot.posts)}</p>
           {!!fetchedAtLabel && (<p className="text-[10px]" style={{ color: C.mute }}>최근 수집: {fetchedAtLabel}</p>)}
         </>
       )}
