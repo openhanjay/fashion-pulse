@@ -2,14 +2,14 @@
   "username": "aakam.kr",
   "name": "AAKAM",
   "profilePicUrl": "data/instagram/images/aakam.kr/profile.jpg",
-  "fetchedAt": "2026-08-20T10:07:38+09:00",
+  "fetchedAt": "2026-08-21T10:11:03+09:00",
   "posts": [
     {
       "url": "https://www.instagram.com/p/DcLlFnnk6rn/",
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/aakam.kr/post_0.jpg",
       "caption": "AAKAM 26FW-1\nRelease — 08.19 (Wed)\n\n#aakam #아캄",
-      "likesCount": 863,
+      "likesCount": 919,
       "commentsCount": 0,
       "timestamp": "2026-08-18T12:09:27.000Z"
     },
@@ -18,7 +18,7 @@
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/aakam.kr/post_1.jpg",
       "caption": "AAKAM 26FW-1\nRelease — 08.19(Wed)\n\n#aakam #아캄",
-      "likesCount": 795,
+      "likesCount": 806,
       "commentsCount": 1,
       "timestamp": "2026-08-16T06:55:02.000Z"
     },
@@ -27,7 +27,7 @@
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/aakam.kr/post_2.jpg",
       "caption": "AAKAM 26FW-1\nRelease — 08.19 (Wed)\n\n#aakam #아캄",
-      "likesCount": 2193,
+      "likesCount": 2225,
       "commentsCount": 1,
       "timestamp": "2026-08-15T08:26:14.000Z"
     },
@@ -36,7 +36,7 @@
       "type": "Video",
       "displayUrl": "data/instagram/images/aakam.kr/post_3.jpg",
       "caption": "+AAKAM NEW FLAGSHIP STORE+\n\n2026.08.22(SAT)\n\nGRAND OPENING SOON 🔜🏠\n\n#aakam #아캄",
-      "likesCount": 726,
+      "likesCount": 735,
       "commentsCount": 3,
       "timestamp": "2026-08-14T09:11:01.000Z"
     }

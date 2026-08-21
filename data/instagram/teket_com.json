@@ -2,12 +2,30 @@
   "username": "teket_com",
   "name": "TEKET",
   "profilePicUrl": "data/instagram/images/teket_com/profile.jpg",
-  "fetchedAt": "2026-08-20T10:07:38+09:00",
+  "fetchedAt": "2026-08-21T10:11:03+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DcQf6fEEcnL/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/teket_com/post_0.jpg",
+      "caption": "26AW Plan 18. Plan Series ✣\n•\nRelease Info\n1st Release - Check It Out Now ⤴\n•\nwww.te-ket.com",
+      "likesCount": -1,
+      "commentsCount": 0,
+      "timestamp": "2026-08-20T10:00:02.000Z"
+    },
+    {
+      "url": "https://www.instagram.com/p/DcPv5RZEcu_/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/teket_com/post_1.jpg",
+      "caption": "26AW ∴Plan 18. Plan Series ∴\n•\nRelease Info\n1st Release - Check It Out Now ⤴\n•\nwww.te-ket.com",
+      "likesCount": -1,
+      "commentsCount": 0,
+      "timestamp": "2026-08-20T03:00:02.000Z"
+    },
     {
       "url": "https://www.instagram.com/p/DcNLfFRkfBu/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/teket_com/post_0.jpg",
+      "displayUrl": "data/instagram/images/teket_com/post_2.jpg",
       "caption": "Plan 18. Inside Curve 𖦹\n• \nRelease Info\n1st Release -  Check It Out Now ⤴\n• \nwww.te-ket.com",
       "likesCount": -1,
       "commentsCount": 1,
@@ -16,29 +34,11 @@
     {
       "url": "https://www.instagram.com/p/DcLPa_jEbpE/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/teket_com/post_1.jpg",
+      "displayUrl": "data/instagram/images/teket_com/post_3.jpg",
       "caption": "Plan 18. Inside Curve 𖦹\n• \n◉Incur Rain Jacket _ Light Blue / Khaki\n• \nRelease Info\n1st Release -  Check It Out Now ⤴\n• \nwww.te-ket.com",
       "likesCount": -1,
       "commentsCount": 0,
       "timestamp": "2026-08-18T09:00:01.000Z"
-    },
-    {
-      "url": "https://www.instagram.com/p/DcKmS78j8V5/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/teket_com/post_2.jpg",
-      "caption": "Plan 18. Inside Curve\n• \nDifferent angles, different views ◐\n• \nRelease Info\n1st Release -  Check It Out Now ⤴\n• \nwww.te-ket.com",
-      "likesCount": -1,
-      "commentsCount": 0,
-      "timestamp": "2026-08-18T03:00:01.000Z"
-    },
-    {
-      "url": "https://www.instagram.com/p/DcC34dglGZM/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/teket_com/post_3.jpg",
-      "caption": "Plan 18. Inside Curve\n• \n◉Unseen Open Button Tee\n◉Scene Hooded Zip-Up\n◉Twist Layered L/S\n◉Convex Three-Quarter Parachute Pants\n• \nRelease Info\n1st Release -  Check It Out Now ⤴\n• \nwww.te-ket.com",
-      "likesCount": -1,
-      "commentsCount": 0,
-      "timestamp": "2026-08-15T03:00:02.000Z"
     }
   ]
 }
