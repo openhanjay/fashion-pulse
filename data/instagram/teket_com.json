@@ -2,12 +2,30 @@
   "username": "teket_com",
   "name": "TEKET",
   "profilePicUrl": "data/instagram/images/teket_com/profile.jpg",
-  "fetchedAt": "2026-08-23T10:13:20+09:00",
+  "fetchedAt": "2026-08-24T10:10:57+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DcYHZKUkeg8/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/teket_com/post_0.jpg",
+      "caption": "26AW Plan 18. Plan Series\n•\nPlan Cap \n• \nCheck It Out Now ⤵\nwww.te-ket.com",
+      "likesCount": -1,
+      "commentsCount": 0,
+      "timestamp": "2026-08-23T09:00:02.000Z"
+    },
+    {
+      "url": "https://www.instagram.com/p/DcXeNZWEQt2/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/teket_com/post_1.jpg",
+      "caption": "26AW Plan 18. Plan Series\n•\nFolder Cap Green\nFolder L/S Tee Blue / Melange Gray / Brown\n• \nCheck It Out Now ⤵\nwww.te-ket.com",
+      "likesCount": -1,
+      "commentsCount": 0,
+      "timestamp": "2026-08-23T03:00:03.000Z"
+    },
     {
       "url": "https://www.instagram.com/p/DcU5ac_kTZU/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/teket_com/post_0.jpg",
+      "displayUrl": "data/instagram/images/teket_com/post_2.jpg",
       "caption": "26AW Plan 18. Plan Series\n•\nPlan Women Tee Brown / Melange Gray\n• \nCheck It Out Now ⤵\nwww.te-ket.com",
       "likesCount": -1,
       "commentsCount": 1,
@@ -16,29 +34,11 @@
     {
       "url": "https://www.instagram.com/p/DcN6069xxhA/",
       "type": "Image",
-      "displayUrl": "data/instagram/images/teket_com/post_1.jpg",
+      "displayUrl": "data/instagram/images/teket_com/post_3.jpg",
       "caption": "26AW Plan 18. Plan Series 🗂️\n•\nRelease Info\n1st Release - Check It Out Now ⤴\n•\nwww.te-ket.com",
       "likesCount": -1,
       "commentsCount": 0,
       "timestamp": "2026-08-21T03:00:02.000Z"
-    },
-    {
-      "url": "https://www.instagram.com/p/DcQf6fEEcnL/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/teket_com/post_2.jpg",
-      "caption": "26AW Plan 18. Plan Series ✣\n•\nRelease Info\n1st Release - Check It Out Now ⤴\n•\nwww.te-ket.com",
-      "likesCount": -1,
-      "commentsCount": 0,
-      "timestamp": "2026-08-20T10:00:02.000Z"
-    },
-    {
-      "url": "https://www.instagram.com/p/DcPv5RZEcu_/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/teket_com/post_3.jpg",
-      "caption": "26AW ∴Plan 18. Plan Series ∴\n•\nRelease Info\n1st Release - Check It Out Now ⤴\n•\nwww.te-ket.com",
-      "likesCount": -1,
-      "commentsCount": 1,
-      "timestamp": "2026-08-20T03:00:02.000Z"
     }
   ]
 }
