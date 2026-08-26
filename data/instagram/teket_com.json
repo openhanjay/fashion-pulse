@@ -2,12 +2,21 @@
   "username": "teket_com",
   "name": "TEKET",
   "profilePicUrl": "data/instagram/images/teket_com/profile.jpg",
-  "fetchedAt": "2026-08-25T10:09:08+09:00",
+  "fetchedAt": "2026-08-26T10:11:33+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DcdKKQ8k-20/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/teket_com/post_0.jpg",
+      "caption": "Plan 18. Inside Curve\n•\nPick-and-choose vision 𖦹\n•\nRelease Info\n2nd Release - 26.08.28(Fri) KST 12:00PM\n•\nwww.te-ket.com",
+      "likesCount": -1,
+      "commentsCount": 0,
+      "timestamp": "2026-08-25T08:00:06.000Z"
+    },
     {
       "url": "https://www.instagram.com/p/Dca6tW7FEJm/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/teket_com/post_0.jpg",
+      "displayUrl": "data/instagram/images/teket_com/post_1.jpg",
       "caption": "26AW - Plan 18. Inside Curve \n• \nRelease Info\n1st Release - Available Now\n2nd Release - 26.08.28(Fri) KST 12:00PM\n3rd Release - 26.09.11(Fri) KST 12:00PM\n4th Release - 26.10.02(Fri) KST 12:00PM\n• \nwww.te-ket.com \n• \nTeket Store \n1F, 39, Seongji 1-gil, Mapo-gu, Seoul\n• \nTeket Centum Store\nB2F, 35 Centum nam-daero, Haeundae-gu, Busan. \n\n1st Release - Available Now\n• \nwww.te-ket.com \n• \nTeket Store \n1F, 39, Seongji 1-gil, Mapo-gu, Seoul\n• \nTeket Centum Store\nB2F, 35 Centum nam-daero, Haeundae-gu, Busan. \n\n2nd Release - 26.08.28(Fri) KST 12:00PM\n• \nwww.te-ket.com \n• \nTeket Store \n1F, 39, Seongji 1-gil, Mapo-gu, Seoul\n• \nTeket Centum Store\nB2F, 35 Centum nam-daero, Haeundae-gu, Busan. \n\n2nd Release - 26.08.28(Fri) KST 12:00PM\n• \nwww.te-ket.com \n• \nTeket Store \n1F, 39, Seongji 1-gil, Mapo-gu, Seoul\n• \nTeket Centum Store\nB2F, 35 Centum nam-daero, Haeundae-gu, Busan. \n\n3rd Release - 26.09.11(Fri) KST 12:00PM\n• \nwww.te-ket.com \n• \nTeket Store \n1F, 39, Seongji 1-gil, Mapo-gu, Seoul\n• \nTeket Centum Store\nB2F, 35 Centum nam-daero, Haeundae-gu, Busan. \n\n3rd Release - 26.09.11(Fri) KST 12:00PM\n• \nwww.te-ket.com \n• \nTeket Store \n1F, 39, Seongji 1-gil, Mapo-gu, Seoul\n• \nTeket Centum Store\nB2F, 35 Centum nam-daero, Haeundae-gu, Busan. \n\n4th Release - 26.10.02(Fri) KST 12:00PM\n• \nwww.te-ket.com \n• \nTeket Store \n1F, 39, Seongji 1-gil, Mapo-gu, Seoul\n• \nTeket Centum Store\nB2F, 35 Centum nam-daero, Haeundae-gu, Busan. \n\n4th Release - 26.10.02(Fri) KST 12:00PM\n• \nwww.te-ket.com \n• \nTeket Store \n1F, 39, Seongji 1-gil, Mapo-gu, Seoul\n• \nTeket Centum Store\nB2F, 35 Centum nam-daero, Haeundae-gu, Busan.",
       "likesCount": -1,
       "commentsCount": 1,
@@ -16,7 +25,7 @@
     {
       "url": "https://www.instagram.com/p/DcYHZKUkeg8/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/teket_com/post_1.jpg",
+      "displayUrl": "data/instagram/images/teket_com/post_2.jpg",
       "caption": "26AW Plan 18. Plan Series\n•\nPlan Cap \n• \nCheck It Out Now ⤵\nwww.te-ket.com",
       "likesCount": -1,
       "commentsCount": 0,
@@ -25,20 +34,11 @@
     {
       "url": "https://www.instagram.com/p/DcXeNZWEQt2/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/teket_com/post_2.jpg",
+      "displayUrl": "data/instagram/images/teket_com/post_3.jpg",
       "caption": "26AW Plan 18. Plan Series\n•\nFolder Cap Green\nFolder L/S Tee Blue / Melange Gray / Brown\n• \nCheck It Out Now ⤵\nwww.te-ket.com",
       "likesCount": -1,
       "commentsCount": 0,
       "timestamp": "2026-08-23T03:00:03.000Z"
-    },
-    {
-      "url": "https://www.instagram.com/p/DcU5ac_kTZU/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/teket_com/post_3.jpg",
-      "caption": "26AW Plan 18. Plan Series\n•\nPlan Women Tee Brown / Melange Gray\n• \nCheck It Out Now ⤵\nwww.te-ket.com",
-      "likesCount": -1,
-      "commentsCount": 1,
-      "timestamp": "2026-08-22T03:00:02.000Z"
     }
   ]
 }

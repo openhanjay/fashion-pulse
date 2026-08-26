@@ -2,12 +2,21 @@
   "username": "vlvd_official",
   "name": "VIVA LA VIDA",
   "profilePicUrl": "data/instagram/images/vlvd_official/profile.jpg",
-  "fetchedAt": "2026-08-25T10:09:08+09:00",
+  "fetchedAt": "2026-08-26T10:11:33+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DcceudsGESb/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/vlvd_official/post_0.jpg",
+      "caption": "2026 FALL DROP : 1⚡️\n\nNo address, no sign, no hours. just a room we kept coming back to until it had our name on it. \rnobody remembers who found it first. the lamp was already there, and so werethe chairs. \rwe only added the mess. you know where.\n\n비바라비다의 가을 아이템을 소개합니다.",
+      "likesCount": 5,
+      "commentsCount": 0,
+      "timestamp": "2026-08-25T01:40:57.000Z"
+    },
     {
       "url": "https://www.instagram.com/p/DcNTS46FN6g/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/vlvd_official/post_0.jpg",
+      "displayUrl": "data/instagram/images/vlvd_official/post_1.jpg",
       "caption": "여름과 가을 사이의 또다른 계절. \n뜨겁다 못해 끓어 버릴 듯한 여름이 저물어, 다른 계절을 맞이할 준비하는 온도.\n\n계절과 계절 사이의 컬러를 만나 보세요.\n\nhttps://vlvd.kr",
       "likesCount": 7,
       "commentsCount": 0,
@@ -16,7 +25,7 @@
     {
       "url": "https://www.instagram.com/p/DcAGnmuGMrq/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/vlvd_official/post_1.jpg",
+      "displayUrl": "data/instagram/images/vlvd_official/post_2.jpg",
       "caption": "비바라비다 여행 코디 추천◡̈⋆*\n\nStyling.1\n⊹ Unstable 반팔 티셔츠\n⊹ 로우 와이드 버뮤다 데님 팬츠\n\nStyling.2\n⊹ April 슬림 반팔 티셔츠\n⊹ 나일론 레이어드 스커트 팬츠\n\n+ Fade 와이드 버뮤다 스웨트 팬츠\n+ Lostar 링거 반팔 티셔츠\n+ Fortune 볼캡",
       "likesCount": 4,
       "commentsCount": 0,
@@ -25,20 +34,11 @@
     {
       "url": "https://www.instagram.com/p/Db4eUOtGORt/",
       "type": "Image",
-      "displayUrl": "data/instagram/images/vlvd_official/post_2.jpg",
+      "displayUrl": "data/instagram/images/vlvd_official/post_3.jpg",
       "caption": "VIVA LA VIDA 2026 SPRING & SUMMER COLLECTION\n\n[OUR YOUTH]\nEasy silhouettes, sharp details, and sun-soaked summer hues. We’re all about the moment graphic attitudes naturally become part of your daily routine.\n\n편안하지만 살아 있는 디테일, 자유로운 실루엣, 지나온 여름의 느낌이 스며 있는 색감들.\n일상속에 애디튜드가 담긴 그래픽이 자연스럽게 스며드는 순간에 집중합니다.\n\nVIVA LA VIDA OFFICIAL WEBSITE, MUSINSA, 29CM\n발매 제품들은 공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
       "likesCount": 3,
       "commentsCount": 0,
       "timestamp": "2026-08-11T02:04:43.000Z"
-    },
-    {
-      "url": "https://www.instagram.com/p/Dbj6d2YGOD8/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/vlvd_official/post_3.jpg",
-      "caption": "𝐇𝐎𝐓 𝐒𝐔𝐌𝐌𝐄𝐑 𝐒𝐀𝐋𝐄\n\n비바라비다 공식 홈페이지에서 한여름 세일이 진행됩니다.\n최대 60% 할인된 가격으로 제품을 만나보세요.\n\n* 8/1 (sat) - 8/19 (wed)",
-      "likesCount": 7,
-      "commentsCount": 0,
-      "timestamp": "2026-08-03T02:26:39.000Z"
     }
   ]
 }
