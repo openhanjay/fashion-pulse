@@ -2,14 +2,14 @@
   "username": "untitled.seoul",
   "name": "untitled.seoul",
   "profilePicUrl": "data/instagram/images/untitled.seoul/profile.jpg",
-  "fetchedAt": "2026-08-27T16:22:52+09:00",
+  "fetchedAt": "2026-08-28T18:37:30+09:00",
   "posts": [
     {
       "url": "https://www.instagram.com/p/DbketjgEXxM/",
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/untitled.seoul/post_0.jpg",
       "caption": "➡️➡️➡️ 2026 UNTITLED FALL 1ST DROP",
-      "likesCount": 53,
+      "likesCount": 54,
       "commentsCount": 0,
       "timestamp": "2026-08-03T07:43:22.000Z"
     },
@@ -27,7 +27,7 @@
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/untitled.seoul/post_2.jpg",
       "caption": "➡️➡️➡️ 2026 UNTITLED FALL 1ST DROP",
-      "likesCount": 102,
+      "likesCount": 104,
       "commentsCount": 0,
       "timestamp": "2026-08-03T07:26:47.000Z"
     },
