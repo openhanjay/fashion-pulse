@@ -2,12 +2,21 @@
   "username": "teket_com",
   "name": "TEKET",
   "profilePicUrl": "data/instagram/images/teket_com/profile.jpg",
-  "fetchedAt": "2026-08-28T18:37:30+09:00",
+  "fetchedAt": "2026-08-29T14:42:09+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/Dcm5liSkZo0/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/teket_com/post_0.jpg",
+      "caption": "Welcome to©️Teket and Uncommon Eyewear\n•\nRelease Info\n•\nTEKET and UNCOMMON Focus Eyewear\nOption\nBlack • Sunglasses / Optical \nBrown • Sunglasses / Optical \nPurple • Sunglasses / Optical \n•\nwww.te-ket.com",
+      "likesCount": -1,
+      "commentsCount": 0,
+      "timestamp": "2026-08-29T02:48:04.000Z"
+    },
     {
       "url": "https://www.instagram.com/p/Dck4hG-Eafg/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/teket_com/post_0.jpg",
+      "displayUrl": "data/instagram/images/teket_com/post_1.jpg",
       "caption": "26AW - Plan 18. Inside Curve\n◉Available Now ◉\n•\nRelease Info\n2nd Release - Check It Out Now ⤴\n•\nwww.te-ket.com\n•\nTeket Store\n1F, 39, Seongji 1-gil, Mapo-gu, Seoul\n•\nTeket Centum Store\nB2F, 35 Centum nam-daero, Haeundae-gu, Busan",
       "likesCount": -1,
       "commentsCount": 0,
@@ -16,7 +25,7 @@
     {
       "url": "https://www.instagram.com/p/DckPXt6ER2R/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/teket_com/post_1.jpg",
+      "displayUrl": "data/instagram/images/teket_com/post_2.jpg",
       "caption": "26AW - Plan 18. Inside Curve\n◉Available Now ◉\n•\nRelease Info\n2nd Release - Check It Out Now ⤴\n•\nwww.te-ket.com\n•\nTeket Store\n1F, 39, Seongji 1-gil, Mapo-gu, Seoul\n•\nTeket Centum Store\nB2F, 35 Centum nam-daero, Haeundae-gu, Busan",
       "likesCount": -1,
       "commentsCount": 0,
@@ -25,20 +34,11 @@
     {
       "url": "https://www.instagram.com/p/Dcij5dHkZMK/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/teket_com/post_2.jpg",
+      "displayUrl": "data/instagram/images/teket_com/post_3.jpg",
       "caption": "26AW - Plan 18. Inside Curve\n◉Dropping Tomorrow◉ 12:00 PM (KST)\n•\nRelease Info\n2nd Release - Check It Out Tomorrow.⤴\n•\nwww.te-ket.com\n•\nTeket Store\n1F, 39, Seongji 1-gil, Mapo-gu, Seoul\n•\nTeket Centum Store\nB2F, 35 Centum nam-daero, Haeundae-gu, Busan",
       "likesCount": -1,
       "commentsCount": 4,
       "timestamp": "2026-08-27T10:21:35.000Z"
-    },
-    {
-      "url": "https://www.instagram.com/p/DcdKKQ8k-20/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/teket_com/post_3.jpg",
-      "caption": "Plan 18. Inside Curve\n•\nPick-and-choose vision 𖦹\n•\nRelease Info\n2nd Release - 26.08.28(Fri) KST 12:00PM\n•\nwww.te-ket.com",
-      "likesCount": -1,
-      "commentsCount": 0,
-      "timestamp": "2026-08-25T08:00:06.000Z"
     }
   ]
 }
