@@ -2,14 +2,14 @@
   "username": "untitled.seoul",
   "name": "untitled.seoul",
   "profilePicUrl": "data/instagram/images/untitled.seoul/profile.jpg",
-  "fetchedAt": "2026-09-03T12:00:20+09:00",
+  "fetchedAt": "2026-09-04T11:59:15+09:00",
   "posts": [
     {
       "url": "https://www.instagram.com/p/DbketjgEXxM/",
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/untitled.seoul/post_0.jpg",
       "caption": "➡️➡️➡️ 2026 UNTITLED FALL 1ST DROP",
-      "likesCount": 58,
+      "likesCount": 60,
       "commentsCount": 0,
       "timestamp": "2026-08-03T07:43:22.000Z"
     },
@@ -18,7 +18,7 @@
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/untitled.seoul/post_1.jpg",
       "caption": "➡️➡️➡️ 2026 UNTITLED FALL 1ST DROP",
-      "likesCount": 43,
+      "likesCount": 45,
       "commentsCount": 1,
       "timestamp": "2026-08-03T07:37:24.000Z"
     },
@@ -27,7 +27,7 @@
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/untitled.seoul/post_2.jpg",
       "caption": "➡️➡️➡️ 2026 UNTITLED FALL 1ST DROP",
-      "likesCount": 115,
+      "likesCount": 116,
       "commentsCount": 0,
       "timestamp": "2026-08-03T07:26:47.000Z"
     },
@@ -36,7 +36,7 @@
       "type": "Video",
       "displayUrl": "data/instagram/images/untitled.seoul/post_3.jpg",
       "caption": "Behind the Shoot.\n\nThe making of\nUNTITLED SEOUL Summer 2026.",
-      "likesCount": 41,
+      "likesCount": 42,
       "commentsCount": 0,
       "timestamp": "2026-07-30T17:00:48.000Z"
     }

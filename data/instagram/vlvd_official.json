@@ -2,12 +2,21 @@
   "username": "vlvd_official",
   "name": "VIVA LA VIDA",
   "profilePicUrl": "data/instagram/images/vlvd_official/profile.jpg",
-  "fetchedAt": "2026-09-03T12:00:20+09:00",
+  "fetchedAt": "2026-09-04T11:59:15+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/Dc2R-qTFDKB/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/vlvd_official/post_0.jpg",
+      "caption": "[Rhythm Heavy Terry Hoodie]\n리듬 후드 티셔츠\n\n- Size : M / L / XL / 2XL\n- Color : White Melange / Melange / Yellow / Blue / Navy / Burgundy / Brown / Black \n\nVLVD.kr / MUSINSA / 29CM\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
+      "likesCount": 0,
+      "commentsCount": 0,
+      "timestamp": "2026-09-04T02:09:49.000Z"
+    },
     {
       "url": "https://www.instagram.com/p/Dcx7COLFK73/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/vlvd_official/post_0.jpg",
+      "displayUrl": "data/instagram/images/vlvd_official/post_1.jpg",
       "caption": "No address, no sign, no hours. just a room we kept coming back to until it had our name on it.\nnobody remembers who found it first. the lamp was already there, and so werethe chairs.\nwe only added the mess. you know where.\n\nComing Soon...",
       "likesCount": 2,
       "commentsCount": 0,
@@ -16,7 +25,7 @@
     {
       "url": "https://www.instagram.com/p/Dcr3CBAgX-W/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/vlvd_official/post_1.jpg",
+      "displayUrl": "data/instagram/images/vlvd_official/post_2.jpg",
       "caption": "[Dreamy Crop Short-sleeved T-shirt]\n⊹ 드리미 크롭 반팔 티셔츠\n\n- Size : Free\n- Color : White / White Melange / Melange / Navy / Charcoal / Black\n\nVLVD.kr, MUSINSA, 29CM\n공식 웹사이트(VLVD.kr)와 무신사,29cm에서 만나보실 수 있습니다.",
       "likesCount": 10,
       "commentsCount": 0,
@@ -25,20 +34,11 @@
     {
       "url": "https://www.instagram.com/p/DcqL00eFB6v/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/vlvd_official/post_2.jpg",
+      "displayUrl": "data/instagram/images/vlvd_official/post_3.jpg",
       "caption": "* 여름 마지막 입고 *\n\n놓치지말고 만나보세요 ◡̈⋆*\n\nRoll-Up Short Sleeve T-Shirt\n⊹ 배색 롤업 반팔 티셔츠\n\n- Size : M / L / XL\n- Color : Melange / Navy / Burgundy / Charcoal / Black\n\nVLVD.kr, MUSINSA, 29CM\n공식 웹사이트(VLVD.kr)와 무신사,29cm에서 만나보실 수 있습니다.",
       "likesCount": 6,
       "commentsCount": 0,
       "timestamp": "2026-08-30T09:25:02.000Z"
-    },
-    {
-      "url": "https://www.instagram.com/p/DciEK-slPXT/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/vlvd_official/post_3.jpg",
-      "caption": "Quad Roll-Up Short Sleeve T-Shirt\n⊹ 쿼드 배색 롤업 반팔 티셔츠\n\n- Size : M / L / XL\n- Color : Melange / Navy / Burgundy / Charcoal / Black\n\nVLVD.kr, MUSINSA, 29CM\n공식 웹사이트(VLVD.kr)와 무신사,29cm에서 만나보실 수 있습니다.",
-      "likesCount": 23,
-      "commentsCount": 0,
-      "timestamp": "2026-08-27T05:44:22.000Z"
     }
   ]
 }
