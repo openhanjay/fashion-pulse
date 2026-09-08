@@ -2,13 +2,22 @@
   "username": "videojockey_official",
   "name": "Vidiojockey",
   "profilePicUrl": "data/instagram/images/videojockey_official/profile.jpg",
-  "fetchedAt": "2026-09-07T11:58:28+09:00",
+  "fetchedAt": "2026-09-08T12:08:23+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DdAkaVIn9yJ/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/videojockey_official/post_0.jpg",
+      "caption": "26FW COLLECTION \n“VIKEY‘S COZY HOURS” 🕰️ ₊ ˚ ᨦ ᨩ\n\n26.09.08(TUE) 13:00 PM - 1ST DROP \nCOMING SOON\n\nvideojockey.co.kr\n#videojockey #비디오자키",
+      "likesCount": -1,
+      "commentsCount": 0,
+      "timestamp": "2026-09-08T02:03:18.000Z"
+    },
     {
       "url": "https://www.instagram.com/p/Dc3GYuOGUAN/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/post_0.jpg",
-      "caption": "26FW PREVIEW\n“VIKEY‘S COZY HOURS” 🕰️ ₊ ˚ ᨦ ᨩ\n\n26.09.08(TUE) 13:00 - 1ST DROP",
+      "displayUrl": "data/instagram/images/videojockey_official/post_1.jpg",
+      "caption": "26FW PREVIEW\n“VIKEY‘S COZY HOURS” 🕰️ ₊ ˚ ᨦ ᨩ\n\n26.09.08(TUE) 13:00 - 1ST DROP\n\nvideojockey.co.kr\n#videojockey #비디오자키",
       "likesCount": -1,
       "commentsCount": 0,
       "timestamp": "2026-09-04T09:47:46.000Z"
@@ -16,8 +25,8 @@
     {
       "url": "https://www.instagram.com/p/Dc3GRoHGQvj/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/post_1.jpg",
-      "caption": "26FW PREVIEW\n“VIKEY‘S COZY HOURS” 🕰️ ₊ ˚ ᨦ ᨩ\n\n26.09.08(TUE) 13:00 - 1ST DROP",
+      "displayUrl": "data/instagram/images/videojockey_official/post_2.jpg",
+      "caption": "26FW PREVIEW\n“VIKEY‘S COZY HOURS” 🕰️ ₊ ˚ ᨦ ᨩ\n\n26.09.08(TUE) 13:00 - 1ST DROP\n\nvideojockey.co.kr\n#videojockey #비디오자키",
       "likesCount": -1,
       "commentsCount": 0,
       "timestamp": "2026-09-04T09:46:48.000Z"
@@ -25,20 +34,11 @@
     {
       "url": "https://www.instagram.com/p/Dc3GIqDGa4s/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/post_2.jpg",
-      "caption": "26FW PREVIEW\n“VIKEY‘S COZY HOURS” 🕰️ ₊ ˚ ᨦ ᨩ\n\n26.09.08(TUE) 13:00 - 1ST DROP",
+      "displayUrl": "data/instagram/images/videojockey_official/post_3.jpg",
+      "caption": "26FW PREVIEW\n“VIKEY‘S COZY HOURS” 🕰️ ₊ ˚ ᨦ ᨩ\n\n26.09.08(TUE) 13:00 - 1ST DROP\n\nvideojockey.co.kr\n#videojockey #비디오자키",
       "likesCount": -1,
       "commentsCount": 0,
       "timestamp": "2026-09-04T09:45:34.000Z"
-    },
-    {
-      "url": "https://www.instagram.com/p/DccVvD_mdcf/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/post_3.jpg",
-      "caption": "VIDEOJOCKEY \n26FW PRE-ORDER\nUP TO 30% OFF - .ᐟ \n\n헤비 아우터부터, 베스트셀러 NEW 컬러까지₊⋆˚꩜｡⋆.\n\n26FW 신상품을 공식 홈페이지에서 \n특별한 혜택으로 먼저 만나보세요🤍\n\nvideojockey.co.kr\n#videojockey #비디오자키",
-      "likesCount": -1,
-      "commentsCount": 1,
-      "timestamp": "2026-08-25T00:22:23.000Z"
     }
   ]
 }
