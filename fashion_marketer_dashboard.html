@@ -567,7 +567,11 @@ const RANGE_TEXT = {
    90MB)까지는 버텨도 월 단위는 한 달이 170MB를 넘어서 탭이 그대로 죽는다. 그래서 날짜를
    DAY_CONCURRENCY개씩만 병렬로 돌리고, 한 날짜가 끝나는 즉시 reduceDay로 "그 날의 평균"(상품
    100~150개 수준)만 남기고 원본 스냅샷은 버려서 피크 메모리를 하루치 수준으로 묶는다.
-   onProgress(done, total)로 날짜 단위 진행률을 알려준다(월 단위는 로딩이 길어서 표시가 필요하다). */
+   onProgress(done, total)로 날짜 단위 진행률을 알려준다(월 단위는 로딩이 길어서 표시가 필요하다).
+   한 날짜가 실패하면(스냅샷 파일 하나가 404거나 네트워크가 한 번 튀면) 그 날만 null로 떨어뜨리고
+   나머지는 그대로 집계한다 - 월 단위는 읽는 파일이 주 단위의 4~5배라 어느 하나가 실패할 확률도
+   그만큼 높은데, 그때 한 달치를 통째로 "데이터 없음"으로 버리면 안 되기 때문이다. 실패한 날은
+   애초에 수집이 없던 날과 똑같이 평균에서 제외된다. */
 const DAY_CONCURRENCY = 2;
 function mapDaysLimited(dateKeys, reduceDay, onProgress) {
   const out = new Array(dateKeys.length);
@@ -575,14 +579,17 @@ function mapDaysLimited(dateKeys, reduceDay, onProgress) {
   const runNext = () => {
     const i = cursor++;
     if (i >= dateKeys.length) return Promise.resolve();
-    return reduceDay(dateKeys[i]).then((dayBundle) => {
-      out[i] = dayBundle;
-      done += 1;
-      if (onProgress) onProgress(done, dateKeys.length);
-      return runNext();
-    });
+    return reduceDay(dateKeys[i])
+      .catch(() => null)
+      .then((dayBundle) => {
+        out[i] = dayBundle;
+        done += 1;
+        if (onProgress) onProgress(done, dateKeys.length);
+        return runNext();
+      });
   };
-  return Promise.all(Array.from({ length: Math.min(DAY_CONCURRENCY, dateKeys.length) }, runNext)).then(() => out);
+  return Promise.all(Array.from({ length: Math.min(DAY_CONCURRENCY, dateKeys.length) }, runNext))
+    .then(() => out.filter(Boolean));
 }
 
 /* 기간 평균 팝업 전용: 그 기간에 데이터가 있는 날짜들(dailyLists, 하루 1개씩) 기준으로 평균을 낸다.
@@ -647,6 +654,7 @@ function RangeAverageModal({ initialRange, musinsaIndex, availableDates, onClose
       const dateKeys = rangeDateKeys(r).filter((k) => availableDates.includes(k));
       if (!dateKeys.length) return Promise.resolve(null);
       return mapDaysLimited(dateKeys, reduceDay, onProgress).then((dailyBundles) => {
+        if (!dailyBundles.length) return null; // 그 기간의 모든 날짜가 실패
         const products = {};
         CATEGORIES.forEach((c) => {
           products[c] = {};
@@ -802,6 +810,7 @@ function Cm29RangeAverageModal({ initialRange, cm29Index, availableDates, onClos
       const dateKeys = rangeDateKeys(r).filter((k) => availableDates.includes(k));
       if (!dateKeys.length) return Promise.resolve(null);
       return mapDaysLimited(dateKeys, reduceDay, onProgress).then((dailyBundles) => {
+        if (!dailyBundles.length) return null; // 그 기간의 모든 날짜가 실패
         const products = {};
         const largeCats = new Set();
         dailyBundles.forEach((b) => Object.keys(b.products || {}).forEach((k) => largeCats.add(k)));
