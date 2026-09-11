@@ -3086,12 +3086,259 @@ function InstagramMonitoringPanel() {
   );
 }
 
-const NAV_ITEMS = [{ key: "musinsa", label: "무신사", icon: Tag }, { key: "cm29", label: "29CM", icon: ShoppingBag }, { key: "instagram", label: "인스타그램", icon: Camera }];
+const NAV_ITEMS = [{ key: "musinsa", label: "무신사", icon: Tag }, { key: "cm29", label: "29CM", icon: ShoppingBag }, { key: "instagram", label: "인스타그램", icon: Camera }, { key: "brand", label: "브랜드 진단", icon: Sparkles }];
 const PAGE_META = {
   musinsa: { title: "무신사", subtitle: "실시간 랭킹 트렌드 & 키워드 검색량" },
   cm29: { title: "29CM", subtitle: "실시간 랭킹 트렌드 & 키워드 검색량" },
   instagram: { title: "인스타그램", subtitle: "경쟁사 브랜드 마케팅 모니터링" },
+  brand: { title: "브랜드 진단", subtitle: "자사 상품 전체 vs 무신사 랭킹 상위권" },
 };
+
+/* ─────────────────────────────────────────────────────────────────────────
+   브랜드 진단: 자사 카탈로그 전체(brand_catalog.json)를 무신사 랭킹 상위권과 비교한다.
+
+   랭킹 스냅샷에는 TOP150에 든 상품만 있어서 "우리 상품 419개 중 왜 32개만 들어갔나"를
+   볼 수가 없었다. 카탈로그를 따로 받아두고, 상품별 고정 속성(product_meta)과 현재 랭킹을
+   붙여서 (1) 상위권 대비 우리 위치 (2) 우리 안에서 진입/미진입을 가른 차이를 낸다.
+
+   (2)가 특히 쓸모 있다. 상위권과의 비교는 "쟤들은 원래 크다"로 끝나기 쉬운데, 우리 상품끼리
+   비교하면 브랜드 체급이 통제된 상태에서 무엇이 실제로 작동했는지가 남는다.
+
+   다른 AI 분석과 마찬가지로 LLM이 아니라 통계·규칙 기반이고, 전부 정적 파일로 계산한다.
+   ───────────────────────────────────────────────────────────────────────── */
+
+const DIAG_BRAND = "vivalavida";
+
+function median(arr) {
+  const a = arr.filter((v) => typeof v === "number" && !Number.isNaN(v)).sort((x, y) => x - y);
+  return a.length ? a[Math.floor(a.length / 2)] : null;
+}
+function mean(arr) {
+  const a = arr.filter((v) => typeof v === "number" && !Number.isNaN(v));
+  return a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+}
+function pickBy(arr, get) { return arr.map(get).filter((v) => typeof v === "number" && !Number.isNaN(v)); }
+/* 평점 전용: 0은 "0점"이 아니라 "리뷰 없음"이라 평균에서 제외한다. */
+function pickScores(arr, get) { return pickBy(arr, get).filter((v) => v > 0); }
+
+/* 카테고리별 개수 -> 비중(%) */
+function shareByCat(arr, getCat) {
+  const m = new Map();
+  let total = 0;
+  arr.forEach((x) => { const c = getCat(x); if (c) { m.set(c, (m.get(c) || 0) + 1); total += 1; } });
+  const out = {};
+  if (total) for (const [c, n] of m) out[c] = (n / total) * 100;
+  return { share: out, total };
+}
+
+function buildBrandDiagnosis({ catalog, meta, ranked }) {
+  if (!catalog || !catalog.items || !catalog.items.length) return null;
+  const items = catalog.items;
+  const metaOf = (id) => (meta && meta[id]) || null;
+  const rankedMeta = (ranked || []).map((r) => metaOf(productIdOf(r))).filter(Boolean);
+
+  const inRank = items.filter((i) => i.rankedDays);
+  const outRank = items.filter((i) => !i.rankedDays);
+
+  /* ── 상위권 대비 ── */
+  const vs = [];
+  const push = (label, mineV, rankV, unit, higherBetter, digits) => {
+    if (mineV === null || rankV === null) return;
+    const fmt = (v) => (digits ? v.toFixed(digits) : Math.round(v).toLocaleString());
+    if (higherBetter === null) {
+      // 가격처럼 높낮이가 곧 우열이 아닌 값은 판정하지 않고 격차만 보여준다.
+      vs.push({ label, text: `${fmt(mineV)}${unit} · 상위권의 ${Math.round((mineV / rankV) * 100)}% 수준`, tone: "flat" });
+      return;
+    }
+    const gap = Math.abs(mineV - rankV) / Math.max(0.001, Math.abs(rankV));
+    const tone = gap < 0.1 ? "flat" : (higherBetter ? (mineV > rankV ? "up" : "down") : (mineV < rankV ? "up" : "down"));
+    vs.push({ label, text: `${fmt(mineV)}${unit} (상위권 ${fmt(rankV)}${unit})`, tone });
+  };
+  push("중간 가격", median(pickBy(items, (i) => i.price)), median(pickBy(ranked || [], (r) => r.price)), "원", null);
+  push("평균 할인율", mean(pickBy(items, (i) => i.discount)), mean(pickBy(ranked || [], (r) => r.discountRatio)), "%", true);
+  push("중간 리뷰 수", median(pickBy(items, (i) => i.reviews)), median(pickBy(rankedMeta, (m) => m.reviews)), "개", true);
+  push("평균 평점", mean(pickScores(items, (i) => i.reviewScore)), mean(pickScores(rankedMeta, (m) => m.reviewScore)), "점", true, 1);
+  push("상세 이미지", mean(pickBy(items, (i) => metaOf(i.id)?.images)), mean(pickBy(rankedMeta, (m) => m.images)), "장", true, 1);
+
+  /* ── 우리 안에서: 진입 vs 미진입 ── */
+  const inner = [];
+  const innerPush = (label, get, unit, digits) => {
+    const a = mean(pickBy(inRank, get)), b = mean(pickBy(outRank, get));
+    if (a === null || b === null) return;
+    const fmt = (v) => (digits ? v.toFixed(digits) : Math.round(v).toLocaleString());
+    const ratio = b > 0 ? a / b : null;
+    inner.push({
+      label,
+      a: `${fmt(a)}${unit}`,
+      b: `${fmt(b)}${unit}`,
+      // 진입/미진입 차이가 20% 미만이면 "그게 갈랐다"고 보기 어렵다.
+      decisive: ratio !== null && (ratio >= 1.2 || ratio <= 0.8),
+      ratio,
+    });
+  };
+  const innerPushScore = (label, get, unit, digits) => {
+    const a = mean(pickScores(inRank, get)), b = mean(pickScores(outRank, get));
+    if (a === null || b === null) return;
+    const ratio = b > 0 ? a / b : null;
+    inner.push({ label, a: a.toFixed(digits) + unit, b: b.toFixed(digits) + unit, decisive: ratio !== null && (ratio >= 1.2 || ratio <= 0.8), ratio });
+  };
+  innerPush("리뷰 수", (i) => i.reviews, "개");
+  innerPushScore("평점", (i) => i.reviewScore, "점", 1);
+  innerPush("가격", (i) => i.price, "원");
+  innerPush("할인율", (i) => i.discount, "%");
+  innerPush("상세 이미지", (i) => metaOf(i.id)?.images, "장", 1);
+
+  /* ── 카테고리 공백 ── */
+  const mineCat = shareByCat(items, (i) => metaOf(i.id)?.cat2);
+  const rankCat = shareByCat(ranked || [], (r) => metaOf(productIdOf(r))?.cat2);
+  const cats = new Set([...Object.keys(mineCat.share), ...Object.keys(rankCat.share)]);
+  const catRows = [...cats]
+    .map((c) => ({ cat: c, mine: mineCat.share[c] || 0, rank: rankCat.share[c] || 0 }))
+    .filter((r) => r.mine >= 3 || r.rank >= 3);
+  const gaps = [...catRows].sort((a, b) => (b.rank - b.mine) - (a.rank - a.mine)).slice(0, 4).filter((r) => r.rank - r.mine > 2);
+  const focus = [...catRows].sort((a, b) => (b.mine - b.rank) - (a.mine - a.rank)).slice(0, 3).filter((r) => r.mine - r.rank > 2);
+
+  /* ── 한 줄 총평 ── */
+  const rate = (inRank.length / items.length) * 100;
+  const headline = `상품 ${items.length}개 중 최근 ${catalog.snapshotDays || 0}일간 TOP150에 들어간 건 ${inRank.length}개(${rate.toFixed(1)}%)예요.`;
+
+  /* 가장 결정적인 내부 차이를 한 문장으로 */
+  const topInner = inner.filter((x) => x.decisive).sort((a, b) => Math.abs(Math.log(b.ratio || 1)) - Math.abs(Math.log(a.ratio || 1)))[0];
+  const verdict = topInner
+    ? `진입 상품과 미진입 상품을 가른 건 주로 ${topInner.label}예요 (진입 ${topInner.a} vs 미진입 ${topInner.b}).`
+    : null;
+
+  return { headline, verdict, vs, inner, gaps, focus, inCount: inRank.length, total: items.length, best: [...inRank].sort((a, b) => (a.bestRank ?? 999) - (b.bestRank ?? 999)).slice(0, 5) };
+}
+
+function DiagRow({ label, text, tone }) {
+  const color = tone === "up" ? "#2563EB" : tone === "down" ? C.signal : C.mute;
+  return (
+    <div className="flex items-center justify-between py-2" style={{ borderBottom: `1px solid ${C.line}` }}>
+      <span className="text-xs font-semibold" style={{ color: C.mute }}>{label}</span>
+      <span className="text-[13px] font-bold" style={{ color }}>{text}</span>
+    </div>
+  );
+}
+
+function BrandDiagnosisPanel() {
+  const [catalog, setCatalog] = useState(undefined); // undefined=로딩중, null=없음
+  const [meta, setMeta] = useState(null);
+  const [ranked, setRanked] = useState(null);
+
+  useEffect(() => {
+    fetch(`data/brand_catalog.json?t=${Date.now()}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => setCatalog(j?.[DIAG_BRAND] || null))
+      .catch(() => setCatalog(null));
+    loadProductMeta().then(setMeta);
+    // 비교 기준은 "가장 최근 수집분의 전체 TOP150"
+    fetch(`data/musinsa_index.json?t=${Date.now()}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((idx) => {
+        if (!idx) return null;
+        const days = Object.keys(idx).sort();
+        const d = days[days.length - 1];
+        const t = (idx[d] || []).slice(-1)[0];
+        if (!d || !t) return null;
+        return fetch(`data/musinsa_${d}_${t}.json`).then((r) => (r.ok ? r.json() : null));
+      })
+      .then((snap) => setRanked(snap?.["전체"]?.all || null))
+      .catch(() => setRanked(null));
+  }, []);
+
+  const diag = useMemo(() => {
+    if (!catalog || !meta || !ranked) return null;
+    return buildBrandDiagnosis({ catalog, meta, ranked });
+  }, [catalog, meta, ranked]);
+
+  if (catalog === undefined || (catalog && !diag)) {
+    return (<div className="rounded-2xl p-8 text-center text-sm font-medium" style={{ background: C.white, border: `1px solid ${C.line}`, color: C.mute }}>불러오는 중...</div>);
+  }
+  if (!catalog) {
+    return (
+      <div className="rounded-2xl p-8 text-center text-sm font-medium" style={{ background: C.white, border: `1px solid ${C.line}`, color: C.mute }}>
+        브랜드 카탈로그가 아직 없어요. <code>node scrape_brand_catalog.js</code>를 먼저 실행해주세요.
+      </div>
+    );
+  }
+
+  const card = { background: C.white, border: `1px solid ${C.line}` };
+  return (
+    <div className="flex flex-col gap-5">
+      <div className="rounded-2xl p-5" style={card}>
+        <div className="flex items-center gap-2 mb-1">
+          <Sparkles size={16} color={C.indigo} />
+          <h2 className="text-base font-bold" style={{ color: C.ink }}>{catalog.brandName} 진단</h2>
+          <span className="text-[11px]" style={{ color: C.mute }}>카탈로그 {catalog.updatedAt} 기준</span>
+        </div>
+        <p className="text-[13px] font-semibold" style={{ color: C.ink }}>{diag.headline}</p>
+        {!!diag.verdict && (<p className="text-[13px] mt-1" style={{ color: C.signal, fontWeight: 700 }}>{diag.verdict}</p>)}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+        <div className="rounded-2xl p-5" style={card}>
+          <p className="text-xs font-bold tracking-wider mb-2" style={{ color: C.mute }}>랭킹 상위권 대비</p>
+          {diag.vs.map((v) => (<DiagRow key={v.label} {...v} />))}
+          <p className="text-[11px] mt-2" style={{ color: C.mute }}>파란색이 우위, 빨간색이 열위. 가격은 전략 문제라 판정하지 않아요.</p>
+        </div>
+
+        <div className="rounded-2xl p-5" style={card}>
+          <p className="text-xs font-bold tracking-wider mb-2" style={{ color: C.mute }}>우리 안에서: 진입 {diag.inCount}개 vs 미진입 {diag.total - diag.inCount}개</p>
+          {diag.inner.map((r) => (
+            <div key={r.label} className="flex items-center justify-between py-2" style={{ borderBottom: `1px solid ${C.line}` }}>
+              <span className="text-xs font-semibold" style={{ color: C.mute }}>
+                {r.label}{r.decisive && <span style={{ color: C.signal }}> ●</span>}
+              </span>
+              <span className="text-[13px]" style={{ color: C.ink }}>
+                <b>{r.a}</b> <span style={{ color: C.mute }}>vs</span> {r.b}
+              </span>
+            </div>
+          ))}
+          <p className="text-[11px] mt-2" style={{ color: C.mute }}>● 표시는 두 집단 차이가 20% 이상이라 진입을 가른 요인일 가능성이 있는 항목이에요.</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+        <div className="rounded-2xl p-5" style={card}>
+          <p className="text-xs font-bold tracking-wider mb-2" style={{ color: C.mute }}>기회 · 랭킹엔 많은데 우리는 적은 카테고리</p>
+          {diag.gaps.length === 0 ? (<p className="text-xs" style={{ color: C.mute }}>뚜렷한 공백이 없어요.</p>) : diag.gaps.map((g) => (
+            <div key={g.cat} className="flex items-center justify-between py-2" style={{ borderBottom: `1px solid ${C.line}` }}>
+              <span className="text-xs font-semibold" style={{ color: C.ink }}>{g.cat}</span>
+              <span className="text-[13px]" style={{ color: C.mute }}>우리 {g.mine.toFixed(0)}% · 랭킹 <b style={{ color: "#2563EB" }}>{g.rank.toFixed(0)}%</b></span>
+            </div>
+          ))}
+        </div>
+
+        <div className="rounded-2xl p-5" style={card}>
+          <p className="text-xs font-bold tracking-wider mb-2" style={{ color: C.mute }}>집중 · 우리가 랭킹보다 많이 파는 카테고리</p>
+          {diag.focus.length === 0 ? (<p className="text-xs" style={{ color: C.mute }}>특별히 쏠린 카테고리가 없어요.</p>) : diag.focus.map((g) => (
+            <div key={g.cat} className="flex items-center justify-between py-2" style={{ borderBottom: `1px solid ${C.line}` }}>
+              <span className="text-xs font-semibold" style={{ color: C.ink }}>{g.cat}</span>
+              <span className="text-[13px]" style={{ color: C.mute }}>우리 <b style={{ color: C.ink }}>{g.mine.toFixed(0)}%</b> · 랭킹 {g.rank.toFixed(0)}%</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded-2xl p-5" style={card}>
+        <p className="text-xs font-bold tracking-wider mb-2" style={{ color: C.mute }}>가장 높이 올라간 우리 상품</p>
+        {diag.best.length === 0 ? (<p className="text-xs" style={{ color: C.mute }}>아직 랭킹에 든 상품이 없어요.</p>) : (
+          <div className="flex flex-col">
+            {diag.best.map((it) => (
+              <a key={it.id} href={`https://www.musinsa.com/products/${it.id}`} target="_blank" rel="noreferrer"
+                 className="flex items-center gap-3 py-2 text-xs" style={{ borderBottom: `1px solid ${C.line}` }}>
+                <span className="font-bold tabular-nums shrink-0" style={{ color: C.ink, width: 52 }}>{it.bestRank ?? "-"}위</span>
+                <span className="flex-1 truncate" style={{ color: C.ink }}>{it.name}</span>
+                <span className="shrink-0 tabular-nums" style={{ color: C.mute }}>{it.rankedDays}일 진입 · 리뷰 {(it.reviews ?? 0).toLocaleString()}</span>
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function Sidebar({ active, onChange, activeCategoryInsight }) {
   const [openInsightIndex, setOpenInsightIndex] = useState(null);
@@ -3170,7 +3417,7 @@ function Sidebar({ active, onChange, activeCategoryInsight }) {
   );
 }
 
-const VIEW_KEYS = ["musinsa", "cm29", "instagram"];
+const VIEW_KEYS = ["musinsa", "cm29", "instagram", "brand"];
 
 function FashionMarketerDashboard() {
   const [selectedDate, setSelectedDate] = useState(new Date(2026, 6, 20));
@@ -3405,6 +3652,7 @@ function FashionMarketerDashboard() {
             </>
           )}
           {view === "instagram" && <InstagramMonitoringPanel />}
+          {view === "brand" && <BrandDiagnosisPanel />}
         </main>
         <footer className="text-center text-[11px] py-4" style={{ color: C.mute }}>ⓘ 무신사 랭킹은 {musinsaDataSource === "live" ? `${panelDateLabel} ${musinsaSelectedTime} 수집분(실시간 데이터)` : "수집 파일을 찾지 못해 표시 중인 샘플(목업) 데이터"}입니다. 29CM 및 키워드/인스타그램 지표는 목업(더미) 데이터입니다.</footer>
       </div>

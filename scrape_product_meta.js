@@ -255,4 +255,4 @@ if (require.main === module) {
   run().catch((e) => { console.error("실패:", e); process.exit(1); });
 }
 
-module.exports = { buildRecord, pickMaterials, pickReferenceSize, pickMeasurements, productIdsInSnapshot, writeMeta, META_FILE, META_SLIM_FILE };
+module.exports = { buildRecord, pickMaterials, pickReferenceSize, pickMeasurements, productIdsInSnapshot, writeMeta, fetchOne, META_FILE, META_SLIM_FILE };

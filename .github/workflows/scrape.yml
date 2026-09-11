@@ -31,6 +31,12 @@ jobs:
       - name: Collect product metadata
         run: node scrape_product_meta.js --limit 3000
 
+      # 자사 브랜드 카탈로그(비바라비다 419개)와 각 상품의 랭킹 진입 이력을 갱신한다.
+      # 랭킹 스냅샷에는 TOP150만 있어서, 이게 있어야 브랜드 진단 패널에서
+      # "올린 상품 중 몇 개가 실제로 랭킹에 들어갔나"를 볼 수 있다.
+      - name: Collect brand catalog
+        run: node scrape_brand_catalog.js
+
       - name: Commit and push new data
         run: |
           git config user.name "github-actions[bot]"
