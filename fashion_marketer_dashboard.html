@@ -558,8 +558,8 @@ function rangeLabel(range) {
   return `${formatDotDate(range.start)} ~ ${formatDotDate(end)}`;
 }
 const RANGE_TEXT = {
-  week: { title: "주간 평균 랭킹", prev: "‹ 지난주", next: "다음주 ›", empty: "이 주에는 수집된 데이터가 없어요." },
-  month: { title: "월간 평균 랭킹", prev: "‹ 지난달", next: "다음달 ›", empty: "이 달에는 수집된 데이터가 없어요." },
+  week: { title: "주간 평균 랭킹", prev: "‹ 지난주", next: "다음주 ›", empty: "이 주에는 수집된 데이터가 없어요.", unit: "주", thisOne: "이번 주", prevOne: "지난주" },
+  month: { title: "월간 평균 랭킹", prev: "‹ 지난달", next: "다음달 ›", empty: "이 달에는 수집된 데이터가 없어요.", unit: "달", thisOne: "이번 달", prevOne: "지난달" },
 };
 
 /* 기간 평균은 그 기간에 수집된 스냅샷 파일을 전부 읽어야 한다. 그런데 날짜별 fetch를 Promise.all로
@@ -618,6 +618,203 @@ function averageWithAbsencePenalty(dailyLists, keyFn, penaltyRank) {
 
 const WEEK_MODAL_TABS = [...CATEGORIES, "검색어"];
 
+/* 주간/월간 평균 팝업 맨 위에 붙는 "AI 분석 - 이번 주 경쟁사 동향" 요약.
+   사이드바 AI 분석(buildCategoryInsights)이나 검색어 AI 분석(buildMoverInsights)과 똑같이
+   LLM이 아니라 통계·규칙 기반이다. 재료는 그 기간의 평균 랭킹과 직전 기간(전주/전월) 대비
+   변동(delta) 두 가지뿐이라, 팝업이 이미 갖고 있는 데이터만으로 계산이 끝난다.
+
+   watchList(관심 브랜드)는 마케터가 직접 지정한 "경쟁사"라서 맨 위에 따로 세워주고, 나머지는
+   브랜드 단위로 묶어서 많이 오른/내린 곳, 신규 진입이 몰린 곳, 할인 공세가 센 곳을 뽑는다.
+   브랜드 평균 변동은 상품 1개짜리가 우연히 크게 움직인 걸 1위로 올려버리지 않도록
+   COMPETITOR_MIN_ITEMS개 이상인 브랜드만 순위에 넣는다. */
+const COMPETITOR_MIN_ITEMS = 2;
+const COMPETITOR_TOP_N = 3;
+
+function avgOf(nums) {
+  return nums.length ? nums.reduce((sum, v) => sum + v, 0) / nums.length : null;
+}
+
+/* 관심 브랜드는 "전체" TOP150에는 없어도 카테고리 랭킹(상의/가방 등)에는 올라와 있을 수 있다.
+   팝업 안 브랜드 검색이 전 카테고리를 훑는 것과 같은 이유로, 관심 브랜드 판정도 전 카테고리를 본다.
+   같은 상품이 "전체"와 카테고리 양쪽에 겹쳐 나오니 url로 dedupe하고, 가장 높은 순위가 나온
+   카테고리를 그 상품의 대표로 남긴다(경쟁사가 "어디서" 몇 위인지가 정보이기 때문). */
+function buildWatchPool(categoryLists) {
+  const best = new Map();
+  categoryLists.forEach(({ category, items }) => {
+    (items || []).forEach((it) => {
+      const key = it.url || `${it.brand}__${it.name}`;
+      const prev = best.get(key);
+      if (!prev || it.rank < prev.rank) best.set(key, { ...it, category });
+    });
+  });
+  return [...best.values()];
+}
+
+/* items를 브랜드별로 묶고 평균 변동/신규 수/최고 순위/평균 할인율을 계산한다. */
+function groupItemsByBrand(items) {
+  const byBrand = new Map();
+  items.forEach((it) => {
+    const brand = it.brand;
+    if (!brand) return;
+    if (!byBrand.has(brand)) byBrand.set(brand, { brand, items: [], deltas: [], news: 0, bestRank: Infinity, discounts: [] });
+    const g = byBrand.get(brand);
+    g.items.push(it);
+    if (typeof it.delta === "number") g.deltas.push(it.delta);
+    else if (it.delta === "NEW") g.news += 1;
+    if (typeof it.rank === "number") g.bestRank = Math.min(g.bestRank, it.rank);
+    if (typeof it.discountRatio === "number" && it.discountRatio > 0) g.discounts.push(it.discountRatio);
+  });
+  return [...byBrand.values()].map((g) => ({ ...g, avgDelta: avgOf(g.deltas), avgDiscount: avgOf(g.discounts) }));
+}
+
+/* "3계단 상승" 같은 문구. 1계단 미만은 방향을 말하지 않고 "비슷"으로 둔다. */
+function movementPhrase(avgDelta, prevOne) {
+  if (avgDelta === null) return null;
+  const n = Math.round(Math.abs(avgDelta));
+  if (n < 1) return { text: `${prevOne}과 비슷`, tone: "flat" };
+  return avgDelta > 0
+    ? { text: `${prevOne} 대비 평균 ${n}계단 상승`, tone: "up" }
+    : { text: `${prevOne} 대비 평균 ${n}계단 하락`, tone: "down" };
+}
+
+function buildCompetitorInsights({ items, keywords, watchList, watchPool, text }) {
+  if (!items || !items.length) return null;
+  const { unit, thisOne, prevOne } = text;
+  // 브랜드 순위/할인 통계는 중복 없는 "전체" 기준(items)으로, 관심 브랜드 판정만 전 카테고리(watchPool)로 한다.
+  const pool = watchPool && watchPool.length ? watchPool : items;
+  const groups = groupItemsByBrand(items);
+  // 직전 기간 집계는 첫 화면을 그린 뒤에 따라붙기 때문에, 아직 안 왔으면 변동 관련 줄은 통째로 뺀다.
+  const hasDelta = items.some((it) => it.delta !== undefined);
+  const sections = [];
+
+  /* 1) 관심 브랜드 = 마케터가 지정한 경쟁사 */
+  const terms = (watchList || []).filter((t) => t && t.trim());
+  if (terms.length) {
+    const rows = terms.map((term) => {
+      const t = term.trim().toLowerCase();
+      const hits = pool.filter((it) => (it.brand || "").toLowerCase().includes(t) || (it.name || "").toLowerCase().includes(t));
+      if (!hits.length) return { term, items: [], tone: "flat", text: "랭킹 안에 없어요" };
+      const top = hits.reduce((a, b) => (b.rank < a.rank ? b : a));
+      const where = top.category && top.category !== "전체" ? `${top.category} ${top.rank}위` : `최고 ${top.rank}위`;
+      const news = hits.filter((it) => it.delta === "NEW").length;
+      const move = hasDelta ? movementPhrase(avgOf(hits.filter((it) => typeof it.delta === "number").map((it) => it.delta)), prevOne) : null;
+      const parts = [`${hits.length}개(${where})`];
+      if (news) parts.push(`신규 ${news}개`);
+      if (move) parts.push(move.text);
+      return { term, items: hits, tone: move ? move.tone : "flat", text: parts.join(" · ") };
+    });
+    sections.push({ label: "관심 브랜드", rows });
+  }
+
+  /* 2) 순위가 가장 많이 오른/내린 브랜드 */
+  if (hasDelta) {
+    const movable = groups.filter((g) => g.deltas.length >= COMPETITOR_MIN_ITEMS && g.avgDelta !== null);
+    const risers = movable.filter((g) => g.avgDelta >= 1).sort((a, b) => b.avgDelta - a.avgDelta).slice(0, COMPETITOR_TOP_N);
+    const fallers = movable.filter((g) => g.avgDelta <= -1).sort((a, b) => a.avgDelta - b.avgDelta).slice(0, COMPETITOR_TOP_N);
+    const toRow = (g, tone) => ({
+      term: g.brand,
+      items: g.items,
+      tone,
+      text: `상품 ${g.items.length}개 · 평균 ${Math.abs(Math.round(g.avgDelta))}계단 ${tone === "up" ? "상승" : "하락"}`,
+    });
+    if (risers.length) sections.push({ label: `많이 오른 브랜드`, rows: risers.map((g) => toRow(g, "up")) });
+    if (fallers.length) sections.push({ label: `많이 내린 브랜드`, rows: fallers.map((g) => toRow(g, "down")) });
+  }
+
+  /* 3) 신규 진입이 몰린 브랜드 */
+  if (hasDelta) {
+    const newcomers = groups.filter((g) => g.news > 0).sort((a, b) => b.news - a.news).slice(0, COMPETITOR_TOP_N);
+    if (newcomers.length) {
+      sections.push({
+        label: "신규 진입",
+        rows: newcomers.map((g) => ({ term: g.brand, items: g.items, tone: "up", text: `${thisOne} 새로 ${g.news}개 진입` })),
+      });
+    }
+  }
+
+  /* 4) 할인 공세가 센 브랜드 (상품 수가 받쳐주는 브랜드만) */
+  const discounting = groups
+    .filter((g) => g.discounts.length >= COMPETITOR_MIN_ITEMS && g.avgDiscount !== null)
+    .sort((a, b) => b.avgDiscount - a.avgDiscount)
+    .slice(0, COMPETITOR_TOP_N);
+  if (discounting.length) {
+    sections.push({
+      label: "할인 공세",
+      rows: discounting.map((g) => ({ term: g.brand, items: g.items, tone: "down", text: `할인 상품 ${g.discounts.length}개 · 평균 ${Math.round(g.avgDiscount)}%` })),
+    });
+  }
+
+  /* 5) 검색어에서 뜨는 것 (검색어는 브랜드 상품 목록이 없어서 클릭 대상이 아니다) */
+  const kwRisers = (keywords || [])
+    .filter((k) => typeof k.delta === "number" && k.delta > 0)
+    .sort((a, b) => b.delta - a.delta)
+    .slice(0, COMPETITOR_TOP_N);
+  if (kwRisers.length) {
+    sections.push({
+      label: "뜨는 검색어",
+      rows: kwRisers.map((k) => ({ term: k.keyword, items: null, tone: "up", text: `${k.rank + k.delta}위 → ${k.rank}위` })),
+    });
+  }
+
+  if (!sections.length) return null;
+
+  /* 한 줄 총평 */
+  const brandCount = groups.length;
+  const newTotal = items.filter((it) => it.delta === "NEW").length;
+  const headline = hasDelta
+    ? `${thisOne} 랭킹에 브랜드 ${brandCount}곳이 올라왔고, 그중 신규 진입 상품이 ${newTotal}개예요.`
+    : `${thisOne} 랭킹에 브랜드 ${brandCount}곳이 올라왔어요. 직전 ${unit} 대비 변동은 계산 중이에요.`;
+  return { headline, sections, hasDelta };
+}
+
+/* buildCompetitorInsights 결과를 그리는 박스. 브랜드 줄을 누르면 그 브랜드 상품만 모아
+   BrandWatchModal로 띄운다(팝업 안 브랜드 검색과 같은 동작). 기본은 접힌 상태가 아니라
+   펼친 상태 - 팝업을 연 목적 자체가 "이번 주 어땠는지" 보는 것이기 때문이다. */
+function CompetitorInsightBox({ insights, rangeText, onOpenBrand }) {
+  const [open, setOpen] = useState(true);
+  if (!insights) return null;
+  const toneColor = (tone) => (tone === "up" ? "#2563EB" : tone === "down" ? C.signal : C.mute);
+  return (
+    <div className="rounded-xl p-3 mb-4" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs font-bold tracking-wider" style={{ color: C.mute }}>
+          AI 분석 · {rangeText.thisOne} 경쟁사 동향
+        </p>
+        <button onClick={() => setOpen((v) => !v)} className="text-[11px] font-bold px-2 py-0.5 rounded-full" style={{ color: C.mute, border: `1px solid ${C.line}`, background: C.white }}>
+          {open ? "접기" : "펼치기"}
+        </button>
+      </div>
+      <p className="text-[12.5px] font-semibold mt-1" style={{ color: C.ink }}>{insights.headline}</p>
+      {open && (
+        <div className="flex flex-col gap-2 mt-2">
+          {insights.sections.map((sec) => (
+            <div key={sec.label} className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              <span className="text-[11px] font-bold shrink-0" style={{ color: C.mute, minWidth: 66 }}>{sec.label}</span>
+              {sec.rows.map((row, ri) => (
+                <button
+                  key={row.term + ri}
+                  onClick={() => row.items && row.items.length && onOpenBrand(row.term, row.items)}
+                  disabled={!row.items || !row.items.length}
+                  className="text-[12px] px-2 py-0.5 rounded-full text-left"
+                  style={{
+                    background: C.white,
+                    border: `1px solid ${C.line}`,
+                    color: C.ink,
+                    cursor: row.items && row.items.length ? "pointer" : "default",
+                  }}
+                >
+                  <span className="font-bold">{truncateLabel(row.term, 14)}</span>
+                  <span style={{ color: toneColor(row.tone) }}> {row.text}</span>
+                </button>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* MiniCalendar의 "주 평균" / "월 평균" 버튼을 눌렀을 때 뜨는 팝업. 그 기간(주면 일~토, 월이면 1일~말일)에
    실제 수집 데이터가 있던 날들의 모든 시각 스냅샷을 모아 평균 낸 TOP150 랭킹(+검색어 TOP100)을,
    카테고리 탭으로 나눠 보여준다. 팝업 안에서 지난주/다음주(월이면 지난달/다음달) 버튼으로 계속
@@ -634,6 +831,17 @@ function RangeAverageModal({ initialRange, musinsaIndex, availableDates, onClose
 
   const text = RANGE_TEXT[range.kind];
   const label = rangeLabel(range);
+
+  // 관심 브랜드 = 마케터가 지정한 경쟁사. RankingPanel과 같은 패턴으로 저장소 파일을 원본으로
+  // 삼고, localStorage 캐시는 팝업을 열자마자 깜빡임 없이 보여주기 위한 용도다.
+  const [watchList, setWatchList] = useState(() => loadPersistedList("fp_musinsa_brand_watch"));
+  useEffect(() => {
+    fetch(`data/musinsa_brand_watch.json?t=${Date.now()}`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((remote) => { if (Array.isArray(remote) && !isStaleStringList(remote, watchList)) setWatchList(remote); })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -695,6 +903,20 @@ function RangeAverageModal({ initialRange, musinsaIndex, availableDates, onClose
   const isEmpty = data && Object.keys(data).length === 0;
   const list = data && !isEmpty ? (cat === "검색어" ? (data.keywords?.all || []) : (data.products?.[cat]?.all || [])) : null;
 
+  // 경쟁사 동향은 카테고리 탭과 무관하게 "전체" 기준으로 낸다(탭을 옮길 때마다 요약이 흔들리면
+  // 기간 요약으로서 의미가 없다). 직전 기간 대비 변동이 뒤늦게 붙으면 data가 새 객체로 바뀌므로
+  // 자동으로 다시 계산된다.
+  const competitorInsights = useMemo(() => {
+    if (!data || isEmpty) return null;
+    return buildCompetitorInsights({
+      items: data.products?.["전체"]?.all || [],
+      keywords: data.keywords?.all || [],
+      watchList,
+      watchPool: buildWatchPool(CATEGORIES.map((c) => ({ category: c, items: data.products?.[c]?.all }))),
+      text,
+    });
+  }, [data, isEmpty, watchList, text]);
+
   // 브랜드명이든 상품명에 들어간 단어든, 이 기간 평균 랭킹(TOP150) 전체 카테고리를 훑어서 찾아준다.
   const runSearch = () => {
     const term = searchInput.trim().toLowerCase();
@@ -745,6 +967,13 @@ function RangeAverageModal({ initialRange, musinsaIndex, availableDates, onClose
             ))}
           </div>
         )}
+        {!!competitorInsights && (
+          <CompetitorInsightBox
+            insights={competitorInsights}
+            rangeText={text}
+            onOpenBrand={(term, items) => setSearchResult({ term, items })}
+          />
+        )}
         {!data ? (
           <div className="flex flex-col items-center justify-center gap-1 rounded-xl text-sm font-medium" style={{ height: 160, background: C.paper, color: C.mute }}>
             <span>불러오는 중...</span>
@@ -791,6 +1020,17 @@ function Cm29RangeAverageModal({ initialRange, cm29Index, availableDates, onClos
 
   const text = RANGE_TEXT[range.kind];
   const label = rangeLabel(range);
+
+  // 관심 브랜드 = 마케터가 지정한 경쟁사. RankingPanel과 같은 패턴으로 저장소 파일을 원본으로
+  // 삼고, localStorage 캐시는 팝업을 열자마자 깜빡임 없이 보여주기 위한 용도다.
+  const [watchList, setWatchList] = useState(() => loadPersistedList("fp_cm29_brand_watch"));
+  useEffect(() => {
+    fetch(`data/cm29_brand_watch.json?t=${Date.now()}`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((remote) => { if (Array.isArray(remote) && !isStaleStringList(remote, watchList)) setWatchList(remote); })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -871,6 +1111,20 @@ function Cm29RangeAverageModal({ initialRange, cm29Index, availableDates, onClos
   const list = data && !isEmpty ? (data.products?.[largeCat]?.[subCat]?.[period] || []) : null;
   const keywordList = data && !isEmpty ? (data.keywords || []) : [];
 
+  // 29CM은 대분류 > 서브카테고리 > 기간 3단계라, 요약 기준은 현재 대분류의 "전체" 서브카테고리 ·
+  // "실시간" 기간으로 고정한다(무신사에서 "전체" 카테고리를 쓰는 것과 같은 이유).
+  const competitorInsights = useMemo(() => {
+    if (!data || isEmpty) return null;
+    const byLarge = data.products?.[largeCat] || {};
+    return buildCompetitorInsights({
+      items: byLarge["전체"]?.["실시간"] || [],
+      keywords: data.keywords || [],
+      watchList,
+      watchPool: buildWatchPool(Object.keys(byLarge).map((sc) => ({ category: sc, items: byLarge[sc]?.["실시간"] }))),
+      text,
+    });
+  }, [data, isEmpty, largeCat, watchList, text]);
+
   // Cm29RankingPanel의 브랜드 검색과 동일하게, 현재 대분류의 "전체" 서브카테고리 + 현재 기간 안에서
   // 브랜드명/상품명에 포함된 단어로 찾는다.
   const runSearch = () => {
@@ -946,6 +1200,13 @@ function Cm29RangeAverageModal({ initialRange, cm29Index, availableDates, onClos
               <button onClick={runSearch} className="px-3 py-1 rounded-full text-xs font-bold" style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>검색</button>
             </div>
           </div>
+        )}
+        {!!competitorInsights && (
+          <CompetitorInsightBox
+            insights={competitorInsights}
+            rangeText={text}
+            onOpenBrand={(term, items) => setSearchResult({ term, items })}
+          />
         )}
         {!data ? (
           <div className="flex flex-col items-center justify-center gap-1 rounded-xl text-sm font-medium" style={{ height: 160, background: C.paper, color: C.mute }}>
