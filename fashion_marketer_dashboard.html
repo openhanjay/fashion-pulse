@@ -558,8 +558,8 @@ function rangeLabel(range) {
   return `${formatDotDate(range.start)} ~ ${formatDotDate(end)}`;
 }
 const RANGE_TEXT = {
-  week: { title: "주간 평균 랭킹", prev: "‹ 지난주", next: "다음주 ›", empty: "이 주에는 수집된 데이터가 없어요.", unit: "주", thisOne: "이번 주", prevOne: "지난주" },
-  month: { title: "월간 평균 랭킹", prev: "‹ 지난달", next: "다음달 ›", empty: "이 달에는 수집된 데이터가 없어요.", unit: "달", thisOne: "이번 달", prevOne: "지난달" },
+  week: { title: "주간 평균 랭킹", prev: "‹ 지난주", next: "다음주 ›", empty: "이 주에는 수집된 데이터가 없어요.", unit: "주", thisOne: "이번 주", prevOne: "지난주", samePhrase: "지난주와 비슷" },
+  month: { title: "월간 평균 랭킹", prev: "‹ 지난달", next: "다음달 ›", empty: "이 달에는 수집된 데이터가 없어요.", unit: "달", thisOne: "이번 달", prevOne: "지난달", samePhrase: "지난달과 비슷" },
 };
 
 /* 기간 평균은 그 기간에 수집된 스냅샷 파일을 전부 읽어야 한다. 그런데 날짜별 fetch를 Promise.all로
@@ -630,6 +630,202 @@ const WEEK_MODAL_TABS = [...CATEGORIES, "검색어"];
 const COMPETITOR_MIN_ITEMS = 2;
 const COMPETITOR_TOP_N = 3;
 
+/* ─────────────────────────────────────────────────────────────────────────
+   상품 속성(product_meta_slim.json) 기반 요약.
+
+   랭킹 스냅샷에는 브랜드/가격/순위밖에 없어서 "상위권 상품들이 어떻게 생겼는지"는 알 수가 없다.
+   scrape_product_meta.js가 상품별 고정 속성(카테고리·성별·핏·실측 사이즈·이미지 장수)을,
+   classify_thumbnails.js가 썸네일 비전 분류(모델컷/스냅/누끼, 무드)를 채워두면,
+   여기서 그걸 랭킹에 붙여 "이번 주 상위권의 생김새"와 "직전 기간 대비 변화"를 낸다.
+
+   비전 분류는 API 키가 필요해서 아직 안 돌렸을 수 있다. 그 경우 shot/mood가 비어 있는데,
+   없는 섹션은 그냥 건너뛴다 - 실측·핏·이미지 장수는 비전 없이도 바로 나온다.
+   ───────────────────────────────────────────────────────────────────────── */
+
+const MOOD_LABELS = {
+  vintage: "빈티지", minimal: "심플", street: "스트릿",
+  sporty: "스포티", classic: "클래식", outdoor: "아웃도어", feminine: "페미닌",
+};
+const SHOT_LABELS = {
+  model: "모델 착용컷", snap: "스냅·룩북", product: "제품 단독컷",
+  detail: "디테일·기획", other: "기타",
+};
+/* 실측 추이를 낼 카테고리는 "같은 종류끼리" 비교돼야 의미가 있다. 상위 N개 카테고리만 본다. */
+const MEASURE_MIN_ITEMS = 5;
+
+/* product_meta_slim.json은 전수 기준 8MB(gzip 1.4MB)라 페이지 로드 때 같이 받으면 부담이다.
+   평균 팝업을 처음 열 때만 받고, 그 뒤로는 모듈 스코프에 캐시해서 다시 받지 않는다.
+   아직 백필이 안 됐거나 파일이 없으면 null로 두고, 속성 섹션만 조용히 빠진다. */
+let productMetaCache = null;
+let productMetaPromise = null;
+function loadProductMeta() {
+  if (productMetaCache) return Promise.resolve(productMetaCache);
+  if (!productMetaPromise) {
+    productMetaPromise = fetch("data/product_meta_slim.json")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => { productMetaCache = json && typeof json === "object" ? json : null; return productMetaCache; })
+      .catch(() => null);
+  }
+  return productMetaPromise;
+}
+
+function productIdOf(item) {
+  const m = (item.url || "").match(/products\/(\d+)/);
+  return m ? m[1] : null;
+}
+
+/* 랭킹 목록에 product_meta를 붙인다. 메타가 아직 없는 상품은 그냥 빠진다(백필 중에도 동작하게). */
+function joinMeta(items, meta) {
+  if (!meta) return [];
+  const out = [];
+  for (const it of items) {
+    const id = productIdOf(it);
+    const m = id && meta[id];
+    if (m) out.push({ ...it, meta: m });
+  }
+  return out;
+}
+
+/* 비율 분포. {키: 비율(0~1)} 로 돌려준다. */
+function shareOf(joined, pick) {
+  const counts = new Map();
+  let total = 0;
+  for (const j of joined) {
+    const vals = pick(j.meta);
+    if (!vals || !vals.length) continue;
+    total += 1;
+    for (const v of vals) counts.set(v, (counts.get(v) || 0) + 1);
+  }
+  if (!total) return null;
+  const out = {};
+  for (const [k, n] of counts) out[k] = n / total;
+  return { share: out, total };
+}
+
+function meanOf(joined, pick) {
+  const vals = joined.map((j) => pick(j.meta)).filter((v) => typeof v === "number" && !Number.isNaN(v));
+  if (!vals.length) return null;
+  return { mean: vals.reduce((a, b) => a + b, 0) / vals.length, n: vals.length };
+}
+
+/* 카테고리+성별별 평균 총장. "남성 긴소매 티셔츠" 단위로 묶어야 비교가 성립한다.
+   표본이 얇으면 주 단위 평균이 심하게 흔들리기 때문에(전체 TOP150만 쓰면 카테고리당 8개 남짓),
+   호출하는 쪽에서 전 카테고리 랭킹을 합친 목록(중복 제거 약 1,000개)을 넘겨준다. */
+function lengthByCategory(joined) {
+  const groups = new Map();
+  for (const j of joined) {
+    const m = j.meta;
+    const len = m.measure && m.measure["총장"];
+    if (!len || !m.cat2) continue;
+    // 성별은 "남성/여성"처럼 복수로 오기도 한다. 단일 성별 상품만 성별을 붙여 구분한다.
+    const genderPrefix = m.sex === "남성" ? "남성 " : m.sex === "여성" ? "여성 " : "";
+    const key = `${genderPrefix}${m.cat2}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(len);
+  }
+  const out = {};
+  for (const [key, arr] of groups) {
+    if (arr.length < MEASURE_MIN_ITEMS) continue;
+    out[key] = { mean: arr.reduce((a, b) => a + b, 0) / arr.length, n: arr.length };
+  }
+  return out;
+}
+
+function summarizeAttributes(items, meta) {
+  const joined = joinMeta(items, meta);
+  if (!joined.length) return null;
+  return {
+    coverage: joined.length / items.length,
+    n: joined.length,
+    mood: shareOf(joined, (m) => m.mood || null),
+    shot: shareOf(joined, (m) => (m.shot ? [m.shot] : null)),
+    fit: shareOf(joined, (m) => (m.fit ? m.fit.split("/") : null)),
+    person: shareOf(joined, (m) => (typeof m.hasPerson === "boolean" ? [m.hasPerson ? "yes" : "no"] : null)),
+    images: meanOf(joined, (m) => m.images),
+    length: lengthByCategory(joined),
+  };
+}
+
+/* "32% (지난주 25%)" 같은 문구용. 차이가 1%p 미만이면 변화를 말하지 않는다. */
+function shareRow(label, cur, prev, prevOne, samePhrase) {
+  const pct = Math.round(cur * 100);
+  if (prev === undefined || prev === null) return { term: label, text: `${pct}%`, tone: "flat", items: null };
+  const diff = Math.round(cur * 100) - Math.round(prev * 100);
+  if (Math.abs(diff) < 1) return { term: label, text: `${pct}% (${samePhrase || prevOne + " 수준"})`, tone: "flat", items: null };
+  return {
+    term: label,
+    text: `${pct}% (${prevOne} ${Math.round(prev * 100)}% → ${diff > 0 ? "+" : ""}${diff}%p)`,
+    tone: diff > 0 ? "up" : "down",
+    items: null,
+  };
+}
+
+/* 상품 속성 섹션들. cur/prev는 summarizeAttributes 결과. */
+function buildAttributeSections(cur, prev, text) {
+  if (!cur) return [];
+  const { prevOne, samePhrase } = text;
+  const sections = [];
+
+  /* 무드 (비전 분류 필요) */
+  if (cur.mood) {
+    const rows = Object.entries(cur.mood.share).sort((a, b) => b[1] - a[1]).slice(0, 4)
+      .map(([k, v]) => shareRow(MOOD_LABELS[k] || k, v, prev?.mood?.share?.[k], prevOne, samePhrase));
+    if (rows.length) sections.push({ label: "무드", rows });
+  }
+
+  /* 썸네일 구성 (비전 분류 필요) */
+  if (cur.shot) {
+    const rows = Object.entries(cur.shot.share).sort((a, b) => b[1] - a[1]).slice(0, 3)
+      .map(([k, v]) => shareRow(SHOT_LABELS[k] || k, v, prev?.shot?.share?.[k], prevOne, samePhrase));
+    if (cur.images) {
+      const prevImg = prev?.images?.mean;
+      const diff = prevImg ? cur.images.mean - prevImg : null;
+      rows.push({
+        term: "상세 이미지",
+        text: `평균 ${cur.images.mean.toFixed(1)}장${diff !== null && Math.abs(diff) >= 0.3 ? ` (${prevOne} ${prevImg.toFixed(1)}장)` : ""}`,
+        tone: diff !== null && Math.abs(diff) >= 0.3 ? (diff > 0 ? "up" : "down") : "flat",
+        items: null,
+      });
+    }
+    if (rows.length) sections.push({ label: "썸네일", rows });
+  }
+
+  /* 핏 (무신사 상세의 구조화 속성. 판매자가 입력 안 한 상품이 많아 표본이 적을 수 있다) */
+  if (cur.fit) {
+    const rows = Object.entries(cur.fit.share).sort((a, b) => b[1] - a[1]).slice(0, 3)
+      .map(([k, v]) => shareRow(k, v, prev?.fit?.share?.[k], prevOne, samePhrase));
+    if (rows.length) sections.push({ label: `핏 (${cur.fit.total}개)`, rows });
+  }
+
+  /* 실측 총장: 카테고리별로 직전 기간과 비교. 0.5cm 미만 차이는 노이즈로 보고 표시만 한다. */
+  const lenKeys = Object.keys(cur.length || {});
+  if (lenKeys.length) {
+    const rows = lenKeys
+      .map((key) => {
+        const c = cur.length[key];
+        const pr = prev?.length?.[key];
+        const diff = pr ? c.mean - pr.mean : null;
+        return { key, c, diff };
+      })
+      // 변화가 큰 것부터, 변화 정보가 없으면 표본 많은 것부터
+      .sort((a, b) => (Math.abs(b.diff ?? 0) - Math.abs(a.diff ?? 0)) || (b.c.n - a.c.n))
+      .slice(0, 4)
+      .map(({ key, c, diff }) => ({
+        term: key,
+        // 표본 수를 항상 붙인다. 카테고리당 5개짜리도 목록에 오르는데, 표본이 얇으면 주 단위
+        // 변화가 크게 흔들려서 숫자만 보면 과잉 해석하기 쉽다.
+        text: diff === null || Math.abs(diff) < 0.5
+          ? `평균 총장 ${c.mean.toFixed(1)}cm (${c.n}개)`
+          : `평균 총장 ${c.mean.toFixed(1)}cm · ${prevOne} 대비 ${diff > 0 ? "+" : ""}${diff.toFixed(1)}cm (${c.n}개)`,
+        tone: diff === null || Math.abs(diff) < 0.5 ? "flat" : (diff > 0 ? "up" : "down"),
+        items: null,
+      }));
+    if (rows.length) sections.push({ label: "실측 총장", rows });
+  }
+
+  return sections;
+}
+
 function avgOf(nums) {
   return nums.length ? nums.reduce((sum, v) => sum + v, 0) / nums.length : null;
 }
@@ -668,18 +864,18 @@ function groupItemsByBrand(items) {
 }
 
 /* "3계단 상승" 같은 문구. 1계단 미만은 방향을 말하지 않고 "비슷"으로 둔다. */
-function movementPhrase(avgDelta, prevOne) {
+function movementPhrase(avgDelta, prevOne, samePhrase) {
   if (avgDelta === null) return null;
   const n = Math.round(Math.abs(avgDelta));
-  if (n < 1) return { text: `${prevOne}과 비슷`, tone: "flat" };
+  if (n < 1) return { text: samePhrase || `${prevOne} 수준`, tone: "flat" };
   return avgDelta > 0
     ? { text: `${prevOne} 대비 평균 ${n}계단 상승`, tone: "up" }
     : { text: `${prevOne} 대비 평균 ${n}계단 하락`, tone: "down" };
 }
 
-function buildCompetitorInsights({ items, keywords, watchList, watchPool, text }) {
+function buildCompetitorInsights({ items, keywords, watchList, watchPool, text, attributeSections }) {
   if (!items || !items.length) return null;
-  const { unit, thisOne, prevOne } = text;
+  const { unit, thisOne, prevOne, samePhrase } = text;
   // 브랜드 순위/할인 통계는 중복 없는 "전체" 기준(items)으로, 관심 브랜드 판정만 전 카테고리(watchPool)로 한다.
   const pool = watchPool && watchPool.length ? watchPool : items;
   const groups = groupItemsByBrand(items);
@@ -697,7 +893,7 @@ function buildCompetitorInsights({ items, keywords, watchList, watchPool, text }
       const top = hits.reduce((a, b) => (b.rank < a.rank ? b : a));
       const where = top.category && top.category !== "전체" ? `${top.category} ${top.rank}위` : `최고 ${top.rank}위`;
       const news = hits.filter((it) => it.delta === "NEW").length;
-      const move = hasDelta ? movementPhrase(avgOf(hits.filter((it) => typeof it.delta === "number").map((it) => it.delta)), prevOne) : null;
+      const move = hasDelta ? movementPhrase(avgOf(hits.filter((it) => typeof it.delta === "number").map((it) => it.delta)), prevOne, samePhrase) : null;
       const parts = [`${hits.length}개(${where})`];
       if (news) parts.push(`신규 ${news}개`);
       if (move) parts.push(move.text);
@@ -755,6 +951,9 @@ function buildCompetitorInsights({ items, keywords, watchList, watchPool, text }
       rows: kwRisers.map((k) => ({ term: k.keyword, items: null, tone: "up", text: `${k.rank + k.delta}위 → ${k.rank}위` })),
     });
   }
+
+  // 상품 속성 섹션(무드/썸네일/핏/실측 총장)은 브랜드 움직임 뒤에 붙인다.
+  for (const sec of attributeSections || []) sections.push(sec);
 
   if (!sections.length) return null;
 
@@ -834,6 +1033,11 @@ function RangeAverageModal({ initialRange, musinsaIndex, availableDates, onClose
 
   // 관심 브랜드 = 마케터가 지정한 경쟁사. RankingPanel과 같은 패턴으로 저장소 파일을 원본으로
   // 삼고, localStorage 캐시는 팝업을 열자마자 깜빡임 없이 보여주기 위한 용도다.
+  // 상품 속성 요약(무드/썸네일/핏/실측)은 직전 기간과 비교해야 의미가 있는데, 순위 delta처럼
+  // 상품마다 붙는 값이 아니라 목록 전체를 다시 집계해야 해서 직전 기간의 목록을 따로 들고 있는다.
+  const [priorItems, setPriorItems] = useState(null);
+  const [productMeta, setProductMeta] = useState(null);
+  useEffect(() => { loadProductMeta().then(setProductMeta); }, []);
   const [watchList, setWatchList] = useState(() => loadPersistedList("fp_musinsa_brand_watch"));
   useEffect(() => {
     fetch(`data/musinsa_brand_watch.json?t=${Date.now()}`)
@@ -847,6 +1051,7 @@ function RangeAverageModal({ initialRange, musinsaIndex, availableDates, onClose
     let cancelled = false;
     setData(null);
     setProgress(null);
+    setPriorItems(null);
     setCat("전체");
     const fetchOne = (dKey, rawTime) => fetch(`data/musinsa_${dKey}_${rawTime}.json`).then((res) => { if (!res.ok) throw new Error("no snapshot file"); return res.json(); });
     // 하루 수집 횟수가 날마다 다를 수 있어서(2회 -> 4회로 늘어난 것처럼) 모든 스냅샷을 그냥 한꺼번에
@@ -891,6 +1096,7 @@ function RangeAverageModal({ initialRange, musinsaIndex, availableDates, onClose
         setProgress(null);
         return fetchRangeBundle(shiftRange(range, -1), null).then((prior) => {
           if (cancelled || !prior) return;
+          setPriorItems(buildWatchPool(CATEGORIES.map((c) => ({ category: c, items: prior.products?.[c]?.all }))));
           attachAverageDelta(current.products, prior.products, CATEGORIES, ["all", "rising", "new"]);
           attachAverageDelta({ keywords: current.keywords }, { keywords: prior.keywords }, ["keywords"], ["all", "rising"]);
           setData({ products: current.products, keywords: current.keywords });
@@ -908,14 +1114,22 @@ function RangeAverageModal({ initialRange, musinsaIndex, availableDates, onClose
   // 자동으로 다시 계산된다.
   const competitorInsights = useMemo(() => {
     if (!data || isEmpty) return null;
+    const items = data.products?.["전체"]?.all || [];
+    // 브랜드 순위 통계는 중복 없는 "전체" 기준, 관심 브랜드 판정과 상품 속성 집계는 전 카테고리 합집합.
+    const pool = buildWatchPool(CATEGORIES.map((c) => ({ category: c, items: data.products?.[c]?.all })));
     return buildCompetitorInsights({
-      items: data.products?.["전체"]?.all || [],
+      items,
       keywords: data.keywords?.all || [],
       watchList,
-      watchPool: buildWatchPool(CATEGORIES.map((c) => ({ category: c, items: data.products?.[c]?.all }))),
+      watchPool: pool,
       text,
+      attributeSections: buildAttributeSections(
+        summarizeAttributes(pool, productMeta),
+        priorItems ? summarizeAttributes(priorItems, productMeta) : null,
+        text
+      ),
     });
-  }, [data, isEmpty, watchList, text]);
+  }, [data, isEmpty, watchList, text, productMeta, priorItems]);
 
   // 브랜드명이든 상품명에 들어간 단어든, 이 기간 평균 랭킹(TOP150) 전체 카테고리를 훑어서 찾아준다.
   const runSearch = () => {
@@ -1023,6 +1237,11 @@ function Cm29RangeAverageModal({ initialRange, cm29Index, availableDates, onClos
 
   // 관심 브랜드 = 마케터가 지정한 경쟁사. RankingPanel과 같은 패턴으로 저장소 파일을 원본으로
   // 삼고, localStorage 캐시는 팝업을 열자마자 깜빡임 없이 보여주기 위한 용도다.
+  // 상품 속성 요약(무드/썸네일/핏/실측)은 직전 기간과 비교해야 의미가 있는데, 순위 delta처럼
+  // 상품마다 붙는 값이 아니라 목록 전체를 다시 집계해야 해서 직전 기간의 목록을 따로 들고 있는다.
+  const [priorItems, setPriorItems] = useState(null);
+  const [productMeta, setProductMeta] = useState(null);
+  useEffect(() => { loadProductMeta().then(setProductMeta); }, []);
   const [watchList, setWatchList] = useState(() => loadPersistedList("fp_cm29_brand_watch"));
   useEffect(() => {
     fetch(`data/cm29_brand_watch.json?t=${Date.now()}`)
@@ -1036,6 +1255,7 @@ function Cm29RangeAverageModal({ initialRange, cm29Index, availableDates, onClos
     let cancelled = false;
     setData(null);
     setProgress(null);
+    setPriorItems(null);
     const fetchOne = (dKey, rawTime) => fetch(`data/cm29_${dKey}_${rawTime}.json`).then((res) => { if (!res.ok) throw new Error("no snapshot file"); return res.json(); });
     // 무신사판과 동일한 이유로, 하루치를 먼저 averageCm29Rankings/averageCm29PopularKeywords로 평균 내
     // "그날의 평균"을 만들고, 그 날짜별 평균들끼리는 결측일(그 기간 안에서 등장 안 한 날)을 순위밖으로
@@ -1084,6 +1304,7 @@ function Cm29RangeAverageModal({ initialRange, cm29Index, availableDates, onClos
         setProgress(null);
         return fetchRangeBundle(shiftRange(range, -1), null).then((prior) => {
           if (cancelled || !prior) return;
+          setPriorItems(buildWatchPool(Object.keys(prior.products?.[largeCat] || {}).map((sc) => ({ category: sc, items: prior.products?.[largeCat]?.[sc]?.["실시간"] }))));
           Object.keys(current.products).forEach((lc) => {
             const subCats = Object.keys(current.products[lc]);
             const periodsSet = new Set();
@@ -1116,14 +1337,21 @@ function Cm29RangeAverageModal({ initialRange, cm29Index, availableDates, onClos
   const competitorInsights = useMemo(() => {
     if (!data || isEmpty) return null;
     const byLarge = data.products?.[largeCat] || {};
+    const items = byLarge["전체"]?.["실시간"] || [];
+    const pool = buildWatchPool(Object.keys(byLarge).map((sc) => ({ category: sc, items: byLarge[sc]?.["실시간"] })));
     return buildCompetitorInsights({
-      items: byLarge["전체"]?.["실시간"] || [],
+      items,
       keywords: data.keywords || [],
       watchList,
-      watchPool: buildWatchPool(Object.keys(byLarge).map((sc) => ({ category: sc, items: byLarge[sc]?.["실시간"] }))),
+      watchPool: pool,
       text,
+      attributeSections: buildAttributeSections(
+        summarizeAttributes(pool, productMeta),
+        priorItems ? summarizeAttributes(priorItems, productMeta) : null,
+        text
+      ),
     });
-  }, [data, isEmpty, largeCat, watchList, text]);
+  }, [data, isEmpty, largeCat, watchList, text, productMeta, priorItems]);
 
   // Cm29RankingPanel의 브랜드 검색과 동일하게, 현재 대분류의 "전체" 서브카테고리 + 현재 기간 안에서
   // 브랜드명/상품명에 포함된 단어로 찾는다.

@@ -25,6 +25,12 @@ jobs:
       - name: Run 29CM scraper
         run: node scrape_cm29.js
 
+      # 랭킹에 새로 등장한 상품의 고정 속성(카테고리/핏/실측 사이즈/이미지 장수)을 받아둔다.
+      # 이미 받은 상품은 건너뛰므로 평소엔 1,000건 미만, 1~2분이면 끝난다.
+      # --limit은 어쩌다 대량 유입이 있어도 워크플로가 늘어지지 않게 하는 상한선이다.
+      - name: Collect product metadata
+        run: node scrape_product_meta.js --limit 3000
+
       - name: Commit and push new data
         run: |
           git config user.name "github-actions[bot]"

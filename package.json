@@ -1,0 +1,16 @@
+{
+  "name": "fashion-pulse",
+  "private": true,
+  "version": "1.0.0",
+  "description": "무신사/29CM 랭킹 수집 + 마케터 대시보드",
+  "scripts": {
+    "serve": "node serve.js",
+    "scrape:musinsa": "node scrape_musinsa.js",
+    "scrape:cm29": "node scrape_cm29.js",
+    "scrape:meta": "node scrape_product_meta.js",
+    "classify": "node classify_thumbnails.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.0"
+  }
+}

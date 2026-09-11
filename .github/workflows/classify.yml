@@ -1,0 +1,82 @@
+name: Classify thumbnails
+
+# 썸네일 비전 분류는 돈이 드는 작업이라 스크랩 워크플로와 분리했다.
+# 하루 한 번(오전 4시 KST)만 돌면서, 전날 새로 들어온 상품만 분류한다.
+# ANTHROPIC_API_KEY 시크릿이 없으면 아무것도 안 하고 조용히 끝난다.
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "이번 실행에서 분류할 최대 상품 수 (비우면 전부)"
+        required: false
+        default: ""
+      model:
+        description: "쓸 모델 (비우면 claude-opus-5)"
+        required: false
+        default: ""
+  schedule:
+    - cron: "0 19 * * *" # 04:00 KST
+
+permissions:
+  contents: write
+
+concurrency:
+  # 배치가 아직 안 끝난 채로 다음 실행이 겹치면 같은 상품을 두 번 분류하게 된다.
+  group: classify-thumbnails
+  cancel-in-progress: false
+
+jobs:
+  classify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Check API key
+        id: key
+        run: |
+          if [ -z "${{ secrets.ANTHROPIC_API_KEY }}" ]; then
+            echo "ANTHROPIC_API_KEY 시크릿이 없어서 건너뜁니다."
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # 실제로 얼마나 쓸지 로그에 먼저 남긴다 (--estimate은 API를 호출하지 않는다).
+      - name: Estimate cost
+        if: steps.key.outputs.present == 'true'
+        run: |
+          node classify_thumbnails.js --estimate \
+            ${{ github.event.inputs.model && format('--model {0}', github.event.inputs.model) || '' }}
+
+      # Batch API의 SLA는 24시간이라 워크플로가 못 기다릴 수 있다. 그때는 배치 id만 남기고
+      # 정상 종료하고, 다음 실행이 그 배치를 이어받아 결과를 회수한다.
+      - name: Classify
+        if: steps.key.outputs.present == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          node classify_thumbnails.js --max-wait-min 150 \
+            ${{ github.event.inputs.limit && format('--limit {0}', github.event.inputs.limit) || '' }} \
+            ${{ github.event.inputs.model && format('--model {0}', github.event.inputs.model) || '' }}
+
+      - name: Commit results
+        if: steps.key.outputs.present == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/product_meta.json data/product_meta_slim.json data/.classify_batch.json || true
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: thumbnail classification"
+            git pull --rebase --autostash
+            git push
+          else
+            echo "no classification changes"
+          fi
