@@ -822,7 +822,7 @@ function buildAttributeSections(cur, prev, text) {
     const rows = [...catRows]
       .filter((r) => Math.abs(r.dCount) >= 2 || Math.abs(r.dRank) >= 5)
       .sort((a, b) => (Math.abs(b.dCount) * 4 + Math.abs(b.dRank)) - (Math.abs(a.dCount) * 4 + Math.abs(a.dRank)))
-      .slice(0, 4)
+      .slice(0, 6)
       .map((r) => ({
         term: r.cat,
         text: `${r.prev.count}개→${r.cur.count}개${Math.abs(r.dRank) >= 5 ? ` · 평균 ${Math.round(r.prev.avgRank)}위→${Math.round(r.cur.avgRank)}위` : ""}`,
@@ -914,7 +914,7 @@ function movementPhrase(avgDelta, prevOne, samePhrase) {
    종류(kind)당 하나씩만 넣는다 - 점수만으로 고르면 브랜드 등락 세 줄이 나란히 나오기 쉬운데,
    그러면 "많이 오른/내린 브랜드" 섹션을 문장으로 옮겨 적은 것밖에 안 된다.
    관심 브랜드는 마케터가 직접 지정한 경쟁사라 점수와 무관하게 맨 앞에 세운다. */
-const TAKEAWAY_COUNT = 3;
+const TAKEAWAY_COUNT = 5;
 /* 품목 흐름을 볼 때 이 정도는 돼야 우연이 아니라고 본다 (이번+직전 합계 개수) */
 const CAT_TREND_MIN = 8;
 
@@ -956,7 +956,7 @@ function buildTakeaways(ctx) {
   /* 관심 브랜드 - 우선 배치 */
   for (const r of watchRows || []) {
     if (!r.items || !r.items.length) {
-      add("watch", 0, 0, "down", `${r.term}${particleOf(r.term, "은", "는")} ${thisOne} 랭킹에 없어요.`);
+      add("watch", 3, 0, "down", `${r.term}${particleOf(r.term, "은", "는")} ${thisOne} 랭킹에 없어요.`);
     } else {
       const m = /평균 (\d+)계단 (상승|하락)/.exec(r.text);
       if (m) add("watch", 0, 0, m[2] === "상승" ? "up" : "down", `${r.term}${particleOf(r.term, "이", "가")} ${prevOne} 대비 평균 ${m[1]}계단 ${m[2]}했어요.`);
@@ -965,21 +965,33 @@ function buildTakeaways(ctx) {
     break; // 관심 브랜드가 여럿이어도 한 줄만
   }
 
-  /* ── 품목 흐름 (tier 1) ── */
+  /* ── 품목 흐름 (tier 1) ──
+     유입량(개수)과 평균 순위를 각각 오른 쪽/내린 쪽 양방향으로 뽑는다. "반팔이 지고 후드집업이
+     떴다"는 두 품목이 같이 있어야 성립하는 이야기라, 한 방향만 보여주면 절반만 말하는 셈이다.
+     usedCat으로 같은 품목이 여러 줄을 차지하지 않게 막는다. */
   const catRows = categoryTrends(attrCur, attrPrev);
-  const byCount = [...catRows].sort((a, b) => Math.abs(b.dCount) - Math.abs(a.dCount))[0];
-  if (byCount && Math.abs(byCount.dCount) >= 3) {
-    add("catCount", 1, Math.abs(byCount.dCount), byCount.dCount > 0 ? "up" : "down",
-      `${byCount.cat}${particleOf(byCount.cat, "이", "가")} 랭킹에 ${byCount.prev.count}개에서 ${byCount.cur.count}개로 ${byCount.dCount > 0 ? "늘었어요" : "줄었어요"}.`);
-  }
-  const byRank = [...catRows].sort((a, b) => Math.abs(b.dRank) - Math.abs(a.dRank))[0];
-  if (byRank && Math.abs(byRank.dRank) >= 5) {
-    add("catRank", 1, Math.abs(byRank.dRank) / 4, byRank.dRank > 0 ? "up" : "down",
-      `${byRank.cat} 평균 순위가 ${Math.round(byRank.prev.avgRank)}위에서 ${Math.round(byRank.cur.avgRank)}위로 ${byRank.dRank > 0 ? "올랐어요" : "내려갔어요"}.`);
-  }
-  // 가장 많이 올라온 품목 (변화가 아니라 현재 구성 자체) - 위 두 개가 못 나올 때를 위한 보조
+  const usedCat = new Set();
+  const addCat = (kind, row, score, tone, t) => {
+    if (!row || usedCat.has(row.cat)) return;
+    usedCat.add(row.cat);
+    add(kind, 1, score, tone, t);
+  };
+  const countUp = [...catRows].filter((r) => r.dCount >= 3).sort((a, b) => b.dCount - a.dCount)[0];
+  const countDown = [...catRows].filter((r) => r.dCount <= -3).sort((a, b) => a.dCount - b.dCount)[0];
+  const rankUp = [...catRows].filter((r) => r.dRank >= 5).sort((a, b) => b.dRank - a.dRank)[0];
+  const rankDown = [...catRows].filter((r) => r.dRank <= -5).sort((a, b) => a.dRank - b.dRank)[0];
+
+  const countText = (r) => `${r.cat}${particleOf(r.cat, "이", "가")} 랭킹에 ${r.prev.count}개에서 ${r.cur.count}개로 ${r.dCount > 0 ? "늘었어요" : "줄었어요"}.`;
+  const rankText = (r) => `${r.cat} 평균 순위가 ${Math.round(r.prev.avgRank)}위에서 ${Math.round(r.cur.avgRank)}위로 ${r.dRank > 0 ? "올랐어요" : "내려갔어요"}.`;
+
+  addCat("catCountUp", countUp, Math.abs(countUp?.dCount || 0) + 100, "up", countUp && countText(countUp));
+  addCat("catCountDown", countDown, Math.abs(countDown?.dCount || 0) + 100, "down", countDown && countText(countDown));
+  addCat("catRankUp", rankUp, Math.abs(rankUp?.dRank || 0) / 4, "up", rankUp && rankText(rankUp));
+  addCat("catRankDown", rankDown, Math.abs(rankDown?.dRank || 0) / 4, "down", rankDown && rankText(rankDown));
+
+  // 변화가 약해 위가 다 안 나올 때를 위한 보조: 현재 구성에서 가장 많은 품목
   const topCat = Object.entries(attrCur?.catStats || {}).sort((a, b) => b[1].count - a[1].count)[0];
-  if (topCat && topCat[1].count >= 5) {
+  if (topCat && topCat[1].count >= 5 && !usedCat.has(topCat[0])) {
     add("catTop", 1, 0.1, "flat",
       `${thisOne} 랭킹엔 ${topCat[0]}${particleOf(topCat[0], "이", "가")} ${topCat[1].count}개로 가장 많아요.`);
   }
@@ -1039,7 +1051,7 @@ function buildTakeaways(ctx) {
     .slice(0, TAKEAWAY_COUNT);
 }
 
-function buildCompetitorInsights({ items, keywords, watchList, watchPool, text, attributeSections, attrCur, attrPrev }) {
+function buildCompetitorInsights({ items, keywords, watchList, watchPool, text, attributeSections, attrCur, attrPrev, scope }) {
   if (!items || !items.length) return null;
   const { unit, thisOne, prevOne, samePhrase } = text;
   // 브랜드 순위/할인 통계는 중복 없는 "전체" 기준(items)으로, 관심 브랜드 판정만 전 카테고리(watchPool)로 한다.
@@ -1129,11 +1141,12 @@ function buildCompetitorInsights({ items, keywords, watchList, watchPool, text, 
   /* 한 줄 총평 */
   const brandCount = groups.length;
   const newTotal = items.filter((it) => it.delta === "NEW").length;
+  const where = scope && scope !== "전체" ? `${scope} 랭킹` : "랭킹";
   const headline = hasDelta
-    ? `${thisOne} 랭킹에 브랜드 ${brandCount}곳이 올라왔고, 그중 신규 진입 상품이 ${newTotal}개예요.`
-    : `${thisOne} 랭킹에 브랜드 ${brandCount}곳이 올라왔어요. 직전 ${unit} 대비 변동은 계산 중이에요.`;
+    ? `${thisOne} ${where}에 브랜드 ${brandCount}곳이 올라왔고, 그중 신규 진입 상품이 ${newTotal}개예요.`
+    : `${thisOne} ${where}에 브랜드 ${brandCount}곳이 올라왔어요. 직전 ${unit} 대비 변동은 계산 중이에요.`;
   const takeaways = buildTakeaways({ text, watchRows, risers, fallers, newcomers, discounting, kwRisers, attrCur, attrPrev });
-  return { headline, takeaways, sections, hasDelta };
+  return { headline, takeaways, sections, hasDelta, scope };
 }
 
 /* buildCompetitorInsights 결과를 그리는 박스. 브랜드 줄을 누르면 그 브랜드 상품만 모아
@@ -1147,7 +1160,7 @@ function CompetitorInsightBox({ insights, rangeText, onOpenBrand }) {
     <div className="rounded-xl p-3 mb-4" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs font-bold tracking-wider" style={{ color: C.mute }}>
-          AI 분석 · {rangeText.thisOne} 경쟁사 동향
+          AI 분석 · {rangeText.thisOne} {insights.scope && insights.scope !== "전체" ? `${insights.scope} 동향` : "경쟁사 동향"}
         </p>
         <button onClick={() => setOpen((v) => !v)} className="text-[11px] font-bold px-2 py-0.5 rounded-full" style={{ color: C.mute, border: `1px solid ${C.line}`, background: C.white }}>
           {open ? "접기" : "펼치기"}
@@ -1276,7 +1289,9 @@ function RangeAverageModal({ initialRange, musinsaIndex, availableDates, onClose
         setProgress(null);
         return fetchRangeBundle(shiftRange(range, -1), null).then((prior) => {
           if (cancelled || !prior) return;
-          setPriorItems(buildWatchPool(CATEGORIES.map((c) => ({ category: c, items: prior.products?.[c]?.all }))));
+          // 카테고리 탭을 옮기면 그 카테고리 기준으로 다시 계산해야 해서, 합집합 하나가 아니라
+          // 직전 기간의 카테고리별 목록을 통째로 들고 있는다(150개 x 7 카테고리라 부담 없다).
+          setPriorItems(prior.products || null);
           attachAverageDelta(current.products, prior.products, CATEGORIES, ["all", "rising", "new"]);
           attachAverageDelta({ keywords: current.keywords }, { keywords: prior.keywords }, ["keywords"], ["all", "rising"]);
           setData({ products: current.products, keywords: current.keywords });
@@ -1294,11 +1309,17 @@ function RangeAverageModal({ initialRange, musinsaIndex, availableDates, onClose
   // 자동으로 다시 계산된다.
   const competitorInsights = useMemo(() => {
     if (!data || isEmpty) return null;
-    const items = data.products?.["전체"]?.all || [];
-    // 브랜드 순위 통계는 중복 없는 "전체" 기준, 관심 브랜드 판정과 상품 속성 집계는 전 카테고리 합집합.
-    const pool = buildWatchPool(CATEGORIES.map((c) => ({ category: c, items: data.products?.[c]?.all })));
-    const curAttr = summarizeAttributes(pool, productMeta);
-    const prevAttr = priorItems ? summarizeAttributes(priorItems, productMeta) : null;
+    // 선택된 카테고리 탭 기준으로 동향을 낸다. "검색어" 탭은 상품 목록이 없어서 전체로 되돌린다.
+    const scope = cat === "검색어" ? "전체" : cat;
+    const items = data.products?.[scope]?.all || [];
+    const prevItems = priorItems?.[scope]?.all || null;
+    // 관심 브랜드를 어디서 찾을지도 탭을 따라간다. "가방" 탭에서 그 브랜드의 상의 실적을 보여주면
+    // 오해를 부르기 때문이다. "전체" 탭에서만 전 카테고리를 훑어 어느 카테고리에 있든 잡아낸다.
+    const pool = scope === "전체"
+      ? buildWatchPool(CATEGORIES.map((c) => ({ category: c, items: data.products?.[c]?.all })))
+      : buildWatchPool([{ category: scope, items }]);
+    const curAttr = summarizeAttributes(items, productMeta);
+    const prevAttr = prevItems ? summarizeAttributes(prevItems, productMeta) : null;
     return buildCompetitorInsights({
       items,
       keywords: data.keywords?.all || [],
@@ -1308,8 +1329,9 @@ function RangeAverageModal({ initialRange, musinsaIndex, availableDates, onClose
       attributeSections: buildAttributeSections(curAttr, prevAttr, text),
       attrCur: curAttr,
       attrPrev: prevAttr,
+      scope,
     });
-  }, [data, isEmpty, watchList, text, productMeta, priorItems]);
+  }, [data, isEmpty, cat, watchList, text, productMeta, priorItems]);
 
   // 브랜드명이든 상품명에 들어간 단어든, 이 기간 평균 랭킹(TOP150) 전체 카테고리를 훑어서 찾아준다.
   const runSearch = () => {
@@ -1484,7 +1506,7 @@ function Cm29RangeAverageModal({ initialRange, cm29Index, availableDates, onClos
         setProgress(null);
         return fetchRangeBundle(shiftRange(range, -1), null).then((prior) => {
           if (cancelled || !prior) return;
-          setPriorItems(buildWatchPool(Object.keys(prior.products?.[largeCat] || {}).map((sc) => ({ category: sc, items: prior.products?.[largeCat]?.[sc]?.["실시간"] }))));
+          setPriorItems(prior.products || null);
           Object.keys(current.products).forEach((lc) => {
             const subCats = Object.keys(current.products[lc]);
             const periodsSet = new Set();
@@ -1517,10 +1539,16 @@ function Cm29RangeAverageModal({ initialRange, cm29Index, availableDates, onClos
   const competitorInsights = useMemo(() => {
     if (!data || isEmpty) return null;
     const byLarge = data.products?.[largeCat] || {};
-    const items = byLarge["전체"]?.["실시간"] || [];
-    const pool = buildWatchPool(Object.keys(byLarge).map((sc) => ({ category: sc, items: byLarge[sc]?.["실시간"] })));
-    const curAttr = summarizeAttributes(pool, productMeta);
-    const prevAttr = priorItems ? summarizeAttributes(priorItems, productMeta) : null;
+    // 무신사와 같은 이유로 선택된 서브카테고리 기준. 기간 필터(period)는 랭킹 집계 방식이라
+    // 동향 비교는 "실시간"으로 고정한다(주/월 평균끼리 비교해야 뜻이 통한다).
+    const scope = subCat || "전체";
+    const items = byLarge[scope]?.["실시간"] || [];
+    const prevItems = priorItems?.[largeCat]?.[scope]?.["실시간"] || null;
+    const pool = scope === "전체"
+      ? buildWatchPool(Object.keys(byLarge).map((sc) => ({ category: sc, items: byLarge[sc]?.["실시간"] })))
+      : buildWatchPool([{ category: scope, items }]);
+    const curAttr = summarizeAttributes(items, productMeta);
+    const prevAttr = prevItems ? summarizeAttributes(prevItems, productMeta) : null;
     return buildCompetitorInsights({
       items,
       keywords: data.keywords || [],
@@ -1530,8 +1558,9 @@ function Cm29RangeAverageModal({ initialRange, cm29Index, availableDates, onClos
       attributeSections: buildAttributeSections(curAttr, prevAttr, text),
       attrCur: curAttr,
       attrPrev: prevAttr,
+      scope,
     });
-  }, [data, isEmpty, largeCat, watchList, text, productMeta, priorItems]);
+  }, [data, isEmpty, largeCat, subCat, watchList, text, productMeta, priorItems]);
 
   // Cm29RankingPanel의 브랜드 검색과 동일하게, 현재 대분류의 "전체" 서브카테고리 + 현재 기간 안에서
   // 브랜드명/상품명에 포함된 단어로 찾는다.
