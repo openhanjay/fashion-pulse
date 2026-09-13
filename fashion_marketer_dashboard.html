@@ -731,6 +731,24 @@ function lengthByCategory(joined) {
   return out;
 }
 
+/* 품목(cat2)별로 랭킹에 몇 개가 올라와 있고 평균 순위가 몇 위인지.
+   "어느 브랜드가 올랐나"보다 "반팔이 지고 후드집업이 뜬다"가 마케터에겐 바로 쓰는 정보라,
+   브랜드가 아니라 품목 단위로도 집계해둔다. */
+function categoryStats(joined) {
+  const m = new Map();
+  for (const j of joined) {
+    const c = j.meta.cat2;
+    if (!c || typeof j.rank !== "number") continue;
+    if (!m.has(c)) m.set(c, { count: 0, rankSum: 0 });
+    const g = m.get(c);
+    g.count += 1;
+    g.rankSum += j.rank;
+  }
+  const out = {};
+  for (const [c, g] of m) out[c] = { count: g.count, avgRank: g.rankSum / g.count };
+  return out;
+}
+
 function summarizeAttributes(items, meta) {
   const joined = joinMeta(items, meta);
   if (!joined.length) return null;
@@ -743,6 +761,7 @@ function summarizeAttributes(items, meta) {
     person: shareOf(joined, (m) => (typeof m.hasPerson === "boolean" ? [m.hasPerson ? "yes" : "no"] : null)),
     images: meanOf(joined, (m) => m.images),
     length: lengthByCategory(joined),
+    catStats: categoryStats(joined),
   };
 }
 
@@ -795,6 +814,22 @@ function buildAttributeSections(cur, prev, text) {
     const rows = Object.entries(cur.fit.share).sort((a, b) => b[1] - a[1]).slice(0, 3)
       .map(([k, v]) => shareRow(k, v, prev?.fit?.share?.[k], prevOne, samePhrase));
     if (rows.length) sections.push({ label: `핏 (${cur.fit.total}개)`, rows });
+  }
+
+  /* 품목 흐름: 랭킹에 올라온 개수가 가장 크게 변한 품목들 */
+  const catRows = categoryTrends(cur, prev);
+  if (catRows.length) {
+    const rows = [...catRows]
+      .filter((r) => Math.abs(r.dCount) >= 2 || Math.abs(r.dRank) >= 5)
+      .sort((a, b) => (Math.abs(b.dCount) * 4 + Math.abs(b.dRank)) - (Math.abs(a.dCount) * 4 + Math.abs(a.dRank)))
+      .slice(0, 4)
+      .map((r) => ({
+        term: r.cat,
+        text: `${r.prev.count}개→${r.cur.count}개${Math.abs(r.dRank) >= 5 ? ` · 평균 ${Math.round(r.prev.avgRank)}위→${Math.round(r.cur.avgRank)}위` : ""}`,
+        tone: (r.dCount || r.dRank) > 0 ? "up" : "down",
+        items: null,
+      }));
+    if (rows.length) sections.push({ label: "품목 흐름", rows });
   }
 
   /* 실측 총장: 카테고리별로 직전 기간과 비교. 0.5cm 미만 차이는 노이즈로 보고 표시만 한다. */
@@ -880,6 +915,23 @@ function movementPhrase(avgDelta, prevOne, samePhrase) {
    그러면 "많이 오른/내린 브랜드" 섹션을 문장으로 옮겨 적은 것밖에 안 된다.
    관심 브랜드는 마케터가 직접 지정한 경쟁사라 점수와 무관하게 맨 앞에 세운다. */
 const TAKEAWAY_COUNT = 3;
+/* 품목 흐름을 볼 때 이 정도는 돼야 우연이 아니라고 본다 (이번+직전 합계 개수) */
+const CAT_TREND_MIN = 8;
+
+/* 품목별로 "랭킹에 몇 개 올라왔나(count)"와 "평균 몇 위인가(avgRank)"의 직전 기간 대비 변화.
+   dCount가 양수면 그 품목 아이템이 더 많이 올라온 것, dRank가 양수면 평균 순위가 오른 것
+   (순위는 숫자가 작을수록 위라서 prev - cur 로 잡는다). */
+function categoryTrends(cur, prev) {
+  if (!cur?.catStats || !prev?.catStats) return [];
+  const rows = [];
+  for (const [c, a] of Object.entries(cur.catStats)) {
+    const b = prev.catStats[c];
+    if (!b) continue;
+    if (a.count + b.count < CAT_TREND_MIN) continue;
+    rows.push({ cat: c, cur: a, prev: b, dCount: a.count - b.count, dRank: b.avgRank - a.avgRank });
+  }
+  return rows;
+}
 
 /* 한글 조사는 앞말의 받침 유무로 갈린다 - "살로몬은/나이키는", "본투윈이/아디다스가".
    완성형 한글은 (코드 - 0xAC00) % 28 이 0이 아니면 받침이 있다. 브랜드명이 영문·숫자로
@@ -896,39 +948,61 @@ function buildTakeaways(ctx) {
   const { text, watchRows, risers, fallers, newcomers, discounting, kwRisers, attrCur, attrPrev } = ctx;
   const { thisOne, prevOne } = text;
   const cand = [];
-  const add = (kind, score, tone, t) => cand.push({ kind, score, tone, text: t });
+  /* tier가 작을수록 먼저다. 점수만으로 고르면 등락 폭이 큰 브랜드 이름 세 줄이 나란히 나오는데,
+     정작 궁금한 건 "어떤 품목이 뜨고 지는가"라서 품목을 브랜드보다 위에 둔다.
+     관심 브랜드는 마케터가 직접 지정한 자사/경쟁사라 항상 맨 앞. */
+  const add = (kind, tier, score, tone, t) => cand.push({ kind, tier, score, tone, text: t });
 
   /* 관심 브랜드 - 우선 배치 */
   for (const r of watchRows || []) {
     if (!r.items || !r.items.length) {
-      add("watch", 1e6, "down", `${r.term}${particleOf(r.term, "은", "는")} ${thisOne} 랭킹에 없어요.`);
+      add("watch", 0, 0, "down", `${r.term}${particleOf(r.term, "은", "는")} ${thisOne} 랭킹에 없어요.`);
     } else {
       const m = /평균 (\d+)계단 (상승|하락)/.exec(r.text);
-      if (m) add("watch", 1e6, m[2] === "상승" ? "up" : "down", `${r.term}${particleOf(r.term, "이", "가")} ${prevOne} 대비 평균 ${m[1]}계단 ${m[2]}했어요.`);
-      else add("watch", 1e6, "flat", `${r.term}${particleOf(r.term, "은", "는")} ${thisOne} 랭킹에 ${r.items.length}개 올라와 있어요.`);
+      if (m) add("watch", 0, 0, m[2] === "상승" ? "up" : "down", `${r.term}${particleOf(r.term, "이", "가")} ${prevOne} 대비 평균 ${m[1]}계단 ${m[2]}했어요.`);
+      else add("watch", 0, 0, "flat", `${r.term}${particleOf(r.term, "은", "는")} ${thisOne} 랭킹에 ${r.items.length}개 올라와 있어요.`);
     }
     break; // 관심 브랜드가 여럿이어도 한 줄만
+  }
+
+  /* ── 품목 흐름 (tier 1) ── */
+  const catRows = categoryTrends(attrCur, attrPrev);
+  const byCount = [...catRows].sort((a, b) => Math.abs(b.dCount) - Math.abs(a.dCount))[0];
+  if (byCount && Math.abs(byCount.dCount) >= 3) {
+    add("catCount", 1, Math.abs(byCount.dCount), byCount.dCount > 0 ? "up" : "down",
+      `${byCount.cat}${particleOf(byCount.cat, "이", "가")} 랭킹에 ${byCount.prev.count}개에서 ${byCount.cur.count}개로 ${byCount.dCount > 0 ? "늘었어요" : "줄었어요"}.`);
+  }
+  const byRank = [...catRows].sort((a, b) => Math.abs(b.dRank) - Math.abs(a.dRank))[0];
+  if (byRank && Math.abs(byRank.dRank) >= 5) {
+    add("catRank", 1, Math.abs(byRank.dRank) / 4, byRank.dRank > 0 ? "up" : "down",
+      `${byRank.cat} 평균 순위가 ${Math.round(byRank.prev.avgRank)}위에서 ${Math.round(byRank.cur.avgRank)}위로 ${byRank.dRank > 0 ? "올랐어요" : "내려갔어요"}.`);
+  }
+  // 가장 많이 올라온 품목 (변화가 아니라 현재 구성 자체) - 위 두 개가 못 나올 때를 위한 보조
+  const topCat = Object.entries(attrCur?.catStats || {}).sort((a, b) => b[1].count - a[1].count)[0];
+  if (topCat && topCat[1].count >= 5) {
+    add("catTop", 1, 0.1, "flat",
+      `${thisOne} 랭킹엔 ${topCat[0]}${particleOf(topCat[0], "이", "가")} ${topCat[1].count}개로 가장 많아요.`);
   }
 
   const top = (arr) => (arr && arr.length ? arr[0] : null);
 
   const up = top(risers);
-  if (up) add("riser", Math.abs(up.avgDelta), "up",
+  if (up) add("riser", 4, Math.abs(up.avgDelta), "up",
     `${up.brand}${particleOf(up.brand, "이", "가")} 상품 ${up.items.length}개로 평균 ${Math.round(up.avgDelta)}계단 올라 가장 많이 상승했어요.`);
 
   const down = top(fallers);
-  if (down) add("faller", Math.abs(down.avgDelta), "down",
+  if (down) add("faller", 4, Math.abs(down.avgDelta), "down",
     `${down.brand}${particleOf(down.brand, "은", "는")} 평균 ${Math.abs(Math.round(down.avgDelta))}계단 내려 낙폭이 가장 컸어요.`);
 
   const nw = top(newcomers);
-  if (nw) add("new", nw.news * 3, "up", `${nw.brand}${particleOf(nw.brand, "이", "가")} ${thisOne} 신규 ${nw.news}개로 가장 많이 새로 진입했어요.`);
+  if (nw) add("new", 4, nw.news * 3, "up", `${nw.brand}${particleOf(nw.brand, "이", "가")} ${thisOne} 신규 ${nw.news}개로 가장 많이 새로 진입했어요.`);
 
   const dc = top(discounting);
-  if (dc && dc.avgDiscount >= 40) add("discount", dc.avgDiscount / 2, "down",
+  if (dc && dc.avgDiscount >= 40) add("discount", 4, dc.avgDiscount / 2, "down",
     `${dc.brand}${particleOf(dc.brand, "이", "가")} 평균 ${Math.round(dc.avgDiscount)}% 할인으로 가장 세게 밀고 있어요.`);
 
   const kw = top(kwRisers);
-  if (kw) add("keyword", kw.delta, "up", `검색어 "${kw.keyword}"${particleOf(kw.keyword, "이", "가")} ${kw.rank + kw.delta}위에서 ${kw.rank}위로 뛰었어요.`);
+  if (kw) add("keyword", 3, kw.delta, "up", `검색어 "${kw.keyword}"${particleOf(kw.keyword, "이", "가")} ${kw.rank + kw.delta}위에서 ${kw.rank}위로 뛰었어요.`);
 
   /* 상품 속성 변화 - 핏/실측은 "무엇이 팔리는지"가 바뀐 신호라 값이 크면 우선순위가 높다 */
   if (attrCur?.fit && attrPrev?.fit) {
@@ -940,7 +1014,7 @@ function buildTakeaways(ctx) {
       if (!best || Math.abs(d) > Math.abs(best.d)) best = { k, d, v, prev };
     }
     if (best && Math.abs(best.d) >= 3) {
-      add("fit", Math.abs(best.d) * 1.5, best.d > 0 ? "up" : "down",
+      add("fit", 2, Math.abs(best.d), best.d > 0 ? "up" : "down",
         `${best.k} 비중이 ${Math.round(best.prev * 100)}%에서 ${Math.round(best.v * 100)}%로 ${best.d > 0 ? "늘었어요" : "줄었어요"}.`);
     }
   }
@@ -953,14 +1027,14 @@ function buildTakeaways(ctx) {
       if (!best || Math.abs(d) > Math.abs(best.d)) best = { k, d, n: v.n };
     }
     if (best && Math.abs(best.d) >= 1.5) {
-      add("length", Math.abs(best.d) * 2, best.d > 0 ? "up" : "down",
+      add("length", 2, Math.abs(best.d), best.d > 0 ? "up" : "down",
         `${best.k} 평균 총장이 ${prevOne}보다 ${Math.abs(best.d).toFixed(1)}cm ${best.d > 0 ? "길어졌어요" : "짧아졌어요"}.`);
     }
   }
 
   const seen = new Set();
   return cand
-    .sort((a, b) => b.score - a.score)
+    .sort((a, b) => (a.tier - b.tier) || (b.score - a.score))
     .filter((c) => (seen.has(c.kind) ? false : (seen.add(c.kind), true)))
     .slice(0, TAKEAWAY_COUNT);
 }
