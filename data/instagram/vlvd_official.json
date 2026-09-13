@@ -2,12 +2,21 @@
   "username": "vlvd_official",
   "name": "VIVA LA VIDA",
   "profilePicUrl": "data/instagram/images/vlvd_official/profile.jpg",
-  "fetchedAt": "2026-09-12T12:11:53+09:00",
+  "fetchedAt": "2026-09-13T12:15:09+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DdNTgegAdwY/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/vlvd_official/post_0.jpg",
+      "caption": "26FW OUR ROOM @ OUR SPOT ◡̈⋆*\n\nStyling.1\n⊹ Sunburst 후드 티셔츠\n⊹ 스트라이프 롱슬리브 후드 티셔츠\n\nStyling.2\n⊹ Seeker 레글런 롱 슬리브 티셔츠\n⊹ Things 에코백\n\nStyling.3\n⊹ 후드 롱 슬리브 티셔츠\n⊹ Muted 레글런 롱 슬리브 티셔츠\n⊹ 호보백 (발매 예정)\n\nStyling.4\n⊹ 버튼 후리스 (발매예정)\n⊹ Enough 에코백",
+      "likesCount": 3,
+      "commentsCount": 0,
+      "timestamp": "2026-09-13T00:45:43.000Z"
+    },
     {
       "url": "https://www.instagram.com/p/DdIn0kSCN3Y/",
       "type": "Video",
-      "displayUrl": "data/instagram/images/vlvd_official/post_0.jpg",
+      "displayUrl": "data/instagram/images/vlvd_official/post_1.jpg",
       "caption": "[OUR ROOM @ OUR SPOT] ▰ 0⊙0 ▰\n▰ Still Motion Archive ▰\n• Shft the view, redefine the line\n• Available Now\n• www.VLVD.KR",
       "likesCount": 5,
       "commentsCount": 0,
@@ -16,7 +25,7 @@
     {
       "url": "https://www.instagram.com/p/DdDvABjlG40/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/vlvd_official/post_1.jpg",
+      "displayUrl": "data/instagram/images/vlvd_official/post_2.jpg",
       "caption": "[Muted Raglan Long Sleeve T-Shirt]\n뮤티드 레글런 롱 슬리브 티셔츠\n\n- Size : S / M / L / XL\n- Color : White-White / White-Black / Yellow-Yellow / Red-Red / Blue-Blue / Melange-Melange\n\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
       "likesCount": 5,
       "commentsCount": 0,
@@ -25,20 +34,11 @@
     {
       "url": "https://www.instagram.com/p/DdAXokHAZx7/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/vlvd_official/post_2.jpg",
+      "displayUrl": "data/instagram/images/vlvd_official/post_3.jpg",
       "caption": "[Swift Heavy Terry Hoodie Zip-Up]\n리듬 후드 집업\n\n- Size : M / L / XL / 2XL\n- Color : Melange / Navy / Burgundy / Brown / Black\n\nVLVD.kr / MUSINSA / 29CM\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
       "likesCount": 12,
       "commentsCount": 0,
       "timestamp": "2026-09-08T00:11:38.000Z"
-    },
-    {
-      "url": "https://www.instagram.com/p/Dc8LwGKFJqZ/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/vlvd_official/post_3.jpg",
-      "caption": "[Selfhood Heavy Terry Hoodie]\n셀프후드 후드 티셔츠\n\n- Size : M / L / XL / 2XL\n- Color : White Melange / Melange /  Yellow / Blue / Burgundy / Brown\n\nVLVD.kr / MUSINSA / 29CM\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
-      "likesCount": 6,
-      "commentsCount": 0,
-      "timestamp": "2026-09-06T09:10:02.000Z"
     }
   ]
 }
