@@ -2,43 +2,43 @@
   "username": "aakam.kr",
   "name": "AAKAM",
   "profilePicUrl": "data/instagram/images/aakam.kr/profile.jpg",
-  "fetchedAt": "2026-09-13T12:15:09+09:00",
+  "fetchedAt": "2026-09-14T12:27:50+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DdN2o3LEfAQ/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/aakam.kr/post_0.jpg",
+      "caption": "AAKAM 25FW-2\n\n2026.09.16 (Wed)\n\n#aakam #아캄",
+      "likesCount": 229,
+      "commentsCount": 0,
+      "timestamp": "2026-09-13T05:52:41.000Z"
+    },
     {
       "url": "https://www.instagram.com/p/DdLOcv6kRv1/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/aakam.kr/post_0.jpg",
+      "displayUrl": "data/instagram/images/aakam.kr/post_1.jpg",
       "caption": "AAKAM 26FW-2\n\n2026.09.16 (Wed)\n\n#aakam #아캄",
-      "likesCount": 337,
+      "likesCount": 376,
       "commentsCount": 0,
       "timestamp": "2026-09-12T05:23:02.000Z"
     },
     {
       "url": "https://www.instagram.com/p/DdJNMqqE-ir/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/aakam.kr/post_1.jpg",
+      "displayUrl": "data/instagram/images/aakam.kr/post_2.jpg",
       "caption": "AAKAM 26FW-2 💘\n\n2026. 09. 16 (Wed)\n\n#aakam #아캄",
-      "likesCount": 953,
+      "likesCount": 1031,
       "commentsCount": 1,
       "timestamp": "2026-09-11T10:33:37.000Z"
     },
     {
       "url": "https://www.instagram.com/p/Dc0ihTBEXKb/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/aakam.kr/post_2.jpg",
+      "displayUrl": "data/instagram/images/aakam.kr/post_3.jpg",
       "caption": "Mint Boy 🩵\n\n#aakam #아캄",
-      "likesCount": 713,
+      "likesCount": 727,
       "commentsCount": 0,
       "timestamp": "2026-09-03T09:55:01.000Z"
-    },
-    {
-      "url": "https://www.instagram.com/p/DclNNPjFIHI/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/aakam.kr/post_3.jpg",
-      "caption": "AAKAM Special Gift 🎁\n\n📍Ceramic CROS2 Necklace\n📍Devil Earbud Cap\n📍Cowboy Water Pistol\n\n아캄 서교 플래그쉽 스토어 구매 고객님께만 선물로 드리는 스페셜 기프트!",
-      "likesCount": 750,
-      "commentsCount": 0,
-      "timestamp": "2026-08-28T11:01:02.000Z"
     }
   ]
 }

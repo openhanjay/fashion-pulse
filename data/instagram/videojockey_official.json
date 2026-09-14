@@ -2,12 +2,21 @@
   "username": "videojockey_official",
   "name": "Vidiojockey",
   "profilePicUrl": "data/instagram/images/videojockey_official/profile.jpg",
-  "fetchedAt": "2026-09-13T12:15:09+09:00",
+  "fetchedAt": "2026-09-14T12:27:50+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DdOM1EsH5Aw/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/videojockey_official/post_0.jpg",
+      "caption": "26FW COLLECTION\n:: DOUBLE HEART DOT CARDIGAN 🤎\n\nvideojockey.co.kr\n#videojockey #비디오자키",
+      "likesCount": -1,
+      "commentsCount": 0,
+      "timestamp": "2026-09-13T09:06:36.000Z"
+    },
     {
       "url": "https://www.instagram.com/p/DdD9PY0H24B/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/post_0.jpg",
+      "displayUrl": "data/instagram/images/videojockey_official/post_1.jpg",
       "caption": "26FW COLLECTION \n“VIKEY‘S COZY HOURS”🏠\n\n26.09.15(TUE) 13:00 PM - 2ND DROP \n\nvideojockey.co.kr\n#videojockey #비디오자키",
       "likesCount": -1,
       "commentsCount": 0,
@@ -16,7 +25,7 @@
     {
       "url": "https://www.instagram.com/p/DdD9JlRn0qm/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/post_1.jpg",
+      "displayUrl": "data/instagram/images/videojockey_official/post_2.jpg",
       "caption": "26FW COLLECTION\n“VIKEY‘S COZY HOURS”🏠\n\n26.09.15(TUE) 13:00 PM - 2ND DROP \n\nvideojockey.co.kr\n#videojockey #비디오자키",
       "likesCount": -1,
       "commentsCount": 0,
@@ -25,20 +34,11 @@
     {
       "url": "https://www.instagram.com/p/DdD9FCeH_Sr/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/post_2.jpg",
+      "displayUrl": "data/instagram/images/videojockey_official/post_3.jpg",
       "caption": "26FW COLLECTION \n“VIKEY‘S COZY HOURS”🏠\n\n26.09.15(TUE) 13:00 PM - 2ND DROP \n\nvideojockey.co.kr\n#videojockey #비디오자키",
       "likesCount": -1,
       "commentsCount": 0,
       "timestamp": "2026-09-09T09:36:34.000Z"
-    },
-    {
-      "url": "https://www.instagram.com/p/DdBWNE5n4kI/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/post_3.jpg",
-      "caption": "26FW COLLECTION\n“VIKEY‘S COZY HOURS”\n⠀\n비디오자키의 26FW 시즌 1차 제품이 발매되었습니다.\n\n새롭게 시작되는 26FW를 \n무신사 및 공식홈페이지에서 만나보세요 🏡 ｡✮\n\nvideojockey.co.kr\n#videojockey #비디오자키",
-      "likesCount": -1,
-      "commentsCount": 0,
-      "timestamp": "2026-09-08T09:18:23.000Z"
     }
   ]
 }
