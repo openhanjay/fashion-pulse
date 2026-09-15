@@ -2,43 +2,43 @@
   "username": "aakam.kr",
   "name": "AAKAM",
   "profilePicUrl": "data/instagram/images/aakam.kr/profile.jpg",
-  "fetchedAt": "2026-09-14T12:27:50+09:00",
+  "fetchedAt": "2026-09-15T12:28:44+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DdQ9i9uE80E/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/aakam.kr/post_0.jpg",
+      "caption": "AAKAM 26FW-2\n\n2026. 09. 16 (Wed)\n\n#aakam #아캄",
+      "likesCount": 910,
+      "commentsCount": 0,
+      "timestamp": "2026-09-14T10:50:02.000Z"
+    },
     {
       "url": "https://www.instagram.com/p/DdN2o3LEfAQ/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/aakam.kr/post_0.jpg",
+      "displayUrl": "data/instagram/images/aakam.kr/post_1.jpg",
       "caption": "AAKAM 25FW-2\n\n2026.09.16 (Wed)\n\n#aakam #아캄",
-      "likesCount": 229,
+      "likesCount": 250,
       "commentsCount": 0,
       "timestamp": "2026-09-13T05:52:41.000Z"
     },
     {
       "url": "https://www.instagram.com/p/DdLOcv6kRv1/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/aakam.kr/post_1.jpg",
+      "displayUrl": "data/instagram/images/aakam.kr/post_2.jpg",
       "caption": "AAKAM 26FW-2\n\n2026.09.16 (Wed)\n\n#aakam #아캄",
-      "likesCount": 376,
+      "likesCount": 401,
       "commentsCount": 0,
       "timestamp": "2026-09-12T05:23:02.000Z"
     },
     {
       "url": "https://www.instagram.com/p/DdJNMqqE-ir/",
       "type": "Sidecar",
-      "displayUrl": "data/instagram/images/aakam.kr/post_2.jpg",
+      "displayUrl": "data/instagram/images/aakam.kr/post_3.jpg",
       "caption": "AAKAM 26FW-2 💘\n\n2026. 09. 16 (Wed)\n\n#aakam #아캄",
-      "likesCount": 1031,
+      "likesCount": 1069,
       "commentsCount": 1,
       "timestamp": "2026-09-11T10:33:37.000Z"
-    },
-    {
-      "url": "https://www.instagram.com/p/Dc0ihTBEXKb/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/aakam.kr/post_3.jpg",
-      "caption": "Mint Boy 🩵\n\n#aakam #아캄",
-      "likesCount": 727,
-      "commentsCount": 0,
-      "timestamp": "2026-09-03T09:55:01.000Z"
     }
   ]
 }
