@@ -82,13 +82,23 @@ async function callApify(body) {
 }
 
 function mapPost(item) {
+  // 인스타가 좋아요 수를 숨긴 게시물은 -1로 온다. "좋아요 -1개"가 아니라 "비공개"라는 뜻이라,
+  // 그대로 두면 합계가 깎인다. 음수는 값이 없는 것으로 본다.
+  const num = (v) => (typeof v === "number" && v >= 0 ? v : null);
   return {
     url: item.url || "",
     type: item.type || "",
     displayUrl: item.displayUrl || "",
     caption: item.caption || "",
-    likesCount: typeof item.likesCount === "number" ? item.likesCount : null,
-    commentsCount: typeof item.commentsCount === "number" ? item.commentsCount : null,
+    likesCount: num(item.likesCount),
+    commentsCount: num(item.commentsCount),
+    // 조회수는 영상/릴스에만 있다 - 이미지나 Sidecar(여러 장) 게시물은 개념 자체가 없어 null로 남는다.
+    // Apify가 두 가지를 주는데 뜻이 다르다. videoViewCount는 일정 시간 이상 본 시청 수,
+    // videoPlayCount는 자동재생까지 포함한 총 재생 수라 보통 몇 배 크다. 화면에는 흔히 "조회수"로
+    // 통용되는 재생 수를 쓰되, 둘 다 저장해서 나중에 어느 쪽으로든 바꿔 쓸 수 있게 둔다.
+    // 이미 받아오던 응답에 들어있던 값이라 Apify 호출 비용은 늘지 않는다.
+    videoPlayCount: num(item.videoPlayCount),
+    videoViewCount: num(item.videoViewCount),
     timestamp: item.timestamp || null,
   };
 }

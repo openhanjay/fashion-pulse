@@ -3054,6 +3054,7 @@ function InstagramBrandCard({ brand, onRemove, onEdit }) {
                     <Camera size={16} color={C.mute} />
                   )}
                 </div>
+                <PostStats post={post} />
                 {!!post.caption && (
                   <>
                     <p className="text-[11px] font-bold leading-tight" style={{ color: C.indigo }}>{classifyPostContent(post.caption)}</p>
@@ -3063,6 +3064,20 @@ function InstagramBrandCard({ brand, onRemove, onEdit }) {
               </a>
             ))}
           </div>
+          {(() => {
+            const e = accountEngagement(snapshot.posts);
+            if (!e.likes && !e.comments && !e.views) return null;
+            return (
+              <p className="text-[11px] tabular-nums" style={{ color: C.ink }}>
+                최근 {e.count}개 ·{" "}
+                {e.likesHidden >= e.count
+                  ? (<span style={{ color: C.mute }}>♥ 비공개</span>)
+                  : (<>♥ {compactCount(e.likes)}{e.likesHidden > 0 && (<span style={{ color: C.mute }}> ({e.likesHidden}개 비공개)</span>)}</>)}
+                {" · "}💬 {compactCount(e.comments)}
+                {e.views > 0 && ` · ▶ ${compactCount(e.views)} (영상 ${e.videoCount}개)`}
+              </p>
+            );
+          })()}
           <p className="text-sm font-semibold" style={{ color: C.indigo }}>{summarizeContentDirection(snapshot.posts)}</p>
           {!!fetchedAtLabel && (<p className="text-[10px]" style={{ color: C.mute }}>최근 수집: {fetchedAtLabel}</p>)}
         </>
@@ -3117,6 +3132,50 @@ const IG_ACCOUNTS_CACHE_KEY = "fp_ig_accounts_cache";
 // 방금 추가/수정한 계정이 남아있는지 확인한다(캐시에 있는 게 fetch 결과엔 없으면 아직 최신이 아닌 것).
 function isStaleAccountsList(fetchedList, cachedList) {
   return cachedList.some((cached) => !fetchedList.some((f) => f.id === cached.id));
+}
+
+/* 1.2만 / 3,400 처럼 짧게. 게시물 카드가 작아서 자릿수가 길면 줄이 깨진다.
+   인스타가 좋아요를 숨긴 게시물은 -1로 오는데(비공개라는 뜻), 스크래퍼에서 null로 바꾸긴 했지만
+   이미 수집해둔 파일에는 -1이 남아 있어서 화면에서도 한 번 더 막는다. */
+function compactCount(n) {
+  if (typeof n !== "number" || n < 0) return null;
+  if (n >= 10000) return `${(n / 10000).toFixed(n >= 100000 ? 0 : 1).replace(/\.0$/, "")}만`;
+  return n.toLocaleString();
+}
+
+/* 게시물 한 건의 참여 지표. 조회수는 영상에만 있어서 없으면 그 칸을 빼고 그린다. */
+function PostStats({ post }) {
+  const likes = compactCount(post.likesCount);
+  const comments = compactCount(post.commentsCount);
+  const views = compactCount(post.videoPlayCount ?? post.videoViewCount);
+  if (likes === null && comments === null && views === null) return null;
+  return (
+    <div className="flex items-center gap-1.5 text-[10px] tabular-nums" style={{ color: C.mute }}>
+      {views !== null && (<span title="조회수(재생 수)">▶ {views}</span>)}
+      {likes !== null && (<span title="좋아요">♥ {likes}</span>)}
+      {comments !== null && (<span title="댓글">💬 {comments}</span>)}
+    </div>
+  );
+}
+
+/* 계정 단위 합계. 게시물마다 흩어진 숫자만 보면 "이 계정이 이번에 잘 나갔나"를 알기 어렵다.
+   조회수는 영상 게시물에만 붙으니 합계도 영상이 있을 때만 의미가 있어서 따로 센다. */
+function accountEngagement(posts) {
+  const list = posts || [];
+  const valid = (v) => typeof v === "number" && v >= 0;
+  const sum = (get) => list.reduce((acc, p) => acc + (valid(get(p)) ? get(p) : 0), 0);
+  const videoPosts = list.filter((p) => valid(p.videoPlayCount ?? p.videoViewCount));
+  // 좋아요를 숨긴 게시물이 섞여 있으면 합계가 "최근 4개 합계"가 아니게 된다. 몇 개가 빠졌는지
+  // 같이 세서 화면에 밝혀준다 - 숫자만 보여주면 실제보다 적은 값을 그대로 믿게 된다.
+  const likesHidden = list.filter((p) => !valid(p.likesCount)).length;
+  return {
+    likes: sum((p) => p.likesCount),
+    comments: sum((p) => p.commentsCount),
+    views: videoPosts.reduce((a, p) => a + (p.videoPlayCount ?? p.videoViewCount), 0),
+    videoCount: videoPosts.length,
+    likesHidden,
+    count: list.length,
+  };
 }
 
 function InstagramMonitoringPanel() {
@@ -3863,7 +3922,7 @@ function FashionMarketerDashboard() {
           {view === "instagram" && <InstagramMonitoringPanel />}
           {view === "brand" && <BrandDiagnosisPanel />}
         </main>
-        <footer className="text-center text-[11px] py-4" style={{ color: C.mute }}>ⓘ 무신사 랭킹은 {musinsaDataSource === "live" ? `${panelDateLabel} ${musinsaSelectedTime} 수집분(실시간 데이터)` : "수집 파일을 찾지 못해 표시 중인 샘플(목업) 데이터"}입니다. 29CM 및 키워드/인스타그램 지표는 목업(더미) 데이터입니다.</footer>
+        <footer className="text-center text-[11px] py-4" style={{ color: C.mute }}>ⓘ 무신사 랭킹은 {musinsaDataSource === "live" ? `${panelDateLabel} ${musinsaSelectedTime} 수집분(실시간 데이터)` : "수집 파일을 찾지 못해 표시 중인 샘플(목업) 데이터"}입니다. 인스타그램은 실제 수집 데이터(좋아요·댓글·조회수 포함)이고, 29CM 및 키워드 지표는 목업(더미) 데이터입니다.</footer>
       </div>
       {!!avgRange && (<RangeAverageModal initialRange={avgRange} musinsaIndex={musinsaIndex} availableDates={musinsaDates} onClose={() => setAvgRange(null)} />)}
       {!!cm29AvgRange && (<Cm29RangeAverageModal initialRange={cm29AvgRange} cm29Index={cm29Index} availableDates={cm29Dates} onClose={() => setCm29AvgRange(null)} />)}
