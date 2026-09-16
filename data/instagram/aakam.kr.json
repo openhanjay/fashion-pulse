@@ -2,15 +2,17 @@
   "username": "aakam.kr",
   "name": "AAKAM",
   "profilePicUrl": "data/instagram/images/aakam.kr/profile.jpg",
-  "fetchedAt": "2026-09-15T12:28:44+09:00",
+  "fetchedAt": "2026-09-16T09:33:31+09:00",
   "posts": [
     {
       "url": "https://www.instagram.com/p/DdQ9i9uE80E/",
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/aakam.kr/post_0.jpg",
       "caption": "AAKAM 26FW-2\n\n2026. 09. 16 (Wed)\n\n#aakam #아캄",
-      "likesCount": 910,
+      "likesCount": 1036,
       "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
       "timestamp": "2026-09-14T10:50:02.000Z"
     },
     {
@@ -18,8 +20,10 @@
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/aakam.kr/post_1.jpg",
       "caption": "AAKAM 25FW-2\n\n2026.09.16 (Wed)\n\n#aakam #아캄",
-      "likesCount": 250,
+      "likesCount": 260,
       "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
       "timestamp": "2026-09-13T05:52:41.000Z"
     },
     {
@@ -27,8 +31,10 @@
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/aakam.kr/post_2.jpg",
       "caption": "AAKAM 26FW-2\n\n2026.09.16 (Wed)\n\n#aakam #아캄",
-      "likesCount": 401,
+      "likesCount": 403,
       "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
       "timestamp": "2026-09-12T05:23:02.000Z"
     },
     {
@@ -36,8 +42,10 @@
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/aakam.kr/post_3.jpg",
       "caption": "AAKAM 26FW-2 💘\n\n2026. 09. 16 (Wed)\n\n#aakam #아캄",
-      "likesCount": 1069,
+      "likesCount": 1085,
       "commentsCount": 1,
+      "videoPlayCount": null,
+      "videoViewCount": null,
       "timestamp": "2026-09-11T10:33:37.000Z"
     }
   ]
