@@ -2,7 +2,9 @@
   "username": "untitled.seoul",
   "name": "untitled.seoul",
   "profilePicUrl": "data/instagram/images/untitled.seoul/profile.jpg",
-  "fetchedAt": "2026-09-16T12:24:51+09:00",
+  "followersCount": 5542,
+  "postsCount": null,
+  "fetchedAt": "2026-09-16T13:20:27+09:00",
   "posts": [
     {
       "url": "https://www.instagram.com/p/DbketjgEXxM/",
@@ -47,7 +49,7 @@
       "caption": "Behind the Shoot.\n\nThe making of\nUNTITLED SEOUL Summer 2026.",
       "likesCount": 43,
       "commentsCount": 0,
-      "videoPlayCount": 5517,
+      "videoPlayCount": 5518,
       "videoViewCount": 892,
       "timestamp": "2026-07-30T17:00:48.000Z",
       "id": "DbbLKqnP-T3"

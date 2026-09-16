@@ -2,7 +2,9 @@
   "username": "teket_com",
   "name": "TEKET",
   "profilePicUrl": "data/instagram/images/teket_com/profile.jpg",
-  "fetchedAt": "2026-09-16T12:24:51+09:00",
+  "followersCount": 134916,
+  "postsCount": 685,
+  "fetchedAt": "2026-09-16T13:20:27+09:00",
   "posts": [
     {
       "url": "https://www.instagram.com/p/DdVRSXfkY3M/",
@@ -10,7 +12,7 @@
       "displayUrl": "data/instagram/images/teket_com/DdVRSXfkY3M.jpg",
       "caption": "Plan 18. Inside Curve\n◉3rd Release Available Now ◉\n•\nCheck It Out Now ⤴\n•\nwww.te-ket.com\n•\nTeket Store\n1F, 39, Seongji 1-gil, Mapo-gu, Seoul\n•\nTeket Centum Store\nB2F, 35 Centum nam-daero, Haeundae-gu, Busan",
       "likesCount": null,
-      "commentsCount": 0,
+      "commentsCount": 1,
       "videoPlayCount": null,
       "videoViewCount": null,
       "timestamp": "2026-09-16T03:00:01.000Z",
