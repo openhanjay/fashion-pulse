@@ -3064,20 +3064,6 @@ function InstagramBrandCard({ brand, onRemove, onEdit }) {
               </a>
             ))}
           </div>
-          {(() => {
-            const e = accountEngagement(snapshot.posts);
-            if (!e.likes && !e.comments && !e.views) return null;
-            return (
-              <p className="text-[11px] tabular-nums" style={{ color: C.ink }}>
-                최근 {e.count}개 ·{" "}
-                {e.likesHidden >= e.count
-                  ? (<span style={{ color: C.mute }}>♥ 비공개</span>)
-                  : (<>♥ {compactCount(e.likes)}{e.likesHidden > 0 && (<span style={{ color: C.mute }}> ({e.likesHidden}개 비공개)</span>)}</>)}
-                {" · "}💬 {compactCount(e.comments)}
-                {e.views > 0 && ` · ▶ ${compactCount(e.views)} (영상 ${e.videoCount}개)`}
-              </p>
-            );
-          })()}
           <p className="text-sm font-semibold" style={{ color: C.indigo }}>{summarizeContentDirection(snapshot.posts)}</p>
           {!!fetchedAtLabel && (<p className="text-[10px]" style={{ color: C.mute }}>최근 수집: {fetchedAtLabel}</p>)}
         </>
@@ -3143,39 +3129,27 @@ function compactCount(n) {
   return n.toLocaleString();
 }
 
-/* 게시물 한 건의 참여 지표. 조회수는 영상에만 있어서 없으면 그 칸을 빼고 그린다. */
+/* 게시물 한 건의 참여 지표. 조회수는 영상에만 있어서 없으면 그 칸을 빼고 그린다.
+   계정 단위 합계는 두지 않는다 - 좋아요는 4개 게시물 합인데 조회수는 영상 1개 것이라
+   한 줄에 섞으면 같은 모수인 것처럼 읽힌다. 게시물마다 따로 보여주는 편이 오해가 없다. */
 function PostStats({ post }) {
   const likes = compactCount(post.likesCount);
   const comments = compactCount(post.commentsCount);
   const views = compactCount(post.videoPlayCount ?? post.videoViewCount);
   if (likes === null && comments === null && views === null) return null;
+  const Item = ({ label, value, color }) => (
+    <span className="flex items-center gap-0.5" style={{ color }}>
+      <span style={{ fontSize: 10 }}>{label}</span>
+      <b>{value}</b>
+    </span>
+  );
   return (
-    <div className="flex items-center gap-1.5 text-[10px] tabular-nums" style={{ color: C.mute }}>
-      {views !== null && (<span title="조회수(재생 수)">▶ {views}</span>)}
-      {likes !== null && (<span title="좋아요">♥ {likes}</span>)}
-      {comments !== null && (<span title="댓글">💬 {comments}</span>)}
+    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] tabular-nums leading-tight">
+      {views !== null && (<Item label="▶" value={views} color={C.indigo} />)}
+      {likes !== null && (<Item label="♥" value={likes} color={C.signal} />)}
+      {comments !== null && (<Item label="💬" value={comments} color={C.mute} />)}
     </div>
   );
-}
-
-/* 계정 단위 합계. 게시물마다 흩어진 숫자만 보면 "이 계정이 이번에 잘 나갔나"를 알기 어렵다.
-   조회수는 영상 게시물에만 붙으니 합계도 영상이 있을 때만 의미가 있어서 따로 센다. */
-function accountEngagement(posts) {
-  const list = posts || [];
-  const valid = (v) => typeof v === "number" && v >= 0;
-  const sum = (get) => list.reduce((acc, p) => acc + (valid(get(p)) ? get(p) : 0), 0);
-  const videoPosts = list.filter((p) => valid(p.videoPlayCount ?? p.videoViewCount));
-  // 좋아요를 숨긴 게시물이 섞여 있으면 합계가 "최근 4개 합계"가 아니게 된다. 몇 개가 빠졌는지
-  // 같이 세서 화면에 밝혀준다 - 숫자만 보여주면 실제보다 적은 값을 그대로 믿게 된다.
-  const likesHidden = list.filter((p) => !valid(p.likesCount)).length;
-  return {
-    likes: sum((p) => p.likesCount),
-    comments: sum((p) => p.commentsCount),
-    views: videoPosts.reduce((a, p) => a + (p.videoPlayCount ?? p.videoViewCount), 0),
-    videoCount: videoPosts.length,
-    likesHidden,
-    count: list.length,
-  };
 }
 
 function InstagramMonitoringPanel() {
