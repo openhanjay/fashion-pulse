@@ -30,6 +30,11 @@ jobs:
         with:
           node-version: "20"
 
+      # package.json에 의존성이 생긴 뒤로 이 단계가 없으면 스크래퍼가 모듈을 못 찾고 죽는다
+      # (실제로 sharp 도입 때 인스타 수집이 한 번 실패했다).
+      - name: Install deps
+        run: npm ci
+
       - name: Run musinsa scraper
         run: node scrape_musinsa.js
 
