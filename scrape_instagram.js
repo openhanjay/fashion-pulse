@@ -24,6 +24,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const sharp = require("sharp");
 
 const APIFY_TOKEN = process.env.APIFY_TOKEN;
 const ACTOR = "apify~instagram-scraper";
@@ -40,6 +41,15 @@ const DATA_DIR = path.join(__dirname, "data");
 const IG_ACCOUNTS_FILE = path.join(DATA_DIR, "ig_accounts.json");
 const IG_DATA_DIR = path.join(DATA_DIR, "instagram");
 const IG_IMAGES_DIR = path.join(IG_DATA_DIR, "images");
+const IG_HISTORY_DIR = path.join(IG_DATA_DIR, "history");
+
+// 인스타는 원본 해상도(최대 3000px 이상, 3MB대)를 주는데 대시보드는 150px 남짓 썸네일로 쓴다.
+// 그대로 저장하면 저장소가 수집마다 3MB씩 늘어난다(실측 3,129KB -> 17KB, 182배 차이).
+// 고해상도 화면을 감안해 400px까지만 남긴다.
+const IMAGE_MAX_PX = 400;
+const IMAGE_QUALITY = 72;
+// 이 기간 넘게 피드에서 안 보인 게시물은 이미지를 지운다. JSON 기록은 가벼워서 남겨둔다.
+const HISTORY_KEEP_DAYS = 90;
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -79,6 +89,14 @@ async function callApify(body) {
   });
   if (!res.ok) throw new Error(`Apify HTTP ${res.status}: ${await res.text()}`);
   return res.json();
+}
+
+/* 게시물 URL(.../p/DdQVB1flEF2/)에서 고유 ID를 뽑는다. 이미지 파일명과 히스토리 키로 쓴다.
+   기존엔 post_0.jpg처럼 순번으로 저장해서 피드가 한 칸 밀릴 때마다 같은 사진을 다른 이름으로
+   다시 받았다. ID로 두면 한 번 받은 사진은 다시 받지 않는다. */
+function postIdOf(url) {
+  const m = String(url || "").match(/\/(?:p|reel|tv)\/([A-Za-z0-9_-]+)/);
+  return m ? m[1] : null;
 }
 
 function mapPost(item) {
@@ -133,17 +151,21 @@ async function fetchProfilePic(accountUrl) {
   }
 }
 
-// 원격 이미지 URL을 받아 destPath에 저장한다. 실패하면 null(호출부에서 원본 필드를 그냥 비움).
+// 원격 이미지 URL을 받아 축소해서 destPath에 저장한다. 실패하면 false(호출부에서 필드를 비움).
 async function downloadImage(url, destPath) {
   if (!url) return false;
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const buffer = Buffer.from(await res.arrayBuffer());
-    fs.writeFileSync(destPath, buffer);
+    const resized = await sharp(buffer)
+      .resize(IMAGE_MAX_PX, IMAGE_MAX_PX, { fit: "inside", withoutEnlargement: true })
+      .jpeg({ quality: IMAGE_QUALITY })
+      .toBuffer();
+    fs.writeFileSync(destPath, resized);
     return true;
   } catch (err) {
-    console.error(`이미지 다운로드 실패 (${url}):`, err.message);
+    console.error(`이미지 처리 실패 (${url}):`, err.message);
     return false;
   }
 }
@@ -154,20 +176,80 @@ async function downloadImage(url, destPath) {
 // 그대로 타게 한다. 매번 그 계정 이미지 폴더를 통째로 비우고 새로 받아서 오래된 파일이 안 쌓인다.
 async function localizeImages(username, profilePicUrl, posts) {
   const dir = path.join(IG_IMAGES_DIR, username);
-  fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
 
+  // 프로필 사진은 바뀔 수 있으니 매번 새로 받는다(한 장이라 부담 없음).
   const localProfilePicUrl = (await downloadImage(profilePicUrl, path.join(dir, "profile.jpg")))
     ? `data/instagram/images/${username}/profile.jpg`
     : "";
 
   const localPosts = [];
-  for (let i = 0; i < posts.length; i++) {
-    const post = posts[i];
-    const ok = await downloadImage(post.displayUrl, path.join(dir, `post_${i}.jpg`));
-    localPosts.push({ ...post, displayUrl: ok ? `data/instagram/images/${username}/post_${i}.jpg` : "" });
+  for (const post of posts) {
+    const id = postIdOf(post.url);
+    if (!id) { localPosts.push({ ...post, displayUrl: "" }); continue; }
+    const rel = `data/instagram/images/${username}/${id}.jpg`;
+    const abs = path.join(dir, `${id}.jpg`);
+    // 같은 게시물이 며칠씩 피드에 머무르는 게 보통이라, 이미 받아둔 건 다시 받지 않는다.
+    const ok = fs.existsSync(abs) || (await downloadImage(post.displayUrl, abs));
+    localPosts.push({ ...post, id, displayUrl: ok ? rel : "" });
   }
   return { localProfilePicUrl, localPosts };
+}
+
+/* 지나간 게시물을 계정별로 모아둔다. 현재 피드 파일은 최근 4개만 담고 매번 덮어쓰기 때문에,
+   밀려난 게시물은 git 이력에만 남고 화면에서는 볼 수가 없었다.
+   같은 게시물이 여러 날 피드에 있으므로 ID로 합치고, 수집할 때마다 그날 지표를 metrics에
+   한 줄씩 남긴다 - 릴스가 며칠 만에 조회수가 얼마나 붙었는지 볼 수 있다. */
+function mergeHistory(username, posts, todayKey) {
+  const file = path.join(IG_HISTORY_DIR, `${username}.json`);
+  let store = {};
+  if (fs.existsSync(file)) {
+    try { store = JSON.parse(fs.readFileSync(file, "utf8")).posts || {}; } catch { store = {}; }
+  }
+  for (const post of posts) {
+    const id = post.id || postIdOf(post.url);
+    if (!id) continue;
+    const prev = store[id];
+    const metrics = prev?.metrics || [];
+    const firstSeen = prev?.firstSeen || todayKey;
+    const snap = { d: todayKey, l: post.likesCount, c: post.commentsCount, v: post.videoPlayCount ?? null };
+    const last = metrics[metrics.length - 1];
+    // 하루에 여러 번 돌아도 그날 줄은 하나만 두고 최신 값으로 갱신한다.
+    if (!last || last.d !== snap.d) metrics.push(snap);
+    else Object.assign(last, snap);
+    store[id] = { ...post, id, firstSeen, lastSeen: todayKey, metrics };
+  }
+  return { file, store };
+}
+
+/* HISTORY_KEEP_DAYS 넘게 피드에서 안 보인 게시물의 이미지를 지운다. JSON 한 줄은 남겨서
+   "그때 이런 게 있었다"는 기록과 지표 추이는 유지하고, 용량을 먹는 이미지만 정리한다. */
+function pruneOldImages(username, store, todayKey) {
+  const cutoff = new Date(todayKey);
+  cutoff.setDate(cutoff.getDate() - HISTORY_KEEP_DAYS);
+  const dir = path.join(IG_IMAGES_DIR, username);
+  let removed = 0;
+  for (const [id, row] of Object.entries(store)) {
+    if (!row.lastSeen || new Date(row.lastSeen) >= cutoff) continue;
+    const abs = path.join(dir, `${id}.jpg`);
+    if (fs.existsSync(abs)) { fs.rmSync(abs, { force: true }); removed += 1; }
+    row.displayUrl = "";
+  }
+  return removed;
+}
+
+/* 히스토리에 없는 이미지 파일을 지운다. 순번 이름(post_0.jpg)으로 저장하던 시절의 잔재와,
+   계정에서 빠진 게시물의 이미지가 여기서 정리된다. */
+function pruneStrayImages(username, store) {
+  const dir = path.join(IG_IMAGES_DIR, username);
+  if (!fs.existsSync(dir)) return 0;
+  let removed = 0;
+  for (const f of fs.readdirSync(dir)) {
+    if (f === "profile.jpg" || !f.endsWith(".jpg")) continue;
+    const id = f.slice(0, -4);
+    if (!store[id]) { fs.rmSync(path.join(dir, f), { force: true }); removed += 1; }
+  }
+  return removed;
 }
 
 // 대시보드에서 계정을 삭제해도 data/instagram/{username}.json이나 이미지 폴더는 자동으로
@@ -175,13 +257,14 @@ async function localizeImages(username, profilePicUrl, posts) {
 // 없는 파일/폴더를 매 실행마다 정리해서 저장소에 죽은 데이터가 안 쌓이게 한다.
 function removeOrphanedFiles(accounts) {
   const validUsernames = new Set(accounts.map((a) => a.username));
-  if (fs.existsSync(IG_DATA_DIR)) {
-    fs.readdirSync(IG_DATA_DIR)
+  for (const dir of [IG_DATA_DIR, IG_HISTORY_DIR]) {
+    if (!fs.existsSync(dir)) continue;
+    fs.readdirSync(dir)
       .filter((f) => f.endsWith(".json"))
       .forEach((f) => {
         const username = f.slice(0, -".json".length);
         if (!validUsernames.has(username)) {
-          fs.rmSync(path.join(IG_DATA_DIR, f), { force: true });
+          fs.rmSync(path.join(dir, f), { force: true });
           console.log(`정리: 삭제된 계정의 남은 파일 제거 (${f})`);
         }
       });
@@ -206,8 +289,10 @@ async function main() {
   }
   if (!fs.existsSync(IG_DATA_DIR)) fs.mkdirSync(IG_DATA_DIR, { recursive: true });
   if (!fs.existsSync(IG_IMAGES_DIR)) fs.mkdirSync(IG_IMAGES_DIR, { recursive: true });
+  if (!fs.existsSync(IG_HISTORY_DIR)) fs.mkdirSync(IG_HISTORY_DIR, { recursive: true });
 
   const now = new Date();
+  const todayKey = kstTimestamp(now).slice(0, 10); // YYYY-MM-DD (KST)
   for (const account of accounts) {
     console.log(`수집 중: ${account.username} (${account.name}) ...`);
     try {
@@ -221,7 +306,18 @@ async function main() {
         posts: localPosts,
       };
       fs.writeFileSync(path.join(IG_DATA_DIR, `${account.username}.json`), JSON.stringify(result, null, 2), "utf-8");
-      console.log(`완료: ${account.username} (게시물 ${posts.length}개)`);
+
+      // 지나간 게시물까지 볼 수 있게 히스토리에 누적하고, 오래된 이미지와 잔재를 정리한다.
+      const { file, store } = mergeHistory(account.username, localPosts, todayKey);
+      const aged = pruneOldImages(account.username, store, todayKey);
+      const stray = pruneStrayImages(account.username, store);
+      // 게시물 하나당 한 줄로 써서 git이 델타만 저장하게 한다(매일 커밋되는 파일이라).
+      const ids = Object.keys(store).sort();
+      const lines = ids.map((id) => `  ${JSON.stringify(id)}: ${JSON.stringify(store[id])}`);
+      fs.writeFileSync(file, `{\n "username": ${JSON.stringify(account.username)},\n "updatedAt": ${JSON.stringify(todayKey)},\n "posts": {\n${lines.join(",\n")}\n }\n}\n`, "utf-8");
+
+      console.log(`완료: ${account.username} (피드 ${posts.length}개 / 누적 ${ids.length}개` +
+        `${aged ? `, 오래된 이미지 ${aged}개 정리` : ""}${stray ? `, 잔재 ${stray}개 정리` : ""})`);
     } catch (err) {
       console.error(`수집 실패 (${account.username}):`, err.message);
     }

@@ -2994,6 +2994,7 @@ function InstagramBrandCard({ brand, onRemove, onEdit }) {
   const [snapshot, setSnapshot] = useState(undefined); // undefined=불러오는 중, null=수집 이력 없음, {...}=최신 스냅샷
   const [imgError, setImgError] = useState(false);
   const [postImgErrors, setPostImgErrors] = useState({}); // 게시물 썸네일별 로드 실패 여부 (index -> true)
+  const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -3027,6 +3028,7 @@ function InstagramBrandCard({ brand, onRemove, onEdit }) {
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
+          <button onClick={() => setShowHistory(true)} className="text-[11px] font-bold" style={{ color: C.mute }}>과거 피드</button>
           <button onClick={onEdit} className="text-[11px] font-bold" style={{ color: C.indigo }}>수정</button>
           <button onClick={onRemove} className="text-xs font-bold" style={{ color: C.mute }}>×</button>
         </div>
@@ -3068,6 +3070,7 @@ function InstagramBrandCard({ brand, onRemove, onEdit }) {
           {!!fetchedAtLabel && (<p className="text-[10px]" style={{ color: C.mute }}>최근 수집: {fetchedAtLabel}</p>)}
         </>
       )}
+      {showHistory && (<PostHistoryModal account={brand} onClose={() => setShowHistory(false)} />)}
     </div>
   );
 }
@@ -3148,6 +3151,92 @@ function PostStats({ post }) {
       {views !== null && (<Item label="▶" value={views} color={C.indigo} />)}
       {likes !== null && (<Item label="♥" value={likes} color={C.signal} />)}
       {comments !== null && (<Item label="💬" value={comments} color={C.mute} />)}
+    </div>
+  );
+}
+
+/* 지나간 게시물 보기. 현재 피드 파일은 최근 4개만 담고 매번 덮어쓰지만, 수집기가
+   data/instagram/history/{username}.json에 본 적 있는 게시물을 전부 쌓아둔다.
+   같은 게시물의 지표가 날짜별로 남아 있어서, 릴스가 며칠 만에 조회수가 얼마나 붙었는지도 보인다. */
+function PostHistoryModal({ account, onClose }) {
+  const [data, setData] = useState(undefined); // undefined=로딩중, null=없음
+
+  useEffect(() => {
+    fetch(`data/instagram/history/${account.username}.json?t=${Date.now()}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => setData(j || null))
+      .catch(() => setData(null));
+  }, [account.username]);
+
+  // 최근에 본 것부터. lastSeen이 같으면 게시일이 최신인 쪽이 앞.
+  const posts = useMemo(() => {
+    if (!data?.posts) return [];
+    return Object.values(data.posts).sort((a, b) =>
+      String(b.lastSeen || "").localeCompare(String(a.lastSeen || "")) ||
+      String(b.timestamp || "").localeCompare(String(a.timestamp || ""))
+    );
+  }, [data]);
+
+  /* 지표가 이틀 이상 쌓였으면 "처음 -> 마지막"으로 증가폭을 보여준다. */
+  const growth = (metrics, key) => {
+    const vals = (metrics || []).map((m) => m[key]).filter((v) => typeof v === "number" && v >= 0);
+    if (vals.length < 2 || vals[0] === vals[vals.length - 1]) return null;
+    return `${compactCount(vals[0])} → ${compactCount(vals[vals.length - 1])}`;
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(23,24,28,0.55)" }} onClick={onClose}>
+      <div className="rounded-2xl w-full max-w-5xl max-h-[92vh] overflow-y-auto p-6" style={{ background: C.white }} onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-bold" style={{ color: C.ink }}>{account.name} 과거 피드</h3>
+            <p className="text-xs" style={{ color: C.mute }}>
+              @{account.username}
+              {posts.length > 0 && ` · 수집된 게시물 ${posts.length}개`}
+            </p>
+          </div>
+          <button onClick={onClose} className="text-sm font-bold px-2 py-1 rounded-full" style={{ color: C.mute }}>×</button>
+        </div>
+
+        {data === undefined ? (
+          <div className="flex items-center justify-center rounded-xl text-sm font-medium" style={{ height: 160, background: C.paper, color: C.mute }}>불러오는 중...</div>
+        ) : !posts.length ? (
+          <div className="flex items-center justify-center rounded-xl text-sm font-medium text-center px-6" style={{ height: 160, background: C.paper, color: C.mute }}>
+            아직 쌓인 기록이 없어요. 다음 수집(매일 09:00)부터 지나간 게시물이 여기에 모입니다.
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {posts.map((post) => {
+              const likeGrowth = growth(post.metrics, "l");
+              const viewGrowth = growth(post.metrics, "v");
+              return (
+                <a key={post.id} href={post.url} target="_blank" rel="noreferrer" className="flex flex-col gap-1">
+                  <div className="rounded-lg overflow-hidden aspect-square flex items-center justify-center" style={{ background: C.paper }}>
+                    {post.displayUrl ? (
+                      <img src={post.displayUrl} alt="" loading="lazy" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
+                    ) : (
+                      // 90일이 지나면 이미지는 지우고 기록만 남긴다
+                      <span className="text-[10px] text-center px-2" style={{ color: C.mute }}>이미지 보관 기간 지남</span>
+                    )}
+                  </div>
+                  <span className="text-[10px] tabular-nums" style={{ color: C.mute }}>
+                    {(post.timestamp || post.firstSeen || "").slice(0, 10)}
+                  </span>
+                  <PostStats post={post} />
+                  {(likeGrowth || viewGrowth) && (
+                    <span className="text-[10px] tabular-nums" style={{ color: C.indigo }}>
+                      {viewGrowth ? `▶ ${viewGrowth}` : `♥ ${likeGrowth}`}
+                    </span>
+                  )}
+                  {!!post.caption && (
+                    <span className="text-[10px] leading-snug" style={{ color: C.mute }}>{captionPreview(post.caption)}</span>
+                  )}
+                </a>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
