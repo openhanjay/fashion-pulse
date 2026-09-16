@@ -3066,6 +3066,26 @@ function InstagramBrandCard({ brand, onRemove, onEdit }) {
               </a>
             ))}
           </div>
+          {(() => {
+            const sum = accountSummary(snapshot);
+            if (!sum) return null;
+            return (
+              <p className="text-[11px] tabular-nums flex flex-wrap items-center gap-x-2" style={{ color: C.ink }}>
+                <span>
+                  영상 <b style={{ color: sum.videoCount ? C.indigo : C.mute }}>{sum.videoCount}/{sum.total}</b>
+                  <span style={{ color: C.mute }}> ({Math.round(sum.videoShare)}%)</span>
+                </span>
+                {sum.engagement !== null ? (
+                  <span title={`최근 ${sum.engagementBase}개 평균 (좋아요+댓글) / 팔로워 ${sum.followers.toLocaleString()}`}>
+                    참여율 <b style={{ color: C.signal }}>{sum.engagement.toFixed(2)}%</b>
+                  </span>
+                ) : (
+                  // 팔로워 수는 다음 수집부터 들어온다
+                  <span style={{ color: C.mute }}>참여율 집계 대기</span>
+                )}
+              </p>
+            );
+          })()}
           <p className="text-sm font-semibold" style={{ color: C.indigo }}>{summarizeContentDirection(snapshot.posts)}</p>
           {!!fetchedAtLabel && (<p className="text-[10px]" style={{ color: C.mute }}>최근 수집: {fetchedAtLabel}</p>)}
         </>
@@ -3153,6 +3173,40 @@ function PostStats({ post }) {
       {comments !== null && (<Item label="💬" value={comments} color={C.mute} />)}
     </div>
   );
+}
+
+/* 계정 단위 요약 두 가지.
+
+   영상 비중: 인스타는 이미지 게시물에 공개 조회수를 안 매기고 영상에만 매긴다. 그래서
+   "조회수가 몇인가"보다 "이 브랜드가 영상에 얼마나 힘을 주는가"가 경쟁사끼리 비교 가능한
+   신호다. 릴스 비중이 높은 계정이 요즘 도달이 잘 나온다.
+
+   참여율: 좋아요 절대 수치는 계정 크기에 좌우돼서 브랜드끼리 비교가 안 된다(팔로워 10만
+   계정의 ♥1,000과 팔로워 1천 계정의 ♥500은 후자가 훨씬 잘한 것). 팔로워로 나눠 체급을
+   맞춘다. 좋아요를 숨긴 게시물은 분자에서 빼고, 분모의 게시물 수에서도 뺀다. */
+function accountSummary(snapshot) {
+  const posts = snapshot?.posts || [];
+  if (!posts.length) return null;
+  const isVideo = (p) => p.type === "Video" || typeof (p.videoPlayCount ?? p.videoViewCount) === "number";
+  const videoCount = posts.filter(isVideo).length;
+
+  const followers = typeof snapshot.followersCount === "number" && snapshot.followersCount > 0
+    ? snapshot.followersCount : null;
+  const valid = (v) => typeof v === "number" && v >= 0;
+  const counted = posts.filter((p) => valid(p.likesCount));
+  let engagement = null;
+  if (followers && counted.length) {
+    const sum = counted.reduce((a, p) => a + p.likesCount + (valid(p.commentsCount) ? p.commentsCount : 0), 0);
+    engagement = (sum / counted.length / followers) * 100;
+  }
+  return {
+    videoCount,
+    total: posts.length,
+    videoShare: (videoCount / posts.length) * 100,
+    followers,
+    engagement,
+    engagementBase: counted.length,
+  };
 }
 
 /* 지나간 게시물 보기. 현재 피드 파일은 최근 4개만 담고 매번 덮어쓰지만, 수집기가

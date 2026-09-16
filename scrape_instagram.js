@@ -140,14 +140,21 @@ async function fetchPosts(accountUrl) {
 // 프로필 사진은 "posts" 모드 응답엔 안 들어있어서 "details" 모드로 계정당 한 번 더(가볍게) 조회한다.
 // 액터 응답 형태가 문서화된 것과 다르거나 실패해도 전체 수집은 계속 진행되게 실패를 흡수한다
 // (대시보드는 profilePicUrl이 없으면 기존 이니셜 아이콘으로 대체 표시함).
-async function fetchProfilePic(accountUrl) {
+async function fetchProfile(accountUrl) {
   try {
     const items = await callApify({ directUrls: [accountUrl], resultsType: "details", resultsLimit: 1 });
-    const info = items[0];
-    return info?.profilePicUrlHD || info?.profilePicUrl || null;
+    const info = items[0] || {};
+    // 팔로워 수는 참여율(좋아요+댓글 / 팔로워) 계산에 쓴다. 좋아요 절대 수치는 계정 크기에
+    // 좌우돼서 브랜드끼리 비교가 안 되는데, 팔로워로 나누면 체급을 맞춰 볼 수 있다.
+    // 이 details 응답에 원래 들어있던 값이라 Apify 호출이 늘지는 않는다.
+    return {
+      picUrl: info.profilePicUrlHD || info.profilePicUrl || null,
+      followersCount: typeof info.followersCount === "number" ? info.followersCount : null,
+      postsCount: typeof info.postsCount === "number" ? info.postsCount : null,
+    };
   } catch (err) {
-    console.error(`프로필 사진 조회 실패 (${accountUrl}):`, err.message);
-    return null;
+    console.error(`프로필 조회 실패 (${accountUrl}):`, err.message);
+    return { picUrl: null, followersCount: null, postsCount: null };
   }
 }
 
@@ -296,12 +303,14 @@ async function main() {
   for (const account of accounts) {
     console.log(`수집 중: ${account.username} (${account.name}) ...`);
     try {
-      const [posts, profilePicUrl] = await Promise.all([fetchPosts(account.url), fetchProfilePic(account.url)]);
-      const { localProfilePicUrl, localPosts } = await localizeImages(account.username, profilePicUrl, posts);
+      const [posts, profile] = await Promise.all([fetchPosts(account.url), fetchProfile(account.url)]);
+      const { localProfilePicUrl, localPosts } = await localizeImages(account.username, profile.picUrl, posts);
       const result = {
         username: account.username,
         name: account.name,
         profilePicUrl: localProfilePicUrl,
+        followersCount: profile.followersCount,
+        postsCount: profile.postsCount,
         fetchedAt: kstTimestamp(now),
         posts: localPosts,
       };
