@@ -1,5 +1,5 @@
 {
-"vivalavida":{"brandName":"비바라비다","total":422,"snapshotDays":43,"updatedAt":"2026-09-17","items":[
+"vivalavida":{"brandName":"비바라비다","total":423,"snapshotDays":43,"updatedAt":"2026-09-17","items":[
   {"id":"7103387","name":"Seestern 롱 슬리브 티셔츠","price":36900,"normalPrice":49900,"discount":26,"reviews":6,"reviewScore":4.8,"soldOut":false,"gender":"공용"},
   {"id":"7103634","name":"Herd 롱 슬리브 티셔츠","price":36900,"normalPrice":49900,"discount":26,"reviews":3,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7107017","name":"[기모선택] Rhythm 헤비테리 후드","price":64900,"normalPrice":93900,"discount":31,"reviews":7,"reviewScore":5,"soldOut":false,"gender":"공용","rankedDays":3},
@@ -39,7 +39,7 @@
   {"id":"6852277","name":"Unstable 반팔 티셔츠","price":30730,"normalPrice":39900,"discount":23,"reviews":4,"reviewScore":4.5,"soldOut":false,"gender":"공용"},
   {"id":"6821494","name":"Triad 반팔 티셔츠","price":30730,"normalPrice":39900,"discount":23,"reviews":10,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
   {"id":"6637807","name":"None 링거 반팔 티셔츠","price":39970,"normalPrice":51900,"discount":23,"reviews":7,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
-  {"id":"6108783","name":"Chaser 링거 반팔 티셔츠","price":32830,"normalPrice":46900,"discount":30,"reviews":340,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":11,"bestRank":35},
+  {"id":"6108783","name":"Chaser 링거 반팔 티셔츠","price":32830,"normalPrice":46900,"discount":30,"reviews":341,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":11,"bestRank":35},
   {"id":"6109652","name":"Sunset 반팔 티셔츠","price":30900,"normalPrice":39900,"discount":23,"reviews":89,"reviewScore":4.8,"soldOut":false,"gender":"공용"},
   {"id":"5369176","name":"Saddie 롱 슬리브 티셔츠","price":32780,"normalPrice":44900,"discount":27,"reviews":63,"reviewScore":4.7,"soldOut":false,"gender":"공용","rankedDays":1},
   {"id":"6108801","name":"Seastar 링거 반팔 티셔츠","price":32830,"normalPrice":46900,"discount":30,"reviews":839,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":16,"bestRank":81},
@@ -421,6 +421,7 @@
   {"id":"7132615","name":"와이드 스웻 팬츠","price":47900,"normalPrice":63900,"discount":25,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
   {"id":"6487397","name":"텐셀 오프숄더 롱슬리브 티셔츠","price":50750,"normalPrice":65900,"discount":23,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"여성"},
   {"id":"5418001","name":"미니 체크 바람막이","price":78770,"normalPrice":107900,"discount":27,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
-  {"id":"7341787","name":"[기모선택] Asus 자수 헤비테리 후드 집업","price":75900,"normalPrice":96900,"discount":22,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"}
+  {"id":"7341787","name":"[기모선택] Asus 자수 헤비테리 후드 집업","price":75900,"normalPrice":96900,"discount":22,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
+  {"id":"6021974","name":"Risk 우먼 집업 후디","price":61530,"normalPrice":79900,"discount":23,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"여성"}
 ]}
 }
