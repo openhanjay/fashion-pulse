@@ -2,16 +2,28 @@
   "username": "vlvd_official",
   "name": "VIVA LA VIDA",
   "profilePicUrl": "data/instagram/images/vlvd_official/profile.jpg",
-  "followersCount": 4747,
-  "postsCount": 275,
-  "fetchedAt": "2026-09-17T12:30:31+09:00",
+  "followersCount": 4753,
+  "postsCount": 276,
+  "fetchedAt": "2026-09-18T12:16:18+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DdYReUfibdd/",
+      "type": "Video",
+      "displayUrl": "data/instagram/images/vlvd_official/DdYReUfibdd.jpg",
+      "caption": "날씨 좋은날 (*°▽°*)\n\n[Rhythm Heavy Terry Hoodie]\n리듬 후드 티셔츠\n\n- Size : M / L / XL / 2XL\n- Color : White Melange / Melange / Yellow / Blue / Navy / Burgundy / Brown / Black\n\nVLVD.kr / MUSINSA / 29CM\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
+      "likesCount": 2,
+      "commentsCount": 0,
+      "videoPlayCount": 598,
+      "videoViewCount": 59,
+      "timestamp": "2026-09-17T07:01:07.000Z",
+      "id": "DdYReUfibdd"
+    },
     {
       "url": "https://www.instagram.com/p/DdVw7xllFGZ/",
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/vlvd_official/DdVw7xllFGZ.jpg",
       "caption": "[Sunburst Heavy Terry Hoodie]\n썬버스트 후드 티셔츠\n\n- Size : M / L / XL / 2XL\n- Color : White Melange / Melange / Yellow / Blue / Navy / Burgundy / Brown / Black\n\nVLVD.kr / MUSINSA / 29CM\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
-      "likesCount": 5,
+      "likesCount": 6,
       "commentsCount": 0,
       "videoPlayCount": null,
       "videoViewCount": null,
@@ -41,18 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-09-13T00:45:43.000Z",
       "id": "DdNTgegAdwY"
-    },
-    {
-      "url": "https://www.instagram.com/p/DdIn0kSCN3Y/",
-      "type": "Video",
-      "displayUrl": "data/instagram/images/vlvd_official/DdIn0kSCN3Y.jpg",
-      "caption": "[OUR ROOM @ OUR SPOT] ▰ 0⊙0 ▰\n▰ Still Motion Archive ▰\n• Shft the view, redefine the line\n• Available Now\n• www.VLVD.KR",
-      "likesCount": 6,
-      "commentsCount": 0,
-      "videoPlayCount": 992,
-      "videoViewCount": 173,
-      "timestamp": "2026-09-11T05:13:31.000Z",
-      "id": "DdIn0kSCN3Y"
     }
   ]
 }
