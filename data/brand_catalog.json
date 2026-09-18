@@ -1,5 +1,5 @@
 {
-"vivalavida":{"brandName":"비바라비다","total":423,"snapshotDays":44,"updatedAt":"2026-09-17","items":[
+"vivalavida":{"brandName":"비바라비다","total":423,"snapshotDays":44,"updatedAt":"2026-09-18","items":[
   {"id":"7103387","name":"Seestern 롱 슬리브 티셔츠","price":36900,"normalPrice":49900,"discount":26,"reviews":6,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":1},
   {"id":"7103634","name":"Herd 롱 슬리브 티셔츠","price":36900,"normalPrice":49900,"discount":26,"reviews":3,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7107017","name":"[기모선택] Rhythm 헤비테리 후드","price":64900,"normalPrice":93900,"discount":31,"reviews":7,"reviewScore":5,"soldOut":false,"gender":"공용","rankedDays":3},
@@ -20,7 +20,7 @@
   {"id":"7124768","name":"[기모선택] Bony 헤비테리 후드 집업","price":72900,"normalPrice":96900,"discount":25,"reviews":6,"reviewScore":4.7,"soldOut":false,"gender":"공용","rankedDays":1},
   {"id":"7120158","name":"[기모선택] Cockle 헤비테리 맨투맨","price":59900,"normalPrice":79900,"discount":25,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"6898250","name":"Hope 우먼 슬림 반팔 티셔츠","price":37900,"normalPrice":48900,"discount":22,"reviews":3,"reviewScore":4.7,"soldOut":false,"gender":"여성"},
-  {"id":"7103609","name":"Muted 레글런 롱 슬리브 티셔츠","price":36900,"normalPrice":49900,"discount":26,"reviews":3,"reviewScore":5,"soldOut":false,"gender":"공용"},
+  {"id":"7103609","name":"Muted 레글런 롱 슬리브 티셔츠","price":36900,"normalPrice":49900,"discount":26,"reviews":4,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"6805563","name":"Ascii 반팔 티셔츠","price":30730,"normalPrice":39900,"discount":23,"reviews":15,"reviewScore":4.3,"soldOut":false,"gender":"공용"},
   {"id":"6887167","name":"Equus 슬림 반팔 티셔츠","price":37900,"normalPrice":48900,"discount":22,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"여성"},
   {"id":"7105810","name":"[기모선택] Softly 헤비테리 후드","price":64900,"normalPrice":93900,"discount":31,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
