@@ -2,19 +2,31 @@
   "username": "vlvd_official",
   "name": "VIVA LA VIDA",
   "profilePicUrl": "data/instagram/images/vlvd_official/profile.jpg",
-  "followersCount": 4753,
-  "postsCount": 276,
-  "fetchedAt": "2026-09-18T12:16:18+09:00",
+  "followersCount": 4759,
+  "postsCount": 277,
+  "fetchedAt": "2026-09-19T12:12:41+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DdaswSwlEC4/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/vlvd_official/DdaswSwlEC4.jpg",
+      "caption": "▰OUR ROOM @ OUR SPOT▰\n\nNo address, no sign, no hours. just a room we kept coming back to until it had our name on it.\nnobody remembers who found it first. the lamp was already there, and so werethe chairs.\nwe only added the mess. you know where.\n\n▰ Still Motion Archive ▰\n• Shft the view, redefine the line\n• Available Now\n• www.VLVD.KR",
+      "likesCount": 5,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-09-18T05:36:27.000Z",
+      "id": "DdaswSwlEC4"
+    },
     {
       "url": "https://www.instagram.com/p/DdYReUfibdd/",
       "type": "Video",
       "displayUrl": "data/instagram/images/vlvd_official/DdYReUfibdd.jpg",
       "caption": "날씨 좋은날 (*°▽°*)\n\n[Rhythm Heavy Terry Hoodie]\n리듬 후드 티셔츠\n\n- Size : M / L / XL / 2XL\n- Color : White Melange / Melange / Yellow / Blue / Navy / Burgundy / Brown / Black\n\nVLVD.kr / MUSINSA / 29CM\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
-      "likesCount": 2,
+      "likesCount": 3,
       "commentsCount": 0,
-      "videoPlayCount": 598,
-      "videoViewCount": 59,
+      "videoPlayCount": 679,
+      "videoViewCount": 71,
       "timestamp": "2026-09-17T07:01:07.000Z",
       "id": "DdYReUfibdd"
     },
@@ -35,24 +47,12 @@
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/vlvd_official/DdQVB1flEF2.jpg",
       "caption": "26FW OUR ROOM @ OUR SPOT ◡̈⋆*\n\nStyling.1\n⊹ 버튼 후리스 (발매 예정)\n\nStyling.2\n⊹ Rhythm 후드 티셔츠\n⊹ 커브드 와이드 데님 팬츠\n\nStyling.3\n⊹ 퀄팅 경량패딩 (발매 예정)\n\nStyling.4\n⊹ Shatter 후드 롱 슬리브\n\nStyling.5\n⊹ Reason 레글런 롱 슬리브 티셔츠\n⊹ 후드 롱 슬리브\n\nStyling.6\n⊹ Untamed 후드 롱 슬리브 티셔츠\n⊹ Opens 레글런 롱 슬리브 티셔츠\n\nStyling.7\n⊹ Selfhood 헤비테리 후드\n⊹ 커브드 와이드 데님 팬츠\n⊹ 로우 와이드 버뮤다 데님 팬츠",
-      "likesCount": 8,
+      "likesCount": 9,
       "commentsCount": 0,
       "videoPlayCount": null,
       "videoViewCount": null,
       "timestamp": "2026-09-14T04:56:43.000Z",
       "id": "DdQVB1flEF2"
-    },
-    {
-      "url": "https://www.instagram.com/p/DdNTgegAdwY/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/vlvd_official/DdNTgegAdwY.jpg",
-      "caption": "26FW OUR ROOM @ OUR SPOT ◡̈⋆*\n\nStyling.1\n⊹ Sunburst 후드 티셔츠\n⊹ 스트라이프 롱슬리브 후드 티셔츠\n\nStyling.2\n⊹ Seeker 레글런 롱 슬리브 티셔츠\n⊹ Things 에코백\n\nStyling.3\n⊹ 후드 롱 슬리브 티셔츠\n⊹ Muted 레글런 롱 슬리브 티셔츠\n⊹ 호보백 (발매 예정)\n\nStyling.4\n⊹ 버튼 후리스 (발매예정)\n⊹ Enough 에코백",
-      "likesCount": 5,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-09-13T00:45:43.000Z",
-      "id": "DdNTgegAdwY"
     }
   ]
 }
