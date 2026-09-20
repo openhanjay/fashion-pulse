@@ -1,5 +1,5 @@
 {
-"vivalavida":{"brandName":"비바라비다","total":423,"snapshotDays":46,"updatedAt":"2026-09-19","items":[
+"vivalavida":{"brandName":"비바라비다","total":423,"snapshotDays":46,"updatedAt":"2026-09-20","items":[
   {"id":"7103387","name":"Seestern 롱 슬리브 티셔츠","price":36900,"normalPrice":49900,"discount":26,"reviews":8,"reviewScore":4.6,"soldOut":false,"gender":"공용","rankedDays":1},
   {"id":"7103634","name":"Herd 롱 슬리브 티셔츠","price":36900,"normalPrice":49900,"discount":26,"reviews":3,"reviewScore":5,"soldOut":false,"gender":"공용","rankedDays":1},
   {"id":"7103608","name":"Measuer 레글런 롱 슬리브 티셔츠","price":36900,"normalPrice":49900,"discount":26,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
@@ -29,7 +29,7 @@
   {"id":"6751888","name":"Until 반팔 티셔츠","price":30730,"normalPrice":39900,"discount":23,"reviews":17,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
   {"id":"7103610","name":"Opens 레글런 롱 슬리브 티셔츠","price":36900,"normalPrice":49900,"discount":26,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
   {"id":"6751894","name":"Post 반팔 티셔츠","price":30730,"normalPrice":39900,"discount":23,"reviews":8,"reviewScore":4.4,"soldOut":false,"gender":"공용"},
-  {"id":"6722998","name":"Movement 반팔 티셔츠","price":30730,"normalPrice":39900,"discount":23,"reviews":32,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":2},
+  {"id":"6722998","name":"Movement 반팔 티셔츠","price":30730,"normalPrice":39900,"discount":23,"reviews":33,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":2},
   {"id":"7106130","name":"[기모선택] Square 헤비테리 후드","price":64900,"normalPrice":93900,"discount":31,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7106820","name":"[기모선택] Shifter 헤비테리 후드","price":64900,"normalPrice":93900,"discount":31,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7171348","name":"Thunder 스트라이프 후드 롱 슬리브 티셔츠","price":51900,"normalPrice":69900,"discount":26,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
@@ -40,7 +40,7 @@
   {"id":"6109652","name":"Sunset 반팔 티셔츠","price":30900,"normalPrice":39900,"discount":23,"reviews":89,"reviewScore":4.8,"soldOut":false,"gender":"공용"},
   {"id":"6852277","name":"Unstable 반팔 티셔츠","price":30730,"normalPrice":39900,"discount":23,"reviews":4,"reviewScore":4.5,"soldOut":false,"gender":"공용"},
   {"id":"6637807","name":"None 링거 반팔 티셔츠","price":39970,"normalPrice":51900,"discount":23,"reviews":7,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
-  {"id":"6108783","name":"Chaser 링거 반팔 티셔츠","price":32830,"normalPrice":46900,"discount":30,"reviews":341,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":11,"bestRank":35},
+  {"id":"6108783","name":"Chaser 링거 반팔 티셔츠","price":32830,"normalPrice":46900,"discount":30,"reviews":342,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":11,"bestRank":35},
   {"id":"7124763","name":"[기모선택] Weed 헤비테리 후드 집업","price":72900,"normalPrice":96900,"discount":25,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
   {"id":"5369176","name":"Saddie 롱 슬리브 티셔츠","price":32780,"normalPrice":44900,"discount":27,"reviews":63,"reviewScore":4.7,"soldOut":false,"gender":"공용","rankedDays":1},
   {"id":"6108801","name":"Seastar 링거 반팔 티셔츠","price":32830,"normalPrice":46900,"discount":30,"reviews":840,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":16,"bestRank":81},
@@ -54,7 +54,7 @@
   {"id":"6108948","name":"Shell 반팔 티셔츠","price":30730,"normalPrice":39900,"discount":23,"reviews":58,"reviewScore":4.7,"soldOut":false,"gender":"공용"},
   {"id":"5190514","name":"Marker 나일론 스트링 카고 와이드 팬츠","price":38620,"normalPrice":52900,"discount":27,"reviews":349,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":3},
   {"id":"6314295","name":"Kick 반팔 티셔츠","price":30730,"normalPrice":39900,"discount":23,"reviews":32,"reviewScore":4.7,"soldOut":false,"gender":"공용"},
-  {"id":"5352832","name":"[기모선택] My Youth 헤비테리 후드","price":59920,"normalPrice":74900,"discount":20,"reviews":863,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":2},
+  {"id":"5352832","name":"[기모선택] My Youth 헤비테리 후드","price":59920,"normalPrice":74900,"discount":20,"reviews":857,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":2},
   {"id":"6811789","name":"AE 우먼 링거 반팔 티셔츠","price":34900,"normalPrice":45900,"discount":24,"reviews":4,"reviewScore":3.8,"soldOut":false,"gender":"여성"},
   {"id":"6653485","name":"Together 링거 반팔 티셔츠","price":39970,"normalPrice":51900,"discount":23,"reviews":7,"reviewScore":4.7,"soldOut":false,"gender":"공용"},
   {"id":"6688194","name":"Ana 반팔 티셔츠","price":30730,"normalPrice":39900,"discount":23,"reviews":32,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":1},
