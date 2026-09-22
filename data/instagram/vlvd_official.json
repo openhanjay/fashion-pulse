@@ -2,10 +2,22 @@
   "username": "vlvd_official",
   "name": "VIVA LA VIDA",
   "profilePicUrl": "data/instagram/images/vlvd_official/profile.jpg",
-  "followersCount": 4767,
-  "postsCount": 277,
-  "fetchedAt": "2026-09-21T12:24:25+09:00",
+  "followersCount": 4773,
+  "postsCount": 278,
+  "fetchedAt": "2026-09-22T12:23:22+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DdivLMbFAwL/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/vlvd_official/DdivLMbFAwL.jpg",
+      "caption": "[Swift Heavy Terry Hoodie Zip-Up]\n스위프트 후드 집업\n\n- Size : M / L / XL / 2XL\n- Color : Melange / Navy / Burgundy / Brown / Black\n\nVLVD.kr / MUSINSA / 29CM\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
+      "likesCount": 8,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-09-21T08:31:31.000Z",
+      "id": "DdivLMbFAwL"
+    },
     {
       "url": "https://www.instagram.com/p/DdgUjVhlGFl/",
       "type": "Sidecar",
@@ -23,7 +35,7 @@
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/vlvd_official/DdaswSwlEC4.jpg",
       "caption": "▰OUR ROOM @ OUR SPOT▰\n\nNo address, no sign, no hours. just a room we kept coming back to until it had our name on it.\nnobody remembers who found it first. the lamp was already there, and so werethe chairs.\nwe only added the mess. you know where.\n\n▰ Still Motion Archive ▰\n• Shft the view, redefine the line\n• Available Now\n• www.VLVD.KR",
-      "likesCount": 6,
+      "likesCount": 7,
       "commentsCount": 0,
       "videoPlayCount": null,
       "videoViewCount": null,
@@ -35,24 +47,12 @@
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/vlvd_official/DdVw7xllFGZ.jpg",
       "caption": "[Sunburst Heavy Terry Hoodie]\n썬버스트 후드 티셔츠\n\n- Size : M / L / XL / 2XL\n- Color : White Melange / Melange / Yellow / Blue / Navy / Burgundy / Brown / Black\n\nVLVD.kr / MUSINSA / 29CM\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
-      "likesCount": 7,
+      "likesCount": 9,
       "commentsCount": 0,
       "videoPlayCount": null,
       "videoViewCount": null,
       "timestamp": "2026-09-16T07:36:46.000Z",
       "id": "DdVw7xllFGZ"
-    },
-    {
-      "url": "https://www.instagram.com/p/DdQVB1flEF2/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/vlvd_official/DdQVB1flEF2.jpg",
-      "caption": "26FW OUR ROOM @ OUR SPOT ◡̈⋆*\n\nStyling.1\n⊹ 버튼 후리스 (발매 예정)\n\nStyling.2\n⊹ Rhythm 후드 티셔츠\n⊹ 커브드 와이드 데님 팬츠\n\nStyling.3\n⊹ 퀄팅 경량패딩 (발매 예정)\n\nStyling.4\n⊹ Shatter 후드 롱 슬리브\n\nStyling.5\n⊹ Reason 레글런 롱 슬리브 티셔츠\n⊹ 후드 롱 슬리브\n\nStyling.6\n⊹ Untamed 후드 롱 슬리브 티셔츠\n⊹ Opens 레글런 롱 슬리브 티셔츠\n\nStyling.7\n⊹ Selfhood 헤비테리 후드\n⊹ 커브드 와이드 데님 팬츠\n⊹ 로우 와이드 버뮤다 데님 팬츠",
-      "likesCount": 10,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-09-14T04:56:43.000Z",
-      "id": "DdQVB1flEF2"
     }
   ]
 }

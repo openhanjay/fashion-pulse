@@ -2,10 +2,34 @@
   "username": "videojockey_official",
   "name": "Vidiojockey",
   "profilePicUrl": "data/instagram/images/videojockey_official/profile.jpg",
-  "followersCount": 17064,
-  "postsCount": 389,
-  "fetchedAt": "2026-09-21T12:24:25+09:00",
+  "followersCount": 17057,
+  "postsCount": 391,
+  "fetchedAt": "2026-09-22T12:23:22+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DdkphgVH8sQ/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/videojockey_official/DdkphgVH8sQ.jpg",
+      "caption": "26FW COLLECTION\n“VIKEY‘S COZY HOURS”\n⠀\n비디오자키의 26FW시즌 3차 제품이 발매되었습니다.\n\n새롭게 시작되는 26FW를\n무신사 및 공식홈페이지에서 만나보세요 🏡 ｡✮\n\nvideojockey.co.kr\n#videojockey #비디오자키",
+      "likesCount": null,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-09-22T02:20:01.000Z",
+      "id": "DdkphgVH8sQ"
+    },
+    {
+      "url": "https://www.instagram.com/p/Ddkoa5aH-JY/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/videojockey_official/Ddkoa5aH-JY.jpg",
+      "caption": "X @shantifyy \n\n음악 큐레이터 샨띠와 비디오자키가 만났습니다 🎧🎵\n\n비디오자키 26FW COLLECTION 을\n샨띠의 추천 음악과 함께 지금 바로 만나보세요 .ᐟ",
+      "likesCount": null,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-09-22T02:10:02.000Z",
+      "id": "Ddkoa5aH-JY"
+    },
     {
       "url": "https://www.instagram.com/p/Ddf0rJzHyrQ/",
       "type": "Sidecar",
@@ -29,30 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-09-19T04:02:28.000Z",
       "id": "DddGy2vn8kw"
-    },
-    {
-      "url": "https://www.instagram.com/p/DddDYovH5OJ/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/DddDYovH5OJ.jpg",
-      "caption": "26FW COLLECTION\n“VIKEY‘S COZY HOURS”🏠\n\n26.09.22(TUE) 11:00 AM - 3RD DROP \n\nvideojockey.co.kr\n#videojockey #비디오자키",
-      "likesCount": null,
-      "commentsCount": 2,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-09-19T03:32:41.000Z",
-      "id": "DddDYovH5OJ"
-    },
-    {
-      "url": "https://www.instagram.com/p/DdVUvSMnwqu/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/DdVUvSMnwqu.jpg",
-      "caption": "26FW COLLECTION\n:: STAR GOGOGO LS ᯓ✶\n\nvideojockey.co.kr\n#videojockey #비디오자키",
-      "likesCount": null,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-09-16T03:30:02.000Z",
-      "id": "DdVUvSMnwqu"
     }
   ]
 }
