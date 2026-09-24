@@ -2,10 +2,34 @@
   "username": "teket_com",
   "name": "TEKET",
   "profilePicUrl": "data/instagram/images/teket_com/profile.jpg",
-  "followersCount": 135257,
-  "postsCount": 686,
-  "fetchedAt": "2026-09-23T12:24:39+09:00",
+  "followersCount": 135304,
+  "postsCount": 688,
+  "fetchedAt": "2026-09-24T12:13:49+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/Ddpww6QkU-P/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/teket_com/Ddpww6QkU-P.jpg",
+      "caption": "26Autumn Winter ©Plan Series\n•\nCheck It Out Now ⤴\n•\nwww.te-ket.com",
+      "likesCount": 40,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-09-24T02:00:01.000Z",
+      "id": "Ddpww6QkU-P"
+    },
+    {
+      "url": "https://www.instagram.com/p/DdnXrceEbqs/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/teket_com/DdnXrceEbqs.jpg",
+      "caption": "Plan 18. Inside Curve\nL/S Tee Edit 𖦹 Look a little closer 𖦹\n•\nCheck It Out Now ⤴\n•\nwww.te-ket.com",
+      "likesCount": null,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-09-23T03:42:25.000Z",
+      "id": "DdnXrceEbqs"
+    },
     {
       "url": "https://www.instagram.com/p/DdiJVUsEXlA/",
       "type": "Sidecar",
@@ -29,30 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-09-16T03:00:01.000Z",
       "id": "DdVRSXfkY3M"
-    },
-    {
-      "url": "https://www.instagram.com/p/DdQHsO2kWb8/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/teket_com/DdQHsO2kWb8.jpg",
-      "caption": "Plan 18. Inside Curve\n◉3rd Release Available Now ◉\n•\nLook closer. 🔭\nHats & Warmers\n•\nwww.te-ket.com",
-      "likesCount": null,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-09-14T03:00:02.000Z",
-      "id": "DdQHsO2kWb8"
-    },
-    {
-      "url": "https://www.instagram.com/p/DdJF-FkkS50/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/teket_com/DdJF-FkkS50.jpg",
-      "caption": "Plan 18. Inside Curve\n◉3rd Release Available Now ◉\n•\nCT Curve Lightweight Down Jacket\nc.T.e Quilted Jacket\n•\nwww.te-ket.com",
-      "likesCount": null,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-09-11T08:59:58.000Z",
-      "id": "DdJF-FkkS50"
     }
   ]
 }

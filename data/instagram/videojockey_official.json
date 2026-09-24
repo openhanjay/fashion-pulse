@@ -2,10 +2,22 @@
   "username": "videojockey_official",
   "name": "Vidiojockey",
   "profilePicUrl": "data/instagram/images/videojockey_official/profile.jpg",
-  "followersCount": 17057,
-  "postsCount": 391,
-  "fetchedAt": "2026-09-23T12:24:39+09:00",
+  "followersCount": 17056,
+  "postsCount": 392,
+  "fetchedAt": "2026-09-24T12:13:49+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DdnkVWrH7S0/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/videojockey_official/DdnkVWrH7S0.jpg",
+      "caption": "26FW LS Collection 🖤\n\nvideojockey.co.kr\n#videojockey #비디오자키",
+      "likesCount": null,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-09-23T05:33:00.000Z",
+      "id": "DdnkVWrH7S0"
+    },
     {
       "url": "https://www.instagram.com/p/DdkphgVH8sQ/",
       "type": "Sidecar",
@@ -41,18 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-09-20T05:21:51.000Z",
       "id": "Ddf0rJzHyrQ"
-    },
-    {
-      "url": "https://www.instagram.com/p/DddGy2vn8kw/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/DddGy2vn8kw.jpg",
-      "caption": "26FW COLLECTION\n“VIKEY‘S COZY HOURS”🏠\n\n26.09.22(TUE) 11:00 AM - 3RD DROP \n\nvideojockey.co.kr\n#videojockey #비디오자키",
-      "likesCount": null,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-09-19T04:02:28.000Z",
-      "id": "DddGy2vn8kw"
     }
   ]
 }
