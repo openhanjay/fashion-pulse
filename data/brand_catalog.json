@@ -1,5 +1,5 @@
 {
-"vivalavida":{"brandName":"비바라비다","total":442,"snapshotDays":51,"updatedAt":"2026-09-24","items":[
+"vivalavida":{"brandName":"비바라비다","total":442,"snapshotDays":51,"updatedAt":"2026-09-25","items":[
   {"id":"7103387","name":"Seestern 롱 슬리브 티셔츠","price":34900,"normalPrice":49900,"discount":30,"reviews":10,"reviewScore":4.7,"soldOut":false,"gender":"공용","rankedDays":1},
   {"id":"7103634","name":"Herd 롱 슬리브 티셔츠","price":34900,"normalPrice":49900,"discount":30,"reviews":5,"reviewScore":5,"soldOut":false,"gender":"공용","rankedDays":3},
   {"id":"6945858","name":"Glory 배색 롤업 반팔 티셔츠","price":43900,"normalPrice":69900,"discount":37,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"공용"},
@@ -22,7 +22,7 @@
   {"id":"6805563","name":"Ascii 반팔 티셔츠","price":25900,"normalPrice":39900,"discount":35,"reviews":15,"reviewScore":4.3,"soldOut":false,"gender":"공용"},
   {"id":"6894420","name":"Quad 배색 롤업 반팔 티셔츠","price":42900,"normalPrice":69900,"discount":39,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"공용","bestRank":99,"rankedDays":1},
   {"id":"7124768","name":"[기모선택] Bony 헤비테리 후드 집업","price":62900,"normalPrice":96900,"discount":35,"reviews":9,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":1},
-  {"id":"7124767","name":"[기모선택] Swift 헤비테리 후드 집업","price":56210,"normalPrice":96900,"discount":42,"reviews":26,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":4,"bestRank":80},
+  {"id":"7124767","name":"[기모선택] Swift 헤비테리 후드 집업","price":56210,"normalPrice":96900,"discount":42,"reviews":27,"reviewScore":4.9,"soldOut":false,"gender":"공용","rankedDays":4,"bestRank":80},
   {"id":"6751894","name":"Post 반팔 티셔츠","price":25900,"normalPrice":39900,"discount":35,"reviews":9,"reviewScore":4.4,"soldOut":false,"gender":"공용"},
   {"id":"7120158","name":"[기모선택] Cockle 헤비테리 맨투맨","price":54900,"normalPrice":79900,"discount":31,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"6751888","name":"Until 반팔 티셔츠","price":25900,"normalPrice":39900,"discount":35,"reviews":17,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
@@ -43,7 +43,7 @@
   {"id":"7106130","name":"[기모선택] Square 헤비테리 후드","price":58900,"normalPrice":93900,"discount":37,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"4881044","name":"Restchill 반팔 티셔츠","price":29130,"normalPrice":39900,"discount":27,"reviews":1628,"reviewScore":4.8,"soldOut":false,"gender":"공용"},
   {"id":"6109652","name":"Sunset 반팔 티셔츠","price":27900,"normalPrice":39900,"discount":30,"reviews":89,"reviewScore":4.8,"soldOut":false,"gender":"공용"},
-  {"id":"6108801","name":"Seastar 링거 반팔 티셔츠","price":27900,"normalPrice":46900,"discount":41,"reviews":852,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":16,"bestRank":81},
+  {"id":"6108801","name":"Seastar 링거 반팔 티셔츠","price":27900,"normalPrice":46900,"discount":41,"reviews":853,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":16,"bestRank":81},
   {"id":"5957374","name":"Solar 롱 슬리브 티셔츠","price":31430,"normalPrice":44900,"discount":30,"reviews":50,"reviewScore":4.4,"soldOut":false,"gender":"공용"},
   {"id":"6821494","name":"Triad 반팔 티셔츠","price":25900,"normalPrice":39900,"discount":35,"reviews":11,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
   {"id":"7179201","name":"Enough 에코백","price":29900,"normalPrice":55900,"discount":47,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
@@ -57,7 +57,7 @@
   {"id":"6340063","name":"Palm 반팔 티셔츠","price":27900,"normalPrice":39900,"discount":30,"reviews":131,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":3},
   {"id":"5352832","name":"[기모선택] My Youth 헤비테리 후드","price":44900,"normalPrice":74900,"discount":40,"reviews":861,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":4},
   {"id":"5190514","name":"Marker 나일론 스트링 카고 와이드 팬츠","price":31900,"normalPrice":52900,"discount":40,"reviews":353,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":3},
-  {"id":"6722998","name":"Movement 반팔 티셔츠","price":25900,"normalPrice":39900,"discount":35,"reviews":34,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":2},
+  {"id":"6722998","name":"Movement 반팔 티셔츠","price":25900,"normalPrice":39900,"discount":35,"reviews":35,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":2},
   {"id":"7124763","name":"[기모선택] Weed 헤비테리 후드 집업","price":62900,"normalPrice":96900,"discount":35,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
   {"id":"6959028","name":"Node 배색 롤업 반팔 티셔츠","price":43900,"normalPrice":69900,"discount":37,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용","rankedDays":1},
   {"id":"4720429","name":"[기모선택] Stamp 헤비테리 후드","price":58900,"normalPrice":93900,"discount":37,"reviews":31,"reviewScore":4.6,"soldOut":false,"gender":"공용"},
