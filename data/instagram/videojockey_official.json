@@ -2,10 +2,22 @@
   "username": "videojockey_official",
   "name": "Vidiojockey",
   "profilePicUrl": "data/instagram/images/videojockey_official/profile.jpg",
-  "followersCount": 17056,
-  "postsCount": 392,
-  "fetchedAt": "2026-09-24T12:13:49+09:00",
+  "followersCount": 17051,
+  "postsCount": 393,
+  "fetchedAt": "2026-09-25T12:31:10+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DdqBYgjn4Rz/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/videojockey_official/DdqBYgjn4Rz.jpg",
+      "caption": "26FW COLLECTION\n:: STAR BERRY BEANIE 🍓⸝⸝꙳\n\nvideo jockey.co.kr\n#videojockey #비디오자키",
+      "likesCount": null,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-09-24T04:25:02.000Z",
+      "id": "DdqBYgjn4Rz"
+    },
     {
       "url": "https://www.instagram.com/p/DdnkVWrH7S0/",
       "type": "Sidecar",
@@ -41,18 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-09-22T02:10:02.000Z",
       "id": "Ddkoa5aH-JY"
-    },
-    {
-      "url": "https://www.instagram.com/p/Ddf0rJzHyrQ/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/Ddf0rJzHyrQ.jpg",
-      "caption": "26FW COLLECTION \n\n:: LIGHT SHELL FUR PADDING JACKET\n[CHARCOAL / BROWN / BUTTER]\n\n부드러운 컬러감에 포근한 퍼 디테일을 더한\n사랑스러운 패딩자켓을 만나보세요 !⋆⭒｡⋆\n\njockey.co.kr\n#videojockey #비디오자키",
-      "likesCount": null,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-09-20T05:21:51.000Z",
-      "id": "Ddf0rJzHyrQ"
     }
   ]
 }
