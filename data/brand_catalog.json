@@ -1,5 +1,5 @@
 {
-"vivalavida":{"brandName":"비바라비다","total":440,"snapshotDays":54,"updatedAt":"2026-09-27","items":[
+"vivalavida":{"brandName":"비바라비다","total":440,"snapshotDays":54,"updatedAt":"2026-09-28","items":[
   {"id":"7103387","name":"Seestern 롱 슬리브 티셔츠","price":34900,"normalPrice":49900,"discount":30,"reviews":13,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":1},
   {"id":"7103634","name":"Herd 롱 슬리브 티셔츠","price":34900,"normalPrice":49900,"discount":30,"reviews":5,"reviewScore":5,"soldOut":false,"gender":"공용","rankedDays":3},
   {"id":"6945858","name":"Glory 배색 롤업 반팔 티셔츠","price":43900,"normalPrice":69900,"discount":37,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"공용"},
@@ -23,7 +23,7 @@
   {"id":"6805563","name":"Ascii 반팔 티셔츠","price":25900,"normalPrice":39900,"discount":35,"reviews":15,"reviewScore":4.3,"soldOut":false,"gender":"공용"},
   {"id":"6894420","name":"Quad 배색 롤업 반팔 티셔츠","price":42900,"normalPrice":69900,"discount":39,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"공용","bestRank":99,"rankedDays":1},
   {"id":"7124768","name":"[기모선택] Bony 헤비테리 후드 집업","price":62900,"normalPrice":96900,"discount":35,"reviews":11,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":1},
-  {"id":"7124767","name":"[기모선택] Swift 헤비테리 후드 집업","price":56210,"normalPrice":96900,"discount":42,"reviews":29,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":6,"bestRank":80},
+  {"id":"7124767","name":"[기모선택] Swift 헤비테리 후드 집업","price":56210,"normalPrice":96900,"discount":42,"reviews":30,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":6,"bestRank":80},
   {"id":"6751894","name":"Post 반팔 티셔츠","price":25900,"normalPrice":39900,"discount":35,"reviews":9,"reviewScore":4.4,"soldOut":false,"gender":"공용"},
   {"id":"6751888","name":"Until 반팔 티셔츠","price":25900,"normalPrice":39900,"discount":35,"reviews":17,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
   {"id":"7103607","name":"Reason 레글런 롱 슬리브 티셔츠","price":34900,"normalPrice":49900,"discount":30,"reviews":4,"reviewScore":4.8,"soldOut":false,"gender":"공용"},
@@ -178,7 +178,7 @@
   {"id":"7388978","name":"Wildness 헨리넥 롱 슬리브 티셔츠","price":39900,"normalPrice":61900,"discount":36,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"남성"},
   {"id":"5234051","name":"Pstar 와이드 코튼 팬츠","price":49570,"normalPrice":67900,"discount":27,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"5265134","name":"Whirlpool 와이드 버뮤다 스웨트 팬츠","price":34900,"normalPrice":56900,"discount":39,"reviews":28,"reviewScore":4.8,"soldOut":false,"gender":"공용"},
-  {"id":"5957355","name":"Smile 헤비테리 후드 집업","price":62900,"normalPrice":96900,"discount":35,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
+  {"id":"5957355","name":"Smile 헤비테리 후드 집업","price":62900,"normalPrice":96900,"discount":35,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"5864212","name":"Gleam 헤비테리 후드 버건디","price":64900,"normalPrice":93900,"discount":31,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
   {"id":"6917785","name":"Noise 반팔 티셔츠","price":27900,"normalPrice":39900,"discount":30,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"5369249","name":"Strike 피그먼트 롱 슬리브 티셔츠","price":40080,"normalPrice":54900,"discount":27,"reviews":6,"reviewScore":4.7,"soldOut":false,"gender":"공용"},
