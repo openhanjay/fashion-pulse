@@ -2,10 +2,22 @@
   "username": "teket_com",
   "name": "TEKET",
   "profilePicUrl": "data/instagram/images/teket_com/profile.jpg",
-  "followersCount": 135373,
-  "postsCount": 689,
-  "fetchedAt": "2026-09-27T12:45:42+09:00",
+  "followersCount": 135394,
+  "postsCount": 690,
+  "fetchedAt": "2026-09-28T12:45:04+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/Dd0NmxIkbgM/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/teket_com/Dd0NmxIkbgM.jpg",
+      "caption": "©Teket 26 Winter\nPlan.18 Editorial ‘Turn Inward’\n\nDropping Soon\n\nwww.te-ket.com",
+      "likesCount": null,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-09-28T03:24:31.000Z",
+      "id": "Dd0NmxIkbgM"
+    },
     {
       "url": "https://www.instagram.com/p/DdxfM8XEZfi/",
       "type": "Sidecar",
@@ -41,18 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-09-23T03:42:25.000Z",
       "id": "DdnXrceEbqs"
-    },
-    {
-      "url": "https://www.instagram.com/p/DdiJVUsEXlA/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/teket_com/DdiJVUsEXlA.jpg",
-      "caption": "Plan 18. Inside Curve\n◉3rd Release Available Now ◉\n•\nCheck It Out Now ⤴\n•\nwww.te-ket.com\n•\nTeket Store\n1F, 39, Seongji 1-gil, Mapo-gu, Seoul\n•\nTeket Centum Store\nB2F, 35 Centum nam-daero, Haeundae-gu, Busan",
-      "likesCount": null,
-      "commentsCount": 1,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-09-21T03:00:06.000Z",
-      "id": "DdiJVUsEXlA"
     }
   ]
 }
