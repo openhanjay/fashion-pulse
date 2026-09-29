@@ -2,10 +2,22 @@
   "username": "videojockey_official",
   "name": "Vidiojockey",
   "profilePicUrl": "data/instagram/images/videojockey_official/profile.jpg",
-  "followersCount": 17038,
-  "postsCount": 393,
-  "fetchedAt": "2026-09-28T12:45:04+09:00",
+  "followersCount": 17041,
+  "postsCount": 394,
+  "fetchedAt": "2026-09-29T13:19:40+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/Dd23D5nn2d0/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/videojockey_official/Dd23D5nn2d0.jpg",
+      "caption": "26FW COLLECTION\n“VIKEY‘S COZY HOURS”\n⠀\n비디오자키의 26FW시즌 4차 제품이 발매되었습니다.\n\n새롭게 시작되는 26FW를\n무신사 및 공식홈페이지에서 만나보세요 🏡 ｡✮\n\nvideojockey.co.kr\n#videojockey #비디오자키",
+      "likesCount": 5,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-09-29T04:05:02.000Z",
+      "id": "Dd23D5nn2d0"
+    },
     {
       "url": "https://www.instagram.com/p/DdqBYgjn4Rz/",
       "type": "Sidecar",
@@ -41,18 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-09-22T02:20:01.000Z",
       "id": "DdkphgVH8sQ"
-    },
-    {
-      "url": "https://www.instagram.com/p/Ddkoa5aH-JY/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/Ddkoa5aH-JY.jpg",
-      "caption": "X @shantifyy \n\n음악 큐레이터 샨띠와 비디오자키가 만났습니다 🎧🎵\n\n비디오자키 26FW COLLECTION 을\n샨띠의 추천 음악과 함께 지금 바로 만나보세요 .ᐟ",
-      "likesCount": null,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-09-22T02:10:02.000Z",
-      "id": "Ddkoa5aH-JY"
     }
   ]
 }
