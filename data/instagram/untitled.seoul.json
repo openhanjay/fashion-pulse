@@ -2,9 +2,9 @@
   "username": "untitled.seoul",
   "name": "untitled.seoul",
   "profilePicUrl": "data/instagram/images/untitled.seoul/profile.jpg",
-  "followersCount": 6027,
+  "followersCount": 6053,
   "postsCount": 18,
-  "fetchedAt": "2026-09-29T13:19:40+09:00",
+  "fetchedAt": "2026-09-30T13:03:29+09:00",
   "posts": [
     {
       "url": "https://www.instagram.com/p/Ddle3gSkf_B/",
@@ -23,7 +23,7 @@
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/untitled.seoul/Ddlcdq8kQDB.jpg",
       "caption": "FROM FLAT TO FORM.\n26 FALL 2ND DROP — NOW OPEN",
-      "likesCount": 81,
+      "likesCount": 83,
       "commentsCount": 1,
       "videoPlayCount": null,
       "videoViewCount": null,

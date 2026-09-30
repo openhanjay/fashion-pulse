@@ -2,10 +2,22 @@
   "username": "vlvd_official",
   "name": "VIVA LA VIDA",
   "profilePicUrl": "data/instagram/images/vlvd_official/profile.jpg",
-  "followersCount": 4791,
-  "postsCount": 280,
-  "fetchedAt": "2026-09-29T13:19:40+09:00",
+  "followersCount": 4788,
+  "postsCount": 281,
+  "fetchedAt": "2026-09-30T13:03:29+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/Dd3cOtKgZJf/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/vlvd_official/Dd3cOtKgZJf.jpg",
+      "caption": "[My youth Heavy Terry Hoodie]\n마이유스 후드 티셔츠\n\n- Size : M / L / XL / 2XL\n- Color : White Melange / Melange / Yellow / Blue / Navy / Burgundy / Brown / Black\n\nVLVD.kr / MUSINSA / 29CM\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
+      "likesCount": 2,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-09-29T09:30:02.000Z",
+      "id": "Dd3cOtKgZJf"
+    },
     {
       "url": "https://www.instagram.com/p/Ddz2HsEgfRS/",
       "type": "Sidecar",
@@ -41,18 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-09-21T08:31:31.000Z",
       "id": "DdivLMbFAwL"
-    },
-    {
-      "url": "https://www.instagram.com/p/DdgUjVhlGFl/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/vlvd_official/DdgUjVhlGFl.jpg",
-      "caption": "▰ Still Motion Archive ▰\n\nWe have created artwork based on the ”OUR ROOM @ OUR SPOT“ seasonal slogan, allowing you to explore a variety of items.\n\n• Shft the view, redefine the line\n• Available Now\n• www.VLVD.KR",
-      "likesCount": 1,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-09-20T10:00:05.000Z",
-      "id": "DdgUjVhlGFl"
     }
   ]
 }
