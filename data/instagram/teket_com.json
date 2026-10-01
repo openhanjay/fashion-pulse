@@ -2,10 +2,22 @@
   "username": "teket_com",
   "name": "TEKET",
   "profilePicUrl": "data/instagram/images/teket_com/profile.jpg",
-  "followersCount": 135449,
-  "postsCount": 692,
-  "fetchedAt": "2026-09-30T13:03:29+09:00",
+  "followersCount": 135493,
+  "postsCount": 693,
+  "fetchedAt": "2026-10-01T13:15:21+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/Dd7riEGFNx5/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/teket_com/Dd7riEGFNx5.jpg",
+      "caption": "WE’RE POPPING UP .ᐟ\n✶ TEKET The Hyundai Seoul Pop-up ✶\n\n10월1일(목) Teket의 Plan.18 Editorial ‘Turn Inward’ 발매를 기념하여 더현대 서울에서 팝업스토어를 진행합니다.\n\n▰ Promotion ▰\n• Plan.18 전 제품 최대 10% 할인\n• 테켓(Teket) 카카오톡 채널 추가 시 더현대 팝업 전용 5% 추가 할인 쿠폰 제공\n\n▰ Gift With Purchase ▰\n• 테켓 공식 인스타그램(@teket_com) 팔로우 인증 시 Unseen Rubber Coin Pouch 증정\n• 실 결제금액 100,000 KRW 이상 구매 시 Unseen Mug 증정\n* 한정수량으로 소진 시 종료됩니다.\n\n▰ Event Details ▰\n📅 Date\n10/01 (Thu) – 10/07 (Wed)\n\n🕦Opening Hours\nMon–Thu: 10:30 AM – 8:00 PM\nFri–Sun: 10:30 AM – 8:30 PM",
+      "likesCount": null,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-10-01T01:00:02.000Z",
+      "id": "Dd7riEGFNx5"
+    },
     {
       "url": "https://www.instagram.com/p/Dd0ECYikTBY/",
       "type": "Sidecar",
@@ -41,18 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-09-28T03:24:31.000Z",
       "id": "Dd0NmxIkbgM"
-    },
-    {
-      "url": "https://www.instagram.com/p/DdxfM8XEZfi/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/teket_com/DdxfM8XEZfi.jpg",
-      "caption": "26Autumn Winter ©Plan Series\n•\nCheck It Out Now ⤴\n•\nwww.te-ket.com",
-      "likesCount": null,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-09-27T02:00:01.000Z",
-      "id": "DdxfM8XEZfi"
     }
   ]
 }
