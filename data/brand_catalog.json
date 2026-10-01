@@ -1,7 +1,7 @@
 {
 "vivalavida":{"brandName":"비바라비다","total":447,"snapshotDays":58,"updatedAt":"2026-10-01","items":[
   {"id":"7103387","name":"Seestern 롱 슬리브 티셔츠","price":34900,"normalPrice":49900,"discount":30,"reviews":14,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":1},
-  {"id":"7103634","name":"Herd 롱 슬리브 티셔츠","price":34900,"normalPrice":49900,"discount":30,"reviews":9,"reviewScore":4.9,"soldOut":false,"gender":"공용","rankedDays":3},
+  {"id":"7103634","name":"Herd 롱 슬리브 티셔츠","price":34900,"normalPrice":49900,"discount":30,"reviews":10,"reviewScore":4.5,"soldOut":false,"gender":"공용","rankedDays":3},
   {"id":"7103608","name":"Measuer 레글런 롱 슬리브 티셔츠","price":34900,"normalPrice":49900,"discount":30,"reviews":2,"reviewScore":4.5,"soldOut":false,"gender":"공용"},
   {"id":"7103414","name":"Swirly 롱 슬리브 티셔츠","price":34900,"normalPrice":49900,"discount":30,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7103603","name":"Buddy 롱 슬리브 티셔츠","price":34900,"normalPrice":49900,"discount":30,"reviews":4,"reviewScore":5,"soldOut":false,"gender":"공용"},
@@ -31,7 +31,7 @@
   {"id":"7126040","name":"Pray 우먼 집업 후디","price":49900,"normalPrice":87900,"discount":43,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"여성"},
   {"id":"7106820","name":"[기모선택] Shifter 헤비테리 후드","price":58900,"normalPrice":93900,"discount":37,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7124764","name":"[기모선택] Tart 헤비테리 후드 집업","price":62900,"normalPrice":96900,"discount":35,"reviews":5,"reviewScore":4.6,"soldOut":false,"gender":"공용","rankedDays":2},
-  {"id":"5395574","name":"044 레글런 롱 슬리브 티셔츠","price":26940,"normalPrice":44900,"discount":40,"reviews":288,"reviewScore":4.7,"soldOut":false,"gender":"공용","rankedDays":14,"bestRank":79},
+  {"id":"5395574","name":"044 레글런 롱 슬리브 티셔츠","price":26940,"normalPrice":44900,"discount":40,"reviews":289,"reviewScore":4.7,"soldOut":false,"gender":"공용","rankedDays":14,"bestRank":79},
   {"id":"5395562","name":"Else 롱 슬리브 티셔츠","price":31430,"normalPrice":44900,"discount":30,"reviews":99,"reviewScore":4.7,"soldOut":false,"gender":"공용","rankedDays":1},
   {"id":"7106130","name":"[기모선택] Square 헤비테리 후드","price":58900,"normalPrice":93900,"discount":37,"reviews":3,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7388981","name":"Spiral 배색 트리밍 롱 슬리브 티셔츠","price":45900,"normalPrice":73900,"discount":38,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"남성"},
@@ -58,7 +58,7 @@
   {"id":"6572355","name":"Lostar 링거 반팔 티셔츠","price":27900,"normalPrice":46900,"discount":41,"reviews":19,"reviewScore":4.5,"soldOut":false,"gender":"공용"},
   {"id":"6340063","name":"Palm 반팔 티셔츠","price":27900,"normalPrice":39900,"discount":30,"reviews":135,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":3},
   {"id":"4881044","name":"Restchill 반팔 티셔츠","price":29130,"normalPrice":39900,"discount":27,"reviews":1629,"reviewScore":4.8,"soldOut":false,"gender":"공용"},
-  {"id":"7154126","name":"Warden 피그먼트 헤비테리 후드 티셔츠","price":59900,"normalPrice":89900,"discount":33,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
+  {"id":"7154126","name":"Warden 피그먼트 헤비테리 후드 티셔츠","price":59900,"normalPrice":89900,"discount":33,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"5386242","name":"Brownchill 롱 슬리브 티셔츠","price":31430,"normalPrice":44900,"discount":30,"reviews":23,"reviewScore":4.8,"soldOut":false,"gender":"공용"},
   {"id":"5190514","name":"Marker 나일론 스트링 카고 와이드 팬츠","price":31900,"normalPrice":52900,"discount":40,"reviews":366,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":3},
   {"id":"6898250","name":"Hope 우먼 슬림 반팔 티셔츠","price":27900,"normalPrice":48900,"discount":43,"reviews":3,"reviewScore":4.7,"soldOut":false,"gender":"여성"},
