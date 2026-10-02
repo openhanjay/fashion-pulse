@@ -2,10 +2,34 @@
   "username": "vlvd_official",
   "name": "VIVA LA VIDA",
   "profilePicUrl": "data/instagram/images/vlvd_official/profile.jpg",
-  "followersCount": 4801,
-  "postsCount": 281,
-  "fetchedAt": "2026-10-01T13:15:21+09:00",
+  "followersCount": 4790,
+  "postsCount": 283,
+  "fetchedAt": "2026-10-02T13:08:32+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/Dd-EiMlAU10/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/vlvd_official/Dd-EiMlAU10.jpg",
+      "caption": "[Half-Button Fleece Pullocver]\n하프 버튼 플리스 풀오버\n\n⊹ Size : 1 / 2 / 3\n⊹ Color : Ivory / Red / Navy / Charcoal\n\nVLVD.kr / MUSINSA / 29CM\nAvailable on our official website, Musinsa, and 29CM.\n\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
+      "likesCount": 4,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-10-01T23:17:40.000Z",
+      "id": "Dd-EiMlAU10"
+    },
+    {
+      "url": "https://www.instagram.com/p/Dd8Y6mHCjLr/",
+      "type": "Video",
+      "displayUrl": "data/instagram/images/vlvd_official/Dd8Y6mHCjLr.jpg",
+      "caption": "1. [Rhythm Heavy Terry Hoodie]\n리듬 후드 티셔츠\n\n⊹ Size : M / L / XL / 2XL\n⊹ Color : White Melange / Melange / Yellow / Blue / Navy / Burgundy / Brown / Black\n\n2. Pocket Light Padding Jacket\n포켓 라이트 패딩 자켓\n\n⊹ Size : M / L / XL\n⊹ Color : Light Gray / Sky Blue / Black\n\nVLVD.kr / MUSINSA / 29CM\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
+      "likesCount": 7,
+      "commentsCount": 0,
+      "videoPlayCount": 712,
+      "videoViewCount": 90,
+      "timestamp": "2026-10-01T07:37:35.000Z",
+      "id": "Dd8Y6mHCjLr"
+    },
     {
       "url": "https://www.instagram.com/p/Dd3cOtKgZJf/",
       "type": "Sidecar",
@@ -23,36 +47,12 @@
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/vlvd_official/Ddz2HsEgfRS.jpg",
       "caption": "2026 Autumn Winter DROP : 2⚡️\n\n⊹ Pocket Light Padding Jacket\n⊹ Half-Button Fleece Pullover\n⊹ Wildness Henley Neck L.S\n⊹ Dia Light Padding Jacket\n⊹ Contrast Trim L.S\n⊹ Twotone Layered L.S\n⊹ Color-Block L.S\n\nNo address, no sign, no hours. just a room we kept coming back to until it had our name on it.\nnobody remembers who found it first. the lamp was already there, and so werethe chairs.\nwe only added the mess. you know where.\n\n비바라비다의 가을,겨울 아이템을 소개합니다.",
-      "likesCount": 3,
+      "likesCount": 4,
       "commentsCount": 0,
       "videoPlayCount": null,
       "videoViewCount": null,
       "timestamp": "2026-09-27T23:59:18.000Z",
       "id": "Ddz2HsEgfRS"
-    },
-    {
-      "url": "https://www.instagram.com/p/DdnOwoUFBGO/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/vlvd_official/DdnOwoUFBGO.jpg",
-      "caption": "▰OUR ROOM @ OUR SPOT▰\n\nNo address, no sign, no hours. just a room we kept coming back to until it had our name on it.\nnobody remembers who found it first. the lamp was already there, and so werethe chairs.\nwe only added the mess. you know where.\n\n▰ Still Motion Archive ▰\n• Shft the view, redefine the line\n• Available Now\n• www.VLVD.KR",
-      "likesCount": 10,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-09-23T02:24:29.000Z",
-      "id": "DdnOwoUFBGO"
-    },
-    {
-      "url": "https://www.instagram.com/p/DdivLMbFAwL/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/vlvd_official/DdivLMbFAwL.jpg",
-      "caption": "[Swift Heavy Terry Hoodie Zip-Up]\n스위프트 후드 집업\n\n- Size : M / L / XL / 2XL\n- Color : Melange / Navy / Burgundy / Brown / Black\n\nVLVD.kr / MUSINSA / 29CM\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
-      "likesCount": 11,
-      "commentsCount": 1,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-09-21T08:31:31.000Z",
-      "id": "DdivLMbFAwL"
     }
   ]
 }
