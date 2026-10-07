@@ -2,10 +2,22 @@
   "username": "teket_com",
   "name": "TEKET",
   "profilePicUrl": "data/instagram/images/teket_com/profile.jpg",
-  "followersCount": 136478,
-  "postsCount": 695,
-  "fetchedAt": "2026-10-06T13:57:28+09:00",
+  "followersCount": 136558,
+  "postsCount": 696,
+  "fetchedAt": "2026-10-07T13:24:26+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DeLjtAJkye3/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/teket_com/DeLjtAJkye3.jpg",
+      "caption": "©Teket 26 Winter\nPlan.18 Editorial ‘Turn Inward’\n\nwww.te-ket.com",
+      "likesCount": null,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-10-07T03:00:03.000Z",
+      "id": "DeLjtAJkye3"
+    },
     {
       "url": "https://www.instagram.com/p/Dd-srOkkZ7K/",
       "type": "Sidecar",
@@ -41,18 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-10-01T01:00:02.000Z",
       "id": "Dd7riEGFNx5"
-    },
-    {
-      "url": "https://www.instagram.com/p/Dd0ECYikTBY/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/teket_com/Dd0ECYikTBY.jpg",
-      "caption": "Plan 18. Inside Curve 𖦹\nPreview of the 4th Release 🔎\n•\n26.10.02(Fri) KST 12:00PM\n•\nwww.te-ket.com",
-      "likesCount": null,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-09-29T02:05:01.000Z",
-      "id": "Dd0ECYikTBY"
     }
   ]
 }
