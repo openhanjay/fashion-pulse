@@ -2,10 +2,22 @@
   "username": "videojockey_official",
   "name": "Vidiojockey",
   "profilePicUrl": "data/instagram/images/videojockey_official/profile.jpg",
-  "followersCount": 17019,
-  "postsCount": 395,
-  "fetchedAt": "2026-10-07T13:24:26+09:00",
+  "followersCount": 17017,
+  "postsCount": 396,
+  "fetchedAt": "2026-10-08T13:35:42+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DeN8gXdn1dX/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/videojockey_official/DeN8gXdn1dX.jpg",
+      "caption": "많은 사랑을 받은 VIVI T-SHIRT가\n새로운 컬러와 함께 HOODIE 로 출시되었습니다.\n\n✩ HOODIE : CROP / MEDIUM\n[CHARCOAL / BROWN / BLUE / MELANGEGREY]\n\n새롭게 추가된 크롭과 미디움 사이즈의\nVIVI HOODIE를 만나보세요.❤︎ ⁺\n\nvideojockey.co.kr\n#videojockey #비디오자키",
+      "likesCount": null,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-10-08T03:15:02.000Z",
+      "id": "DeN8gXdn1dX"
+    },
     {
       "url": "https://www.instagram.com/p/DeLaioFH_Ef/",
       "type": "Sidecar",
@@ -41,18 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-09-24T04:25:02.000Z",
       "id": "DdqBYgjn4Rz"
-    },
-    {
-      "url": "https://www.instagram.com/p/DdnkVWrH7S0/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/DdnkVWrH7S0.jpg",
-      "caption": "26FW LS Collection 🖤\n\nvideojockey.co.kr\n#videojockey #비디오자키",
-      "likesCount": null,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-09-23T05:33:00.000Z",
-      "id": "DdnkVWrH7S0"
     }
   ]
 }
