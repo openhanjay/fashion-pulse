@@ -2,10 +2,22 @@
   "username": "videojockey_official",
   "name": "Vidiojockey",
   "profilePicUrl": "data/instagram/images/videojockey_official/profile.jpg",
-  "followersCount": 17017,
-  "postsCount": 396,
-  "fetchedAt": "2026-10-08T13:35:42+09:00",
+  "followersCount": 17013,
+  "postsCount": 397,
+  "fetchedAt": "2026-10-09T13:38:53+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DeQfn22H0Hr/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/videojockey_official/DeQfn22H0Hr.jpg",
+      "caption": "26FW COLLECTION\n“VIKEY‘S COZY HOURS”\n⠀\n비디오자키의 26FW 시즌 5차 제품이 발매되었습니다.\n\n새롭게 시작되는 26FW를\n무신사 및 공식홈페이지에서 만나보세요 🏡 ｡✮\n\nvideojockey.co.kr\n#videojockey #비디오자키",
+      "likesCount": null,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-10-09T03:00:02.000Z",
+      "id": "DeQfn22H0Hr"
+    },
     {
       "url": "https://www.instagram.com/p/DeN8gXdn1dX/",
       "type": "Sidecar",
@@ -41,18 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-09-29T04:05:02.000Z",
       "id": "Dd23D5nn2d0"
-    },
-    {
-      "url": "https://www.instagram.com/p/DdqBYgjn4Rz/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/DdqBYgjn4Rz.jpg",
-      "caption": "26FW COLLECTION\n:: STAR BERRY BEANIE 🍓⸝⸝꙳\n\nvideojockey.co.kr\n#videojockey #비디오자키",
-      "likesCount": null,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-09-24T04:25:02.000Z",
-      "id": "DdqBYgjn4Rz"
     }
   ]
 }
