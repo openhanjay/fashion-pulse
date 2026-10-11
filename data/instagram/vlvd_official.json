@@ -2,10 +2,22 @@
   "username": "vlvd_official",
   "name": "VIVA LA VIDA",
   "profilePicUrl": "data/instagram/images/vlvd_official/profile.jpg",
-  "followersCount": 4804,
-  "postsCount": 286,
-  "fetchedAt": "2026-10-10T13:24:45+09:00",
+  "followersCount": 4803,
+  "postsCount": 287,
+  "fetchedAt": "2026-10-11T13:06:04+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DeT0c-iFMMX/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/vlvd_official/DeT0c-iFMMX.jpg",
+      "caption": "*지금 입기 좋은 MD추천 후드집업*\n\n[Swift Heavy Terry Hoodie Zip-Up]\n스위프트 후드 집업\n\n⊹ Size : M / L / XL / 2XL\n⊹ Color : Melange / Navy / Burgundy / Brown / Black\n\nVLVD.kr / MUSINSA / 29CM\nAvailable on our official website, Musinsa, and 29CM.\n\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
+      "likesCount": 3,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-10-10T10:00:05.000Z",
+      "id": "DeT0c-iFMMX"
+    },
     {
       "url": "https://www.instagram.com/p/DeO1J0MFGEY/",
       "type": "Sidecar",
@@ -41,18 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-10-04T09:30:02.000Z",
       "id": "DeEUQ7_AUmD"
-    },
-    {
-      "url": "https://www.instagram.com/p/Dd-EiMlAU10/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/vlvd_official/Dd-EiMlAU10.jpg",
-      "caption": "[Half-Button Fleece Pullocver]\n하프 버튼 플리스 풀오버\n\n⊹ Size : 1 / 2 / 3\n⊹ Color : Ivory / Red / Navy / Charcoal\n\nVLVD.kr / MUSINSA / 29CM\nAvailable on our official website, Musinsa, and 29CM.\n\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
-      "likesCount": 5,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-10-01T23:17:40.000Z",
-      "id": "Dd-EiMlAU10"
     }
   ]
 }
