@@ -2,10 +2,22 @@
   "username": "videojockey_official",
   "name": "Vidiojockey",
   "profilePicUrl": "data/instagram/images/videojockey_official/profile.jpg",
-  "followersCount": 17012,
-  "postsCount": 397,
-  "fetchedAt": "2026-10-11T13:06:04+09:00",
+  "followersCount": 17004,
+  "postsCount": 398,
+  "fetchedAt": "2026-10-12T13:25:08+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DeYPuDknx5T/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/videojockey_official/DeYPuDknx5T.jpg",
+      "caption": "26FW COLLECTION\n“VIKEY‘S COZY HOURS” STYLING 🕰️ ｡✮\n\nvideojockey.co.kr\n#videojockey #비디오자키",
+      "likesCount": null,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-10-12T03:15:02.000Z",
+      "id": "DeYPuDknx5T"
+    },
     {
       "url": "https://www.instagram.com/p/DeQfn22H0Hr/",
       "type": "Sidecar",
@@ -41,18 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-10-07T03:40:02.000Z",
       "id": "DeLaioFH_Ef"
-    },
-    {
-      "url": "https://www.instagram.com/p/Dd23D5nn2d0/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/Dd23D5nn2d0.jpg",
-      "caption": "26FW COLLECTION\n“VIKEY‘S COZY HOURS”\n⠀\n비디오자키의 26FW시즌 4차 제품이 발매되었습니다.\n\n새롭게 시작되는 26FW를\n무신사 및 공식홈페이지에서 만나보세요 🏡 ｡✮\n\nvideojockey.co.kr\n#videojockey #비디오자키",
-      "likesCount": null,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-09-29T04:05:02.000Z",
-      "id": "Dd23D5nn2d0"
     }
   ]
 }
