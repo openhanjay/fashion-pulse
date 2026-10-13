@@ -1,21 +1,27 @@
 name: Scrape rankings
 
 on:
-  # 08:00/13:00/18:00/23:00 KST 예약 실행은 Cloudflare Worker(worker/index.js의 scheduled 핸들러,
-  # wrangler.toml [triggers] crons)가 workflow_dispatch로 트리거한다. Actions 자체 cron보다
-  # 시각을 잘 지켜서 그쪽을 주 경로로 쓴다.
+  # 08/12/16/20/24시 KST 예약 실행은 Cloudflare Worker(worker/index.js의 scheduled 핸들러,
+  # wrangler.toml [triggers] crons)가 workflow_dispatch로 트리거한다. Actions 자체 cron은
+  # 실측 2~8시간씩 밀려서(2026-10월 기록: 23:05 예약이 01:46~03:29에 실행) 시각을 못 지킨다.
+  # 그래서 Worker를 주 경로로 쓴다.
   workflow_dispatch: {}
 
   # 아래 schedule은 안전망이다. Worker가 쓰는 GitHub 토큰이 만료되면 dispatch가 401로 조용히
   # 실패하는데, 실행 자체가 안 생기니 Actions 화면에도 아무 흔적이 남지 않는다. 실제로 그렇게
-  # 2026-09-10부터 6일간 수집이 멈춘 걸 뒤늦게 발견했다. Actions cron은 토큰이 필요 없으므로,
-  # Worker가 죽어도 수집은 계속된다. 몇 분 지연될 수 있지만 하루 4회 스냅샷에는 문제없다.
-  # 같은 시각에 Worker와 겹쳐 두 번 돌 수 있는데, 스냅샷 파일명이 분 단위라 덮어쓰기만 될 뿐이다.
+  # 2026-09-10부터 6일간 수집이 멈춘 적이 있다. Actions cron은 토큰이 필요 없으므로 Worker가
+  # 죽어도 수집은 이어진다.
+  #
+  # 다만 Actions cron은 시각을 못 지킨다(실측 2~8시간 지연). Worker가 정상일 때 이게 같이 돌면
+  # 엉뚱한 시각에 한 번 더 수집돼서 "수집 시각이 중구난방"으로 보인다. 그래서 아래 Guard 단계에서
+  # 최근 수집이 충분히 최신이면 건너뛴다 - Worker가 살아 있으면 안전망은 조용히 쉬고,
+  # Worker가 죽었을 때만 실제로 돈다.
   schedule:
-    - cron: "5 23 * * *" # 08:05 KST
-    - cron: "5 4 * * *"  # 13:05 KST
-    - cron: "5 9 * * *"  # 18:05 KST
-    - cron: "5 14 * * *" # 23:05 KST
+    - cron: "0 23 * * *" # 08:00 KST
+    - cron: "0 3 * * *"  # 12:00 KST
+    - cron: "0 7 * * *"  # 16:00 KST
+    - cron: "0 11 * * *" # 20:00 KST
+    - cron: "0 15 * * *" # 24:00 KST
 
 permissions:
   contents: write
@@ -35,25 +41,58 @@ jobs:
       - name: Install deps
         run: npm ci
 
+      # Worker(workflow_dispatch)가 제시각에 수집했는데 몇 시간 뒤 밀린 Actions cron이 또 돌면,
+      # 엉뚱한 시각에 스냅샷이 하나 더 생겨 수집 시각이 뒤죽박죽이 된다. 예약 실행일 때만
+      # 마지막 수집이 얼마나 지났는지 보고, 아직 최신이면 이번 회차를 통째로 건너뛴다.
+      # 수집 간격이 4시간이므로 3시간을 기준으로 둔다 - Worker가 죽어 간격이 벌어졌을 때만 돈다.
+      # 수동 실행(workflow_dispatch)은 이 가드를 타지 않는다.
+      - name: Skip if a recent snapshot already exists
+        id: guard
+        if: github.event_name == 'schedule'
+        run: |
+          node -e "
+            const fs = require('fs');
+            const idx = JSON.parse(fs.readFileSync('data/musinsa_index.json', 'utf8'));
+            const days = Object.keys(idx).sort();
+            const last = days[days.length - 1];
+            const times = idx[last] || [];
+            const t = times[times.length - 1];
+            if (!last || !t) { console.log('수집 기록이 없어 그대로 진행'); process.exit(0); }
+            // 파일명 시각은 KST 기준이라 UTC로 되돌려 비교한다
+            const [h, m] = t.split('-').map(Number);
+            const whenKst = new Date(last + 'T' + String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':00Z');
+            const ageH = (Date.now() - (whenKst.getTime() - 9 * 3600 * 1000)) / 3600000;
+            console.log('마지막 수집: ' + last + ' ' + t + ' KST (' + ageH.toFixed(1) + '시간 전)');
+            if (ageH < 3) {
+              console.log('3시간 이내라 이번 예약 실행은 건너뜁니다 (Worker가 정상 동작 중).');
+              fs.appendFileSync(process.env.GITHUB_OUTPUT, 'skip=true\n');
+            }
+          "
+
       - name: Run musinsa scraper
+        if: steps.guard.outputs.skip != 'true'
         run: node scrape_musinsa.js
 
       - name: Run 29CM scraper
+        if: steps.guard.outputs.skip != 'true'
         run: node scrape_cm29.js
 
       # 랭킹에 새로 등장한 상품의 고정 속성(카테고리/핏/실측 사이즈/이미지 장수)을 받아둔다.
       # 이미 받은 상품은 건너뛰므로 평소엔 1,000건 미만, 1~2분이면 끝난다.
       # --limit은 어쩌다 대량 유입이 있어도 워크플로가 늘어지지 않게 하는 상한선이다.
       - name: Collect product metadata
+        if: steps.guard.outputs.skip != 'true'
         run: node scrape_product_meta.js --limit 3000
 
       # 자사 브랜드 카탈로그(비바라비다 419개)와 각 상품의 랭킹 진입 이력을 갱신한다.
       # 랭킹 스냅샷에는 TOP150만 있어서, 이게 있어야 브랜드 진단 패널에서
       # "올린 상품 중 몇 개가 실제로 랭킹에 들어갔나"를 볼 수 있다.
       - name: Collect brand catalog
+        if: steps.guard.outputs.skip != 'true'
         run: node scrape_brand_catalog.js
 
       - name: Commit and push new data
+        if: steps.guard.outputs.skip != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
