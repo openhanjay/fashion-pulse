@@ -2,16 +2,28 @@
   "username": "vlvd_official",
   "name": "VIVA LA VIDA",
   "profilePicUrl": "data/instagram/images/vlvd_official/profile.jpg",
-  "followersCount": 4825,
-  "postsCount": 288,
-  "fetchedAt": "2026-10-13T14:33:17+09:00",
+  "followersCount": 4832,
+  "postsCount": 289,
+  "fetchedAt": "2026-10-14T12:36:36+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/Debb_hoFKb-/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/vlvd_official/Debb_hoFKb-.jpg",
+      "caption": "[Aero Tote Bag]\n아에로 토트백\n\n⊹ Size : Free\n⊹ Color : Burgundy / Purple / Navy / Brown\n\nVLVD.kr / MUSINSA / 29CM\nAvailable on our official website, Musinsa, and 29CM.\n\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
+      "likesCount": 3,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-10-13T09:00:03.000Z",
+      "id": "Debb_hoFKb-"
+    },
     {
       "url": "https://www.instagram.com/p/DeY3Of6lClG/",
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/vlvd_official/DeY3Of6lClG.jpg",
       "caption": "[Selfhood Heavy Terry Hoodie]\n셀프후드 후드 티셔츠\n\n⊹ Size : M / L / XL / 2XL\n⊹ Color : White Melange / Melange / Yellow / Blue / Burgundy / Brown\n\nVLVD.kr / MUSINSA / 29CM\nAvailable on our official website, Musinsa, and 29CM.\n\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
-      "likesCount": 3,
+      "likesCount": 5,
       "commentsCount": 0,
       "videoPlayCount": null,
       "videoViewCount": null,
@@ -23,7 +35,7 @@
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/vlvd_official/DeT0c-iFMMX.jpg",
       "caption": "*지금 입기 좋은 MD추천 후드집업*\n\n[Swift Heavy Terry Hoodie Zip-Up]\n스위프트 후드 집업\n\n⊹ Size : M / L / XL / 2XL\n⊹ Color : Melange / Navy / Burgundy / Brown / Black\n\nVLVD.kr / MUSINSA / 29CM\nAvailable on our official website, Musinsa, and 29CM.\n\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
-      "likesCount": 5,
+      "likesCount": 7,
       "commentsCount": 0,
       "videoPlayCount": null,
       "videoViewCount": null,
@@ -41,18 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-10-08T11:30:02.000Z",
       "id": "DeO1J0MFGEY"
-    },
-    {
-      "url": "https://www.instagram.com/p/DeJSKXVlNrf/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/vlvd_official/DeJSKXVlNrf.jpg",
-      "caption": "[Dia Light Padding Jacket]\n다이아 라이트 패딩 자켓\n\n⊹ Size : M / L / XL\n⊹ Color : Light Gray / Charcoal / Black\n\nVLVD.kr / MUSINSA / 29CM\nAvailable on our official website, Musinsa, and 29CM.\n\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
-      "likesCount": 3,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-10-06T07:48:23.000Z",
-      "id": "DeJSKXVlNrf"
     }
   ]
 }
