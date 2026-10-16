@@ -2,16 +2,28 @@
   "username": "aakam.kr",
   "name": "AAKAM",
   "profilePicUrl": "data/instagram/images/aakam.kr/profile.jpg",
-  "followersCount": 114035,
-  "postsCount": 351,
-  "fetchedAt": "2026-10-15T12:16:36+09:00",
+  "followersCount": 114071,
+  "postsCount": 352,
+  "fetchedAt": "2026-10-16T12:12:21+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/Deg4ynEE29F/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/aakam.kr/Deg4ynEE29F.jpg",
+      "caption": "‘26FW-3\n\n2026-10-21\n\n#aakam",
+      "likesCount": 938,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-10-15T11:48:28.000Z",
+      "id": "Deg4ynEE29F"
+    },
     {
       "url": "https://www.instagram.com/p/DeeRJgEE0y3/",
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/aakam.kr/DeeRJgEE0y3.jpg",
       "caption": "26FW-3 Behind 💟\n\n2026. 10. 21 (Wed)\n\n#aakam #아캄",
-      "likesCount": 415,
+      "likesCount": 496,
       "commentsCount": 0,
       "videoPlayCount": null,
       "videoViewCount": null,
@@ -23,7 +35,7 @@
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/aakam.kr/DeT0dNuEoSI.jpg",
       "caption": "PANTS COLLECTING👖\n \n#aakam #아캄",
-      "likesCount": 700,
+      "likesCount": 720,
       "commentsCount": 1,
       "videoPlayCount": null,
       "videoViewCount": null,
@@ -35,24 +47,12 @@
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/aakam.kr/DeOrDovEyeZ.jpg",
       "caption": "HOODIE🩵💚\n \n#aakam #아캄",
-      "likesCount": 259,
+      "likesCount": 263,
       "commentsCount": 1,
       "videoPlayCount": null,
       "videoViewCount": null,
       "timestamp": "2026-10-08T10:02:07.000Z",
       "id": "DeOrDovEyeZ"
-    },
-    {
-      "url": "https://www.instagram.com/p/DdQ9i9uE80E/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/aakam.kr/DdQ9i9uE80E.jpg",
-      "caption": "AAKAM 26FW-2\n\n2026. 09. 16 (Wed)\n\n#aakam #아캄",
-      "likesCount": 1366,
-      "commentsCount": 1,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-09-14T10:50:02.000Z",
-      "id": "DdQ9i9uE80E"
     }
   ]
 }
