@@ -2,10 +2,34 @@
   "username": "videojockey_official",
   "name": "Vidiojockey",
   "profilePicUrl": "data/instagram/images/videojockey_official/profile.jpg",
-  "followersCount": 17025,
-  "postsCount": 399,
-  "fetchedAt": "2026-10-18T12:05:38+09:00",
+  "followersCount": 17027,
+  "postsCount": 401,
+  "fetchedAt": "2026-10-19T12:19:39+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DeqP6yvmWQ5/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/videojockey_official/DeqP6yvmWQ5.jpg",
+      "caption": "비디오자키는 겨울 준비중! ₊⋆ ❅ ☃︎\n\n포근한 퍼 디테일과 따뜻한 착용감으로\n매일 입고 싶은 겨울 패딩을 만나보세요 !\n\nvideojockey.co.kr\n#videojockey #비디오자키 #퍼패딩 #패딩",
+      "likesCount": null,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-10-19T03:03:02.000Z",
+      "id": "DeqP6yvmWQ5"
+    },
+    {
+      "url": "https://www.instagram.com/p/Den4ahEGbwF/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/videojockey_official/Den4ahEGbwF.jpg",
+      "caption": "26FW COLLECTION\n“VIKEY‘S COZY HOURS” 🕰️ ｡✮\n\nvideojockey.co.kr\n#videojockey #비디오자키",
+      "likesCount": null,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-10-18T04:59:51.000Z",
+      "id": "Den4ahEGbwF"
+    },
     {
       "url": "https://www.instagram.com/p/Dedj1oPH_M3/",
       "type": "Sidecar",
@@ -29,30 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-10-12T03:15:02.000Z",
       "id": "DeYPuDknx5T"
-    },
-    {
-      "url": "https://www.instagram.com/p/DeQfn22H0Hr/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/DeQfn22H0Hr.jpg",
-      "caption": "26FW COLLECTION\n“VIKEY‘S COZY HOURS”\n⠀\n비디오자키의 26FW 시즌 5차 제품이 발매되었습니다.\n\n새롭게 시작되는 26FW를\n무신사 및 공식홈페이지에서 만나보세요 🏡 ｡✮\n\nvideojockey.co.kr\n#videojockey #비디오자키",
-      "likesCount": null,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-10-09T03:00:02.000Z",
-      "id": "DeQfn22H0Hr"
-    },
-    {
-      "url": "https://www.instagram.com/p/DeN8gXdn1dX/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/DeN8gXdn1dX.jpg",
-      "caption": "많은 사랑을 받은 VIVI T-SHIRT가\n새로운 컬러와 함께 HOODIE 로 출시되었습니다.\n\n✩ HOODIE : CROP / MEDIUM\n[CHARCOAL / BROWN / BLUE / MELANGEGREY]\n\n새롭게 추가된 크롭과 미디움 사이즈의\nVIVI HOODIE를 만나보세요.❤︎ ⁺\n\nvideojockey.co.kr\n#videojockey #비디오자키",
-      "likesCount": null,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-10-08T03:15:02.000Z",
-      "id": "DeN8gXdn1dX"
     }
   ]
 }
