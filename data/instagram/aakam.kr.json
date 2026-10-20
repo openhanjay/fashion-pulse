@@ -1,58 +1,21 @@
 {
   "username": "aakam.kr",
   "name": "AAKAM",
-  "profilePicUrl": "data/instagram/images/aakam.kr/profile.jpg",
-  "followersCount": 114464,
-  "postsCount": 355,
-  "fetchedAt": "2026-10-19T12:19:39+09:00",
+  "profilePicUrl": "",
+  "followersCount": null,
+  "postsCount": null,
+  "fetchedAt": "2026-10-20T12:28:32+09:00",
   "posts": [
     {
-      "url": "https://www.instagram.com/p/Deooie_E8-j/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/aakam.kr/Deooie_E8-j.jpg",
-      "caption": "26FW 3rd With @pinnnblin \n \n#aakam #아캄",
-      "likesCount": 486,
-      "commentsCount": 0,
+      "url": "https://www.instagram.com/aakam.kr/",
+      "type": "",
+      "displayUrl": "",
+      "caption": "",
+      "likesCount": null,
+      "commentsCount": null,
       "videoPlayCount": null,
       "videoViewCount": null,
-      "timestamp": "2026-10-18T12:00:07.000Z",
-      "id": "Deooie_E8-j"
-    },
-    {
-      "url": "https://www.instagram.com/p/DelGgKuEyGp/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/aakam.kr/DelGgKuEyGp.jpg",
-      "caption": "AAKAM 26FW 3rd Collection\n\n2026. 10. 21 (Wed)\n\n#aakam",
-      "likesCount": 621,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-10-17T03:05:02.000Z",
-      "id": "DelGgKuEyGp"
-    },
-    {
-      "url": "https://www.instagram.com/p/DejNYmkE5zw/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/aakam.kr/DejNYmkE5zw.jpg",
-      "caption": "+AAKAM 26FW-3+\n\nRELEASE 2026-10-21\n\n#aakam",
-      "likesCount": 473,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-10-16T09:26:54.000Z",
-      "id": "DejNYmkE5zw"
-    },
-    {
-      "url": "https://www.instagram.com/p/Deg4ynEE29F/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/aakam.kr/Deg4ynEE29F.jpg",
-      "caption": "‘26FW-3\n\n2026-10-21\n\n#aakam",
-      "likesCount": 1320,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-10-15T11:48:28.000Z",
-      "id": "Deg4ynEE29F"
+      "timestamp": null
     }
   ]
 }

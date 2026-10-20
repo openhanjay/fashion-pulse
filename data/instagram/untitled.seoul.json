@@ -1,58 +1,21 @@
 {
   "username": "untitled.seoul",
   "name": "untitled.seoul",
-  "profilePicUrl": "data/instagram/images/untitled.seoul/profile.jpg",
-  "followersCount": 6279,
-  "postsCount": 18,
-  "fetchedAt": "2026-10-19T12:19:39+09:00",
+  "profilePicUrl": "",
+  "followersCount": null,
+  "postsCount": null,
+  "fetchedAt": "2026-10-20T12:28:32+09:00",
   "posts": [
     {
-      "url": "https://www.instagram.com/p/DejWPw-mQ-l/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/untitled.seoul/DejWPw-mQ-l.jpg",
-      "caption": "UNTITLED SEOUL\n26 WINTER 1ST DROP\n\n겨울의 시작, 새로운 실루엣.\n\n아우터부터 우븐 팬츠까지,\n언타이틀서울의 26 WINTER 첫 번째 컬렉션을 공개합니다.\n\n10.19 MON — OFFICIAL RELEASE\n\n지금 미리 만나보세요.",
-      "likesCount": 23,
-      "commentsCount": 0,
+      "url": "https://www.instagram.com/untitled.seoul/",
+      "type": "",
+      "displayUrl": "",
+      "caption": "",
+      "likesCount": null,
+      "commentsCount": null,
       "videoPlayCount": null,
       "videoViewCount": null,
-      "timestamp": "2026-10-16T10:44:20.000Z",
-      "id": "DejWPw-mQ-l"
-    },
-    {
-      "url": "https://www.instagram.com/p/DejV061mY5x/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/untitled.seoul/DejV061mY5x.jpg",
-      "caption": "UNTITLED SEOUL\n26 WINTER 1ST DROP\n\n겨울의 시작, 새로운 실루엣.\n\n아우터부터 우븐 팬츠까지,\n언타이틀서울의 26 WINTER 첫 번째 컬렉션을 공개합니다.\n\n10.19 MON — OFFICIAL RELEASE\n\n지금 미리 만나보세요.",
-      "likesCount": 34,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-10-16T10:40:40.000Z",
-      "id": "DejV061mY5x"
-    },
-    {
-      "url": "https://www.instagram.com/p/DejVIhTGYOf/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/untitled.seoul/DejVIhTGYOf.jpg",
-      "caption": "UNTITLED SEOUL\n26 WINTER 1ST DROP\n\n겨울의 시작, 새로운 실루엣.\n\n아우터부터 우븐 팬츠까지,\n언타이틀서울의 26 WINTER 첫 번째 컬렉션을 공개합니다.\n\n10.19 MON — OFFICIAL RELEASE\n\n지금 미리 만나보세요.",
-      "likesCount": 45,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-10-16T10:34:36.000Z",
-      "id": "DejVIhTGYOf"
-    },
-    {
-      "url": "https://www.instagram.com/p/Ddle3gSkf_B/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/untitled.seoul/Ddle3gSkf_B.jpg",
-      "caption": "✔️26 FALL 2ND DROP — ZIP-UP EDIT",
-      "likesCount": 48,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-09-22T10:06:45.000Z",
-      "id": "Ddle3gSkf_B"
+      "timestamp": null
     }
   ]
 }
