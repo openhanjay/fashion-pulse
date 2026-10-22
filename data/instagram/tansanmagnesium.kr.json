@@ -2,16 +2,16 @@
   "username": "tansanmagnesium.kr",
   "name": "Tansanmagnesium",
   "profilePicUrl": "data/instagram/images/tansanmagnesium.kr/profile.jpg",
-  "followersCount": 143610,
+  "followersCount": 143588,
   "postsCount": null,
-  "fetchedAt": "2026-10-21T12:22:55+09:00",
+  "fetchedAt": "2026-10-22T12:22:05+09:00",
   "posts": [
     {
       "url": "https://www.instagram.com/p/Det02p8mqub/",
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/tansanmagnesium.kr/Det02p8mqub.jpg",
       "caption": "tansanmagnesium POP-UP STORE💗\n\n탄산마그네슘이 신림 타임스트림에 찾아갑니다!\n10월 21일부터 내년 1월 3일까지, 타임스트림 5층에서 탄산마그네슘 팝업을 만나보세요✨\n\n직접 입어보고 쇼핑할 수 있는 다양한 제품들과 함께\n팝업에서만 만나볼 수 있는 특별한 혜택도 준비했습니다.\n\n🎁 POP-UP EVENT\n품목별 증정 이벤트 롱슬리브 1+1\n바지 구매 시 롱슬리브 1+2\n팝업 전 제품 5% OFF\n\n신림에서 만나요! 🤎\n\n📍 신림 타임스트림 5F\n서울 관악구 신림로 330\n📅 2026.10.21 WED — 2027.01.03 SUN",
-      "likesCount": 128,
+      "likesCount": 307,
       "commentsCount": 0,
       "videoPlayCount": null,
       "videoViewCount": null,
@@ -19,13 +19,25 @@
       "id": "Det02p8mqub"
     },
     {
+      "url": "https://www.instagram.com/p/Dety_IPGG9o/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/tansanmagnesium.kr/Dety_IPGG9o.jpg",
+      "caption": "(✦ ̮ ✦)\n\n@tansanmagnesium.kr\n\n⊂(ᴖ ̫ᴖ)⊃",
+      "likesCount": null,
+      "commentsCount": 3,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-10-20T12:07:52.000Z",
+      "id": "Dety_IPGG9o"
+    },
+    {
       "url": "https://www.instagram.com/p/DeqnTZ1sun0/",
       "type": "Video",
       "displayUrl": "data/instagram/images/tansanmagnesium.kr/DeqnTZ1sun0.jpg",
       "caption": "권기범 선수님께서 마운틴 화이트/레드 롱슬리브 착용해주셨습니다!",
-      "likesCount": 207,
+      "likesCount": 221,
       "commentsCount": 0,
-      "videoPlayCount": 17684,
+      "videoPlayCount": 18614,
       "videoViewCount": null,
       "timestamp": "2026-10-19T06:40:00.000Z",
       "id": "DeqnTZ1sun0"
@@ -35,24 +47,12 @@
       "type": "Image",
       "displayUrl": "data/instagram/images/tansanmagnesium.kr/Del-QGJp_Hr.jpg",
       "caption": "Roots X tansanmagnesium Collabo 🧡\n\n루츠를 방문해주시는 분들께 탄산 마그네슘 할인 쿠폰과 추첨을 통해  탄산 마그네슘의 롱 슬리브 티셔츠를 증정해드립니다.\n\nYour friendly neighbor Roots 🌼\n\n■ OPERATING HOURS\n→ WEEKDAY (SUN-THU)\nOPEN 19:00PM - CLOSE 04:00AM\n\n→ WEEKEND (FRI-SAT)\nOPEN 18:00PM - CLOSE 05:00PM \n\n/ EVERYDAY OPEN\n\n■ LOCATION\n→ DONGSEONG-RO 3GIL 58-18, 1F\n\n■ CONTACT\n→ 01047177832 + INSTAGRAM DM📩\n\n————————————————",
-      "likesCount": 90,
+      "likesCount": 95,
       "commentsCount": 0,
       "videoPlayCount": null,
       "videoViewCount": null,
       "timestamp": "2026-10-17T11:12:34.000Z",
       "id": "Del-QGJp_Hr"
-    },
-    {
-      "url": "https://www.instagram.com/p/Del-PiSiU3P/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/tansanmagnesium.kr/Del-PiSiU3P.jpg",
-      "caption": "Roots X tansanmagnesium Collabo 🧡\n\n루츠를 방문해주시는 분들께 탄산 마그네슘 할인 쿠폰과 추첨을 통해  탄산 마그네슘의 롱 슬리브 티셔츠를 증정해드립니다.\n\nYour friendly neighbor Roots 🌼\n\n■ OPERATING HOURS\n→ WEEKDAY (SUN-THU)\nOPEN 19:00PM - CLOSE 04:00AM\n\n→ WEEKEND (FRI-SAT)\nOPEN 18:00PM - CLOSE 05:00PM \n\n/ EVERYDAY OPEN\n\n■ LOCATION\n→ DONGSEONG-RO 3GIL 58-18, 1F\n\n■ CONTACT\n→ 01047177832 + INSTAGRAM DM📩\n\n————————————————",
-      "likesCount": 56,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-10-17T11:12:18.000Z",
-      "id": "Del-PiSiU3P"
     }
   ]
 }
