@@ -1,8 +1,8 @@
 {
-"vivalavida":{"brandName":"비바라비다","total":439,"snapshotDays":78,"updatedAt":"2026-10-21","items":[
+"vivalavida":{"brandName":"비바라비다","total":439,"snapshotDays":78,"updatedAt":"2026-10-22","items":[
   {"id":"7388978","name":"Wildness 헨리넥 롱 슬리브 티셔츠","price":45900,"normalPrice":61900,"discount":26,"reviews":3,"reviewScore":5,"soldOut":false,"gender":"남성"},
-  {"id":"7443151","name":"Skewer 헨리넥 롱 슬리브 티셔츠","price":45900,"normalPrice":61900,"discount":26,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
-  {"id":"7437501","name":"Spiky 투톤 레이어드 롱 슬리브 티셔츠","price":48900,"normalPrice":65900,"discount":26,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
+  {"id":"7443151","name":"Skewer 헨리넥 롱 슬리브 티셔츠","price":45900,"normalPrice":61900,"discount":26,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
+  {"id":"7437501","name":"Spiky 투톤 레이어드 롱 슬리브 티셔츠","price":48900,"normalPrice":65900,"discount":26,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7388976","name":"헨리넥 롱 슬리브 티셔츠","price":33900,"normalPrice":44900,"discount":24,"reviews":4,"reviewScore":5,"soldOut":false,"gender":"남성"},
   {"id":"7388981","name":"Spiral 배색 트리밍 롱 슬리브 티셔츠","price":54900,"normalPrice":73900,"discount":26,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"남성","rankedDays":1},
   {"id":"7426592","name":"Whisk 우먼 롱 슬리브 티셔츠","price":35900,"normalPrice":46900,"discount":23,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"여성"},
@@ -57,7 +57,7 @@
   {"id":"5969431","name":"Siam 헤비테리 후드","price":58220,"normalPrice":93900,"discount":38,"reviews":14,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
   {"id":"5353422","name":"[기모선택] Storm 헤비테리 후드","price":58220,"normalPrice":93900,"discount":38,"reviews":22,"reviewScore":4.8,"soldOut":false,"gender":"공용"},
   {"id":"4517945","name":"[기모선택] Element 헤비테리 후드","price":48920,"normalPrice":78900,"discount":38,"reviews":36,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
-  {"id":"7382725","name":"Sticky 다이아 라이트 패딩 자켓","price":94900,"normalPrice":164900,"discount":42,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"공용"},
+  {"id":"7382725","name":"Sticky 다이아 라이트 패딩 자켓","price":94900,"normalPrice":164900,"discount":42,"reviews":3,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7103604","name":"Seeker 레글런 롱 슬리브 티셔츠","price":32440,"normalPrice":49900,"discount":35,"reviews":3,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"6021974","name":"Risk 우먼 집업 후디","price":51940,"normalPrice":79900,"discount":35,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"여성"},
   {"id":"5190514","name":"Marker 나일론 스트링 카고 와이드 팬츠","price":33330,"normalPrice":52900,"discount":37,"reviews":374,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":3},
