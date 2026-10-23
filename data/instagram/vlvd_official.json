@@ -2,10 +2,22 @@
   "username": "vlvd_official",
   "name": "VIVA LA VIDA",
   "profilePicUrl": "data/instagram/images/vlvd_official/profile.jpg",
-  "followersCount": 4924,
-  "postsCount": 294,
-  "fetchedAt": "2026-10-22T12:22:05+09:00",
+  "followersCount": 4939,
+  "postsCount": 295,
+  "fetchedAt": "2026-10-23T12:27:02+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DeynJu5lJq_/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/vlvd_official/DeynJu5lJq_.jpg",
+      "caption": "[Half-Button Fleece Pullocver]\n하프 버튼 플리스 풀오버\n\n⊹ Size : 1 / 2 / 3\n⊹ Color : Ivory / Red / Navy / Charcoal\n\nVLVD.kr / MUSINSA / 29CM\nAvailable on our official website, Musinsa, and 29CM.\n\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
+      "likesCount": 5,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-10-22T09:00:03.000Z",
+      "id": "DeynJu5lJq_"
+    },
     {
       "url": "https://www.instagram.com/p/DewCXYtFBG0/",
       "type": "Sidecar",
@@ -41,18 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-10-18T06:46:02.000Z",
       "id": "DeoEoh4FNz_"
-    },
-    {
-      "url": "https://www.instagram.com/p/DejKWRaFBfy/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/vlvd_official/DejKWRaFBfy.jpg",
-      "caption": "[Seeker Raglan Long Sleeve T-Shirt]\n시커 레글런 롱 슬리브\n\n⊹ Size : S / M / L / XL\n⊹ Color : White-Green / White-Black / Yellow-Yellow / Red-Red / Blue-Blue / Melange-Melange / Black-Black\n\nVLVD.kr / MUSINSA / 29CM\nAvailable on our official website, Musinsa, and 29CM.\n\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
-      "likesCount": 8,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-10-16T09:00:13.000Z",
-      "id": "DejKWRaFBfy"
     }
   ]
 }
