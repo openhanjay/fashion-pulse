@@ -2,10 +2,22 @@
   "username": "videojockey_official",
   "name": "Vidiojockey",
   "profilePicUrl": "data/instagram/images/videojockey_official/profile.jpg",
-  "followersCount": 17043,
+  "followersCount": 17071,
   "postsCount": null,
-  "fetchedAt": "2026-10-23T12:27:02+09:00",
+  "fetchedAt": "2026-10-24T12:21:28+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/De0tiOlGRmn/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/videojockey_official/De0tiOlGRmn.jpg",
+      "caption": "비디오자키의 새로운 공간에 초대합니다 ✉️\n\n자사몰이 새 집으로 리뉴얼 오픈했습니다. \n이사 떡 대신 최대 90% 할인으로 인사드릴게요 🍡⋆.ೃ࿔*:·\n\n☆EVENT 01\n26FW 신규 상품 전용 20% 쿠폰\n\n☆EVENT 02\n9,900원부터 시작하는 균일가 특가\n\n새로워진 공식몰에서 다양한 겨울 아이템과 혜택을 만나보세요🧤\n(수량 소진 시 마감 될수있어요 ⏰)\n\n10.23(FRI) - 11.01(SUN)\n\nvideojockey.co.kr\n#videojockey #비디오자키",
+      "likesCount": null,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-10-23T04:34:55.000Z",
+      "id": "De0tiOlGRmn"
+    },
     {
       "url": "https://www.instagram.com/p/DevhOkiGS6W/",
       "type": "Sidecar",
@@ -41,18 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-10-18T04:59:51.000Z",
       "id": "Den4ahEGbwF"
-    },
-    {
-      "url": "https://www.instagram.com/p/Dedj1oPH_M3/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/Dedj1oPH_M3.jpg",
-      "caption": "26FW COLLECTION “VIKEY‘S COZY HOURS”\n\n✩ STRIPE FLEECE JACKET [GREY / BROWN]\n✩ DOUBLE HEART CORDUROY DOT MIDI SKIRT [CHARCOAL / BROWN]\n✩ DOT FLEECE DUFFLE COAT [CHARCOAL / BROWN]\n✩ STAR NO.5 SWEAT PANTS [MELANGE GREY / CHARCOAL]\n\n videojockey.co.kr\n#videojockey #비디오자키",
-      "likesCount": null,
-      "commentsCount": 1,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-10-14T04:47:39.000Z",
-      "id": "Dedj1oPH_M3"
     }
   ]
 }
