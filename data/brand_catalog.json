@@ -1,5 +1,5 @@
 {
-"vivalavida":{"brandName":"비바라비다","total":441,"snapshotDays":80,"updatedAt":"2026-10-23","items":[
+"vivalavida":{"brandName":"비바라비다","total":441,"snapshotDays":80,"updatedAt":"2026-10-24","items":[
   {"id":"7443151","name":"Skewer 헨리넥 롱 슬리브 티셔츠","price":45900,"normalPrice":61900,"discount":26,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7437501","name":"Spiky 투톤 레이어드 롱 슬리브 티셔츠","price":48900,"normalPrice":65900,"discount":26,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7388978","name":"Wildness 헨리넥 롱 슬리브 티셔츠","price":45900,"normalPrice":61900,"discount":26,"reviews":3,"reviewScore":5,"soldOut":false,"gender":"남성"},
@@ -89,7 +89,7 @@
   {"id":"4720429","name":"[기모선택] Stamp 헤비테리 후드","price":64900,"normalPrice":93900,"discount":31,"reviews":32,"reviewScore":4.7,"soldOut":false,"gender":"공용"},
   {"id":"7388975","name":"Equine 투톤 레이어드 롱 슬리브 티셔츠","price":48900,"normalPrice":65900,"discount":26,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"남성"},
   {"id":"7132635","name":"Amulet 와이드 스웻 팬츠","price":53900,"normalPrice":71900,"discount":25,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
-  {"id":"5855807","name":"[기모선택] Dest 헤비테리 후드 집업","price":62900,"normalPrice":89900,"discount":30,"reviews":59,"reviewScore":4.9,"soldOut":false,"gender":"공용","rankedDays":4},
+  {"id":"5855807","name":"[기모선택] Dest 헤비테리 후드 집업","price":62900,"normalPrice":89900,"discount":30,"reviews":60,"reviewScore":4.9,"soldOut":false,"gender":"공용","rankedDays":4},
   {"id":"5387919","name":"Blast 나일론 바람막이","price":44900,"normalPrice":122400,"discount":63,"reviews":5,"reviewScore":4.2,"soldOut":false,"gender":"공용"},
   {"id":"5968861","name":"Stripe 헤비테리 후드 집업","price":62900,"normalPrice":96900,"discount":35,"reviews":22,"reviewScore":4.7,"soldOut":false,"gender":"공용","rankedDays":1},
   {"id":"7398969","name":"Aero 토트백","price":44900,"normalPrice":59900,"discount":25,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
