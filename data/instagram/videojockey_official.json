@@ -2,10 +2,22 @@
   "username": "videojockey_official",
   "name": "Vidiojockey",
   "profilePicUrl": "data/instagram/images/videojockey_official/profile.jpg",
-  "followersCount": 17071,
+  "followersCount": 17090,
   "postsCount": null,
-  "fetchedAt": "2026-10-24T12:21:28+09:00",
+  "fetchedAt": "2026-10-25T12:16:49+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/De5sSEUGR9I/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/videojockey_official/De5sSEUGR9I.jpg",
+      "caption": "26FW COLLECTION\n“VIKEY‘S COZY HOURS” STYLING 🕰️ ｡✮\n\nvideojockey.co.kr\n#videojockey #비디오자키",
+      "likesCount": 7,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-10-25T03:00:04.000Z",
+      "id": "De5sSEUGR9I"
+    },
     {
       "url": "https://www.instagram.com/p/De0tiOlGRmn/",
       "type": "Sidecar",
@@ -41,18 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-10-19T03:03:02.000Z",
       "id": "DeqP6yvmWQ5"
-    },
-    {
-      "url": "https://www.instagram.com/p/Den4ahEGbwF/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/Den4ahEGbwF.jpg",
-      "caption": "26FW COLLECTION\n“VIKEY‘S COZY HOURS” 🕰️ ｡✮\n\nvideojockey.co.kr\n#videojockey #비디오자키",
-      "likesCount": null,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-10-18T04:59:51.000Z",
-      "id": "Den4ahEGbwF"
     }
   ]
 }

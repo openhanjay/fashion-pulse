@@ -2,18 +2,30 @@
   "username": "vlvd_official",
   "name": "VIVA LA VIDA",
   "profilePicUrl": "data/instagram/images/vlvd_official/profile.jpg",
-  "followersCount": 4949,
-  "postsCount": 296,
-  "fetchedAt": "2026-10-24T12:21:28+09:00",
+  "followersCount": 4964,
+  "postsCount": 297,
+  "fetchedAt": "2026-10-25T12:16:49+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/De3ww1QAUgS/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/vlvd_official/De3ww1QAUgS.jpg",
+      "caption": "OUR ROOM @ OUR SPOT ARTWORK 01. \n\n01\n[Spicky Dia Light Padding Jacket]\n스피키 다이아 라이트 패딩 자켓\n\n⊹ Size : S / M / L\n⊹ Color : Burgundy / Navy / Charcoal / Black\n\n02\n[Sticky Dia Light Padding Jacket]\n스티키 다이아 라이트 패딩 자켓\n\n⊹ Size : M / L / XL\n⊹ Color : Light Gray / Charcoal / Black\n\nVLVD.kr / MUSINSA / 29CM\nAvailable on our official website, Musinsa, and 29CM.",
+      "likesCount": 0,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-10-24T09:00:07.000Z",
+      "id": "De3ww1QAUgS"
+    },
     {
       "url": "https://www.instagram.com/p/De1Ii5nzlAo/",
       "type": "Video",
       "displayUrl": "data/instagram/images/vlvd_official/De1Ii5nzlAo.jpg",
       "caption": "OUR ROOM @ OUR SPOT ◡̈⋆*\n\nWinning or losing doesn’t matter. Try focusing on who you‘re with and where you are right now.",
-      "likesCount": 3,
+      "likesCount": 4,
       "commentsCount": 0,
-      "videoPlayCount": 1001,
+      "videoPlayCount": 1256,
       "videoViewCount": null,
       "timestamp": "2026-10-23T08:30:07.000Z",
       "id": "De1Ii5nzlAo"
@@ -41,18 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-10-21T09:00:01.000Z",
       "id": "DewCXYtFBG0"
-    },
-    {
-      "url": "https://www.instagram.com/p/Deq4uICFNBh/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/vlvd_official/Deq4uICFNBh.jpg",
-      "caption": "▰ New Item ▰\n\nWe have created artwork based on the ”OUR ROOM @ OUR SPOT“ seasonal slogan, allowing you to explore a variety of items.\n\n• Added winter accessories.\n• Available Now\n• www.VLVD.KR",
-      "likesCount": 9,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-10-19T09:00:03.000Z",
-      "id": "Deq4uICFNBh"
     }
   ]
 }
