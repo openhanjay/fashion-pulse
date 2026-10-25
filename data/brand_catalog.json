@@ -1,8 +1,8 @@
 {
-"vivalavida":{"brandName":"비바라비다","total":441,"snapshotDays":81,"updatedAt":"2026-10-24","items":[
+"vivalavida":{"brandName":"비바라비다","total":441,"snapshotDays":81,"updatedAt":"2026-10-25","items":[
   {"id":"7443151","name":"Skewer 헨리넥 롱 슬리브 티셔츠","price":45900,"normalPrice":61900,"discount":26,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7437501","name":"Spiky 투톤 레이어드 롱 슬리브 티셔츠","price":48900,"normalPrice":65900,"discount":26,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"공용"},
-  {"id":"7388978","name":"Wildness 헨리넥 롱 슬리브 티셔츠","price":45900,"normalPrice":61900,"discount":26,"reviews":3,"reviewScore":5,"soldOut":false,"gender":"남성"},
+  {"id":"7388978","name":"Wildness 헨리넥 롱 슬리브 티셔츠","price":45900,"normalPrice":61900,"discount":26,"reviews":4,"reviewScore":5,"soldOut":false,"gender":"남성"},
   {"id":"7426592","name":"Whisk 우먼 롱 슬리브 티셔츠","price":35900,"normalPrice":46900,"discount":23,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"여성"},
   {"id":"7426609","name":"Crufi 우먼 롱 슬리브 티셔츠","price":35900,"normalPrice":46900,"discount":23,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"여성"},
   {"id":"7388976","name":"헨리넥 롱 슬리브 티셔츠","price":33900,"normalPrice":44900,"discount":24,"reviews":4,"reviewScore":5,"soldOut":false,"gender":"남성"},
@@ -67,7 +67,7 @@
   {"id":"5853639","name":"[기모선택] Otherz 헤비테리 후드 집업","price":62900,"normalPrice":96900,"discount":35,"reviews":53,"reviewScore":4.9,"soldOut":false,"gender":"공용","rankedDays":1},
   {"id":"7124767","name":"[기모선택] Swift 헤비테리 후드 집업","price":62900,"normalPrice":96900,"discount":35,"reviews":63,"reviewScore":4.8,"soldOut":false,"gender":"여성","rankedDays":9,"bestRank":80},
   {"id":"7382725","name":"Sticky 다이아 라이트 패딩 자켓","price":94900,"normalPrice":164900,"discount":42,"reviews":5,"reviewScore":5,"soldOut":false,"gender":"공용"},
-  {"id":"5543992","name":"[기모선택] My Youth 헤비테리 맨투맨","price":49900,"normalPrice":79900,"discount":38,"reviews":276,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":11},
+  {"id":"5543992","name":"[기모선택] My Youth 헤비테리 맨투맨","price":49900,"normalPrice":79900,"discount":38,"reviews":277,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":11},
   {"id":"7124763","name":"[기모선택] Weed 헤비테리 후드 집업","price":62900,"normalPrice":96900,"discount":35,"reviews":2,"reviewScore":3,"soldOut":false,"gender":"공용"},
   {"id":"5369192","name":"S2 Dot 레글런 롱 슬리브 티셔츠","price":32780,"normalPrice":44900,"discount":27,"reviews":12,"reviewScore":4.3,"soldOut":false,"gender":"공용"},
   {"id":"5771917","name":"[기모선택] Cupid 우먼 세미 크롭 맨투맨","price":47380,"normalPrice":64900,"discount":27,"reviews":6,"reviewScore":4.3,"soldOut":false,"gender":"여성"},
