@@ -1,5 +1,5 @@
 {
-"vivalavida":{"brandName":"비바라비다","total":449,"snapshotDays":82,"updatedAt":"2026-10-26","items":[
+"vivalavida":{"brandName":"비바라비다","total":450,"snapshotDays":82,"updatedAt":"2026-10-26","items":[
   {"id":"7443151","name":"Skewer 헨리넥 롱 슬리브 티셔츠","price":45900,"normalPrice":61900,"discount":26,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7437501","name":"Spiky 투톤 레이어드 롱 슬리브 티셔츠","price":48900,"normalPrice":65900,"discount":26,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7388978","name":"Wildness 헨리넥 롱 슬리브 티셔츠","price":45900,"normalPrice":61900,"discount":26,"reviews":4,"reviewScore":5,"soldOut":false,"gender":"남성"},
@@ -447,6 +447,7 @@
   {"id":"7597886","name":"Percent 스트라이프 후드 롱 슬리브 티셔츠","price":52430,"normalPrice":69900,"discount":25,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"여성"},
   {"id":"7587093","name":"Est 포켓 라이트 패딩 자켓","price":122180,"normalPrice":162900,"discount":25,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
   {"id":"7587046","name":"Ironic 포켓 라이트 패딩 자켓","price":122180,"normalPrice":162900,"discount":25,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
+  {"id":"7585285","name":"Sunburnt 기모 나일론 핀턱 와이드 팬츠","price":94900,"normalPrice":94900,"discount":0,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
   {"id":"7579953","name":"Union Jack 롱 슬리브 티셔츠","price":36800,"normalPrice":49900,"discount":26,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
   {"id":"7574960","name":"Nonstop 포켓 라이트 패딩 자켓","price":162900,"normalPrice":162900,"discount":0,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"}
 ]}
