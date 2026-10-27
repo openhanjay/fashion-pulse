@@ -2,10 +2,22 @@
   "username": "videojockey_official",
   "name": "Vidiojockey",
   "profilePicUrl": "data/instagram/images/videojockey_official/profile.jpg",
-  "followersCount": 17098,
+  "followersCount": 17105,
   "postsCount": null,
-  "fetchedAt": "2026-10-26T12:18:07+09:00",
+  "fetchedAt": "2026-10-27T12:46:54+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/De-7HZtHw2f/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/videojockey_official/De-7HZtHw2f.jpg",
+      "caption": "26FW COLLECTION “VIKEY‘S COZY HOURS”\n\n✩ DOT FLEECE DUFFLE COAT [CHARCOAL / BROWN]\n\n videojockey.co.kr\n#videojockey #비디오자키",
+      "likesCount": 1,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-10-27T03:45:02.000Z",
+      "id": "De-7HZtHw2f"
+    },
     {
       "url": "https://www.instagram.com/p/De5sSEUGR9I/",
       "type": "Sidecar",
@@ -41,18 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-10-21T04:11:10.000Z",
       "id": "DevhOkiGS6W"
-    },
-    {
-      "url": "https://www.instagram.com/p/DeqP6yvmWQ5/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/DeqP6yvmWQ5.jpg",
-      "caption": "비디오자키는 겨울 준비중! ₊⋆ ❅ ☃︎\n\n포근한 퍼 디테일과 따뜻한 착용감으로\n매일 입고 싶은 겨울 패딩을 만나보세요 !\n\nvideojockey.co.kr\n#videojockey #비디오자키 #퍼패딩 #패딩",
-      "likesCount": null,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-10-19T03:03:02.000Z",
-      "id": "DeqP6yvmWQ5"
     }
   ]
 }
