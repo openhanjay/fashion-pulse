@@ -1,5 +1,5 @@
 {
-"vivalavida":{"brandName":"비바라비다","total":450,"snapshotDays":83,"updatedAt":"2026-10-26","items":[
+"vivalavida":{"brandName":"비바라비다","total":450,"snapshotDays":83,"updatedAt":"2026-10-27","items":[
   {"id":"7443151","name":"Skewer 헨리넥 롱 슬리브 티셔츠","price":45900,"normalPrice":61900,"discount":26,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7437501","name":"Spiky 투톤 레이어드 롱 슬리브 티셔츠","price":48900,"normalPrice":65900,"discount":26,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7388978","name":"Wildness 헨리넥 롱 슬리브 티셔츠","price":45900,"normalPrice":61900,"discount":26,"reviews":4,"reviewScore":5,"soldOut":false,"gender":"남성"},
@@ -29,7 +29,7 @@
   {"id":"5353408","name":"Gleam 헤비테리 후드","price":51650,"normalPrice":93900,"discount":45,"reviews":105,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":1},
   {"id":"5395562","name":"Else 롱 슬리브 티셔츠","price":31430,"normalPrice":44900,"discount":30,"reviews":108,"reviewScore":4.7,"soldOut":false,"gender":"공용","rankedDays":1},
   {"id":"7377722","name":"하프 버튼 플리스 풀오버","price":57900,"normalPrice":96900,"discount":40,"reviews":6,"reviewScore":4.3,"soldOut":false,"gender":"공용"},
-  {"id":"7107060","name":"[기모선택] Sunburst 헤비테리 후드","price":57900,"normalPrice":93900,"discount":38,"reviews":17,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":1},
+  {"id":"7107060","name":"[기모선택] Sunburst 헤비테리 후드","price":57900,"normalPrice":93900,"discount":38,"reviews":18,"reviewScore":4.7,"soldOut":false,"gender":"공용","rankedDays":1},
   {"id":"6108801","name":"Seastar 링거 반팔 티셔츠","price":32830,"normalPrice":46900,"discount":30,"reviews":870,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":16,"bestRank":81},
   {"id":"5386242","name":"Brownchill 롱 슬리브 티셔츠","price":38200,"normalPrice":44900,"discount":15,"reviews":26,"reviewScore":4.7,"soldOut":false,"gender":"공용"},
   {"id":"5957374","name":"Solar 롱 슬리브 티셔츠","price":32780,"normalPrice":44900,"discount":27,"reviews":51,"reviewScore":4.5,"soldOut":false,"gender":"공용"},
@@ -65,7 +65,7 @@
   {"id":"5855421","name":"[기모선택] Tristar 헤비테리 후드 집업 네이비","price":62900,"normalPrice":96900,"discount":35,"reviews":13,"reviewScore":4.7,"soldOut":false,"gender":"공용","rankedDays":1},
   {"id":"5853639","name":"[기모선택] Otherz 헤비테리 후드 집업","price":62900,"normalPrice":96900,"discount":35,"reviews":53,"reviewScore":4.9,"soldOut":false,"gender":"공용","rankedDays":1},
   {"id":"7124767","name":"[기모선택] Swift 헤비테리 후드 집업","price":62900,"normalPrice":96900,"discount":35,"reviews":64,"reviewScore":4.8,"soldOut":false,"gender":"여성","rankedDays":9,"bestRank":80},
-  {"id":"5543992","name":"[기모선택] My Youth 헤비테리 맨투맨","price":49900,"normalPrice":79900,"discount":38,"reviews":277,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":12},
+  {"id":"5543992","name":"[기모선택] My Youth 헤비테리 맨투맨","price":49900,"normalPrice":79900,"discount":38,"reviews":278,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":12},
   {"id":"7124763","name":"[기모선택] Weed 헤비테리 후드 집업","price":62900,"normalPrice":96900,"discount":35,"reviews":2,"reviewScore":3,"soldOut":false,"gender":"공용"},
   {"id":"5369192","name":"S2 Dot 레글런 롱 슬리브 티셔츠","price":32780,"normalPrice":44900,"discount":27,"reviews":12,"reviewScore":4.3,"soldOut":false,"gender":"공용"},
   {"id":"5771917","name":"[기모선택] Cupid 우먼 세미 크롭 맨투맨","price":47380,"normalPrice":64900,"discount":27,"reviews":6,"reviewScore":4.3,"soldOut":false,"gender":"여성"},
@@ -439,7 +439,7 @@
   {"id":"6814992","name":"Dreamy 크롭 반팔 티셔츠","price":29960,"normalPrice":38900,"discount":23,"reviews":2,"reviewScore":3,"soldOut":false,"gender":"여성"},
   {"id":"6329745","name":"AHA 에코백","price":36900,"normalPrice":47900,"discount":23,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
   {"id":"6221018","name":"Wish 에코백","price":36900,"normalPrice":47900,"discount":23,"reviews":3,"reviewScore":4.3,"soldOut":false,"gender":"공용"},
-  {"id":"7574960","name":"Nonstop 포켓 라이트 패딩 자켓","price":162900,"normalPrice":162900,"discount":0,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
+  {"id":"7574960","name":"Nonstop 포켓 라이트 패딩 자켓","price":122180,"normalPrice":162900,"discount":25,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
   {"id":"7579953","name":"Union Jack 롱 슬리브 티셔츠","price":36800,"normalPrice":49900,"discount":26,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
   {"id":"7613883","name":"Vertical 토트백","price":44930,"normalPrice":59900,"discount":25,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
   {"id":"7613447","name":"[기모선택] Familiar 헤비테리 맨투맨","price":59930,"normalPrice":79900,"discount":25,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
@@ -449,6 +449,6 @@
   {"id":"7597886","name":"Percent 스트라이프 후드 롱 슬리브 티셔츠","price":52430,"normalPrice":69900,"discount":25,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"여성"},
   {"id":"7587093","name":"Est 포켓 라이트 패딩 자켓","price":122180,"normalPrice":162900,"discount":25,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
   {"id":"7587046","name":"Ironic 포켓 라이트 패딩 자켓","price":122180,"normalPrice":162900,"discount":25,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
-  {"id":"7585285","name":"Sunburnt 기모 나일론 핀턱 와이드 팬츠","price":94900,"normalPrice":94900,"discount":0,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"}
+  {"id":"7585285","name":"Sunburnt 기모 나일론 핀턱 와이드 팬츠","price":71180,"normalPrice":94900,"discount":25,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"}
 ]}
 }
