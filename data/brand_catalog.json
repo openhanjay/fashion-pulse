@@ -78,7 +78,7 @@
   {"id":"7157001","name":"후드 롱 슬리브 티셔츠","price":39900,"normalPrice":52900,"discount":25,"reviews":2,"reviewScore":4.5,"soldOut":false,"gender":"여성"},
   {"id":"5855438","name":"[기모선택] Tristar 헤비테리 후드 집업 버건디","price":62900,"normalPrice":96900,"discount":35,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"5855430","name":"[기모선택] Tristar 헤비테리 후드 집업 블랙","price":62900,"normalPrice":96900,"discount":35,"reviews":6,"reviewScore":5,"soldOut":false,"gender":"공용"},
-  {"id":"5855820","name":"[기모선택] Scheme 헤비테리 후드 집업","price":62900,"normalPrice":96900,"discount":35,"reviews":91,"reviewScore":4.8,"soldOut":false,"gender":"공용","bestRank":27,"rankedDays":2},
+  {"id":"5855820","name":"[기모선택] Scheme 헤비테리 후드 집업","price":62900,"normalPrice":96900,"discount":35,"reviews":93,"reviewScore":4.8,"soldOut":false,"gender":"공용","bestRank":27,"rankedDays":2},
   {"id":"5949404","name":"Ac Seven 헤비테리 후드","price":64900,"normalPrice":93900,"discount":31,"reviews":16,"reviewScore":4.7,"soldOut":false,"gender":"공용"},
   {"id":"5773185","name":"[기모선택] Young Days 우먼 세미 크롭 맨투맨","price":47380,"normalPrice":64900,"discount":27,"reviews":10,"reviewScore":4.4,"soldOut":false,"gender":"여성"},
   {"id":"6021820","name":"Fruit 우먼 집업 후디","price":62300,"normalPrice":80900,"discount":23,"reviews":20,"reviewScore":4.7,"soldOut":false,"gender":"여성"},
