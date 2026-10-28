@@ -2,10 +2,22 @@
   "username": "vlvd_official",
   "name": "VIVA LA VIDA",
   "profilePicUrl": "data/instagram/images/vlvd_official/profile.jpg",
-  "followersCount": 4976,
+  "followersCount": 5005,
   "postsCount": 298,
-  "fetchedAt": "2026-10-27T12:46:54+09:00",
+  "fetchedAt": "2026-10-28T13:04:03+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/De_fDYzmEt8/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/vlvd_official/De_fDYzmEt8.jpg",
+      "caption": "[Ocean Heavy Terry Sweat Shirt]\n오션 헤비테리 맨투맨 티셔츠\n\n⊹ Size : M / L / XL\n⊹ Color : White Melange / Melange / Yellow / Blue / Navy / Black\n\nVLVD.kr / MUSINSA / 29CM\nAvailable on our official website, Musinsa, and 29CM.\n\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
+      "likesCount": 3,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-10-27T09:00:03.000Z",
+      "id": "De_fDYzmEt8"
+    },
     {
       "url": "https://www.instagram.com/p/De6VfPjFFa-/",
       "type": "Sidecar",
@@ -31,23 +43,11 @@
       "id": "De3ww1QAUgS"
     },
     {
-      "url": "https://www.instagram.com/p/De1Ii5nzlAo/",
-      "type": "Video",
-      "displayUrl": "data/instagram/images/vlvd_official/De1Ii5nzlAo.jpg",
-      "caption": "OUR ROOM @ OUR SPOT ◡̈⋆*\n\nWinning or losing doesn’t matter. Try focusing on who you‘re with and where you are right now.",
-      "likesCount": 5,
-      "commentsCount": 0,
-      "videoPlayCount": 1380,
-      "videoViewCount": null,
-      "timestamp": "2026-10-23T08:30:07.000Z",
-      "id": "De1Ii5nzlAo"
-    },
-    {
       "url": "https://www.instagram.com/p/DeynJu5lJq_/",
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/vlvd_official/DeynJu5lJq_.jpg",
       "caption": "[Half-Button Fleece Pullocver]\n하프 버튼 플리스 풀오버\n\n⊹ Size : 1 / 2 / 3\n⊹ Color : Ivory / Red / Navy / Charcoal\n\nVLVD.kr / MUSINSA / 29CM\nAvailable on our official website, Musinsa, and 29CM.\n\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
-      "likesCount": 8,
+      "likesCount": 9,
       "commentsCount": 0,
       "videoPlayCount": null,
       "videoViewCount": null,
