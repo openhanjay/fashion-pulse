@@ -2,10 +2,22 @@
   "username": "videojockey_official",
   "name": "Vidiojockey",
   "profilePicUrl": "data/instagram/images/videojockey_official/profile.jpg",
-  "followersCount": 17111,
-  "postsCount": null,
-  "fetchedAt": "2026-10-28T13:04:03+09:00",
+  "followersCount": 17121,
+  "postsCount": 406,
+  "fetchedAt": "2026-10-29T13:27:41+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DfEC-5hmaeW/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/videojockey_official/DfEC-5hmaeW.jpg",
+      "caption": "26FW COLLECTION “VIKEY‘S COZY HOURS”\n\n✩ DOT FLEECE SWEAT SHIRTS & PANTS [IVORY / BROWN]\n\n videojockey.co.kr\n#videojockey #비디오자키",
+      "likesCount": null,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-10-29T03:30:03.000Z",
+      "id": "DfEC-5hmaeW"
+    },
     {
       "url": "https://www.instagram.com/p/De-7HZtHw2f/",
       "type": "Sidecar",
@@ -41,18 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-10-23T04:34:55.000Z",
       "id": "De0tiOlGRmn"
-    },
-    {
-      "url": "https://www.instagram.com/p/DevhOkiGS6W/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/DevhOkiGS6W.jpg",
-      "caption": "26FW COLLECTION\n“VIKEY‘S COZY HOURS”\n\n✩ FUR TROOPER HAT [CHARCOAL / BROWN]\n✩ WING BADGE BEANIE [WHITE / BLACK]\n✩ KNIT HOOD MUFFLER [CHARCOAL / BROWN]\n\nvideojockey.co.kr\n#videojockey #비디오자키",
-      "likesCount": null,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-10-21T04:11:10.000Z",
-      "id": "DevhOkiGS6W"
     }
   ]
 }
