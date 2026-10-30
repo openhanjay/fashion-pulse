@@ -2,16 +2,28 @@
   "username": "aakam.kr",
   "name": "AAKAM",
   "profilePicUrl": "data/instagram/images/aakam.kr/profile.jpg",
-  "followersCount": 114940,
-  "postsCount": null,
-  "fetchedAt": "2026-10-29T13:27:41+09:00",
+  "followersCount": 115004,
+  "postsCount": 359,
+  "fetchedAt": "2026-10-30T13:27:41+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DfE2YRhTqoR/",
+      "type": "Video",
+      "displayUrl": "data/instagram/images/aakam.kr/DfE2YRhTqoR.jpg",
+      "caption": "AAKAM SEONGSU STABLE STORE\n\n아캄의 새로운 스토어가 성수에 곧 오픈합니다!🐴🤎\n\nGRAND OPENING\n2026.11.07 (SAT)\n\n#aakam",
+      "likesCount": 651,
+      "commentsCount": 3,
+      "videoPlayCount": 51346,
+      "videoViewCount": null,
+      "timestamp": "2026-10-29T11:04:51.000Z",
+      "id": "DfE2YRhTqoR"
+    },
     {
       "url": "https://www.instagram.com/p/De0czeuE-Mo/",
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/aakam.kr/De0czeuE-Mo.jpg",
       "caption": "みなさん、こんにちは！🇯🇵\n\nAAKAMが大阪にやってきました！\n\n今日からMUSINSA POP-UP STORE OSAKAに参加しています。\n\nみなさんにお会いできるのを楽しみにしています！\n\nお近くに来た際は、ぜひ気軽に遊びに来てくださいね！💖\n\n📍 GRAND GREEN OSAKA VS.\n大阪府大阪市北区大深町6-86\n\n📅 2026.10.23 – 11.08",
-      "likesCount": 1047,
+      "likesCount": 1062,
       "commentsCount": 2,
       "videoPlayCount": null,
       "videoViewCount": null,
@@ -23,7 +35,7 @@
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/aakam.kr/Deyx-gdgRV8.jpg",
       "caption": "26FW 3RD WITH FRIENDS\n \n#aakam #아캄",
-      "likesCount": 278,
+      "likesCount": 285,
       "commentsCount": 0,
       "videoPlayCount": null,
       "videoViewCount": null,
@@ -35,24 +47,12 @@
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/aakam.kr/DewJMz6kW-s.jpg",
       "caption": "26FW-3🧡\n \n#aakam #아캄",
-      "likesCount": 403,
+      "likesCount": 416,
       "commentsCount": 0,
       "videoPlayCount": null,
       "videoViewCount": null,
       "timestamp": "2026-10-21T10:00:02.000Z",
       "id": "DewJMz6kW-s"
-    },
-    {
-      "url": "https://www.instagram.com/p/Deooie_E8-j/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/aakam.kr/Deooie_E8-j.jpg",
-      "caption": "26FW-3😈\n \n#aakam #아캄",
-      "likesCount": 899,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-10-18T12:00:07.000Z",
-      "id": "Deooie_E8-j"
     }
   ]
 }
