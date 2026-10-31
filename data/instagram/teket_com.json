@@ -2,10 +2,22 @@
   "username": "teket_com",
   "name": "TEKET",
   "profilePicUrl": "data/instagram/images/teket_com/profile.jpg",
-  "followersCount": 137241,
-  "postsCount": 708,
-  "fetchedAt": "2026-10-30T13:27:41+09:00",
+  "followersCount": 137265,
+  "postsCount": 709,
+  "fetchedAt": "2026-10-31T13:08:27+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DfGkQrIk_zx/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/teket_com/DfGkQrIk_zx.jpg",
+      "caption": "©Teket 26 Winter\r\nPlan.18 Editorial ‘Turn Inward’\r\n\r\n• Color Test Printed Beanie\r\n• Sequence Sherpa Jacket\r\n\r\nwww.te-ket.com",
+      "likesCount": null,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-10-31T01:00:03.000Z",
+      "id": "DfGkQrIk_zx"
+    },
     {
       "url": "https://www.instagram.com/p/DfGWhD6k5mY/",
       "type": "Sidecar",
@@ -41,18 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-10-20T02:47:43.000Z",
       "id": "Desy4geoE9C"
-    },
-    {
-      "url": "https://www.instagram.com/p/Deqbg9ykX0h/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/teket_com/Deqbg9ykX0h.jpg",
-      "caption": "©Teket 26 Winter\n\nCurrently feeling warm.\nPlan18. Inside Curve Online Now\n\nwww.te-ket.com",
-      "likesCount": null,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-10-19T04:45:03.000Z",
-      "id": "Deqbg9ykX0h"
     }
   ]
 }

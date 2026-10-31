@@ -2,16 +2,28 @@
   "username": "vlvd_official",
   "name": "VIVA LA VIDA",
   "profilePicUrl": "data/instagram/images/vlvd_official/profile.jpg",
-  "followersCount": 5040,
-  "postsCount": 299,
-  "fetchedAt": "2026-10-30T13:27:41+09:00",
+  "followersCount": 5055,
+  "postsCount": 300,
+  "fetchedAt": "2026-10-31T13:08:27+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DfG4vQ0FOne/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/vlvd_official/DfG4vQ0FOne.jpg",
+      "caption": "[Fleeting Heavy Terry Hoodie]\n플리팅 후드 티셔츠\n\n⊹ Size : 1 / 2\n⊹ Color : White / Melange / Deep Blue / Black\n\nVLVD.kr / MUSINSA / 29CM\nAvailable on our official website, Musinsa, and 29CM.\n\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
+      "likesCount": 3,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-10-30T05:59:09.000Z",
+      "id": "DfG4vQ0FOne"
+    },
     {
       "url": "https://www.instagram.com/p/DfB193wFA4j/",
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/vlvd_official/DfB193wFA4j.jpg",
       "caption": "[Odds Heavy Terry Hoodie]\n오즈 후드 티셔츠\n\n- Size : M / L / XL / 2XL\n- Color : White Melange / Melange / Yellow / Blue / Navy / Burgundy\n\nVLVD.kr / MUSINSA / 29CM\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
-      "likesCount": 7,
+      "likesCount": 6,
       "commentsCount": 0,
       "videoPlayCount": null,
       "videoViewCount": null,
@@ -35,24 +47,12 @@
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/vlvd_official/De6VfPjFFa-.jpg",
       "caption": "[Things Eco Bag]\n띵스 에코백\n\n⊹ Size : Free\n⊹ Color : Beige / Yellow / Babypink / Pink / Red / Skyblue / Blue / Navy / Charcoal / Black\n\nVLVD.kr / MUSINSA / 29CM\nAvailable on our official website, Musinsa, and 29CM.\n\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
-      "likesCount": 5,
+      "likesCount": 6,
       "commentsCount": 0,
       "videoPlayCount": null,
       "videoViewCount": null,
       "timestamp": "2026-10-25T09:00:04.000Z",
       "id": "De6VfPjFFa-"
-    },
-    {
-      "url": "https://www.instagram.com/p/De3ww1QAUgS/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/vlvd_official/De3ww1QAUgS.jpg",
-      "caption": "OUR ROOM @ OUR SPOT ARTWORK 01. \n\n01\n[Spicky Dia Light Padding Jacket]\n스피키 다이아 라이트 패딩 자켓\n\n⊹ Size : S / M / L\n⊹ Color : Burgundy / Navy / Charcoal / Black\n\n02\n[Sticky Dia Light Padding Jacket]\n스티키 다이아 라이트 패딩 자켓\n\n⊹ Size : M / L / XL\n⊹ Color : Light Gray / Charcoal / Black\n\nVLVD.kr / MUSINSA / 29CM\nAvailable on our official website, Musinsa, and 29CM.",
-      "likesCount": 2,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-10-24T09:00:07.000Z",
-      "id": "De3ww1QAUgS"
     }
   ]
 }
