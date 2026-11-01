@@ -2,10 +2,22 @@
   "username": "vlvd_official",
   "name": "VIVA LA VIDA",
   "profilePicUrl": "data/instagram/images/vlvd_official/profile.jpg",
-  "followersCount": 5055,
-  "postsCount": 300,
-  "fetchedAt": "2026-10-31T13:08:27+09:00",
+  "followersCount": 5060,
+  "postsCount": 301,
+  "fetchedAt": "2026-11-01T13:29:28+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DfJxK3TzRkz/",
+      "type": "Video",
+      "displayUrl": "data/instagram/images/vlvd_official/DfJxK3TzRkz.jpg",
+      "caption": "[OUR ROOM @ OUR SPOT] ▰ 0⊙0 ▰\n▰ Still Motion Archive ▰\n• Shft the view, redefine the line\n• Available Now\n• www.VLVD.KR",
+      "likesCount": 10,
+      "commentsCount": 0,
+      "videoPlayCount": 1518,
+      "videoViewCount": null,
+      "timestamp": "2026-10-31T08:50:09.000Z",
+      "id": "DfJxK3TzRkz"
+    },
     {
       "url": "https://www.instagram.com/p/DfG4vQ0FOne/",
       "type": "Sidecar",
@@ -41,18 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-10-27T09:00:03.000Z",
       "id": "De_fDYzmEt8"
-    },
-    {
-      "url": "https://www.instagram.com/p/De6VfPjFFa-/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/vlvd_official/De6VfPjFFa-.jpg",
-      "caption": "[Things Eco Bag]\n띵스 에코백\n\n⊹ Size : Free\n⊹ Color : Beige / Yellow / Babypink / Pink / Red / Skyblue / Blue / Navy / Charcoal / Black\n\nVLVD.kr / MUSINSA / 29CM\nAvailable on our official website, Musinsa, and 29CM.\n\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
-      "likesCount": 6,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-10-25T09:00:04.000Z",
-      "id": "De6VfPjFFa-"
     }
   ]
 }
