@@ -1,5 +1,5 @@
 {
-"vivalavida":{"brandName":"비바라비다","total":461,"snapshotDays":88,"updatedAt":"2026-11-01","items":[
+"vivalavida":{"brandName":"비바라비다","total":461,"snapshotDays":89,"updatedAt":"2026-11-01","items":[
   {"id":"7443151","name":"Skewer 헨리넥 롱 슬리브 티셔츠","price":39900,"normalPrice":61900,"discount":36,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7437501","name":"Spiky 투톤 레이어드 롱 슬리브 티셔츠","price":39900,"normalPrice":65900,"discount":39,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7388978","name":"Wildness 헨리넥 롱 슬리브 티셔츠","price":34900,"normalPrice":61900,"discount":44,"reviews":4,"reviewScore":5,"soldOut":false,"gender":"공용"},
@@ -37,8 +37,8 @@
   {"id":"7107045","name":"[기모선택] Penta 헤비테리 후드","price":56900,"normalPrice":93900,"discount":39,"reviews":21,"reviewScore":4.7,"soldOut":false,"gender":"공용","rankedDays":10},
   {"id":"7103603","name":"Buddy 롱 슬리브 티셔츠","price":34900,"normalPrice":49900,"discount":30,"reviews":16,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
   {"id":"7212608","name":"사이드 포켓 코튼 팬츠","price":79900,"normalPrice":99900,"discount":20,"reviews":3,"reviewScore":5,"soldOut":false,"gender":"공용"},
-  {"id":"5395574","name":"044 레글런 롱 슬리브 티셔츠","price":26940,"normalPrice":44900,"discount":40,"reviews":380,"reviewScore":4.7,"soldOut":false,"gender":"공용","rankedDays":31,"bestRank":78},
-  {"id":"7105528","name":"[기모선택] Rodea 헤비테리 후드","price":56900,"normalPrice":93900,"discount":39,"reviews":30,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":17},
+  {"id":"5395574","name":"044 레글런 롱 슬리브 티셔츠","price":26940,"normalPrice":44900,"discount":40,"reviews":380,"reviewScore":4.7,"soldOut":false,"gender":"공용","rankedDays":32,"bestRank":78},
+  {"id":"7105528","name":"[기모선택] Rodea 헤비테리 후드","price":56900,"normalPrice":93900,"discount":39,"reviews":31,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":17},
   {"id":"7106130","name":"[기모선택] Square 헤비테리 후드","price":56900,"normalPrice":93900,"discount":39,"reviews":5,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7103609","name":"Muted 레글런 롱 슬리브 티셔츠","price":34900,"normalPrice":49900,"discount":30,"reviews":12,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
   {"id":"7103606","name":"Nacre 레글런 롱 슬리브 티셔츠","price":34900,"normalPrice":49900,"discount":30,"reviews":1,"reviewScore":1,"soldOut":false,"gender":"공용"},
@@ -61,13 +61,13 @@
   {"id":"7103605","name":"Amber 롱 슬리브 티셔츠","price":34900,"normalPrice":49900,"discount":30,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"5855421","name":"[기모선택] Tristar 헤비테리 후드 집업 네이비","price":62900,"normalPrice":96900,"discount":35,"reviews":14,"reviewScore":4.6,"soldOut":false,"gender":"공용","rankedDays":1},
   {"id":"5853639","name":"[기모선택] Otherz 헤비테리 후드 집업","price":62900,"normalPrice":96900,"discount":35,"reviews":54,"reviewScore":4.9,"soldOut":false,"gender":"공용","rankedDays":1},
-  {"id":"7124767","name":"[기모선택] Swift 헤비테리 후드 집업","price":53210,"normalPrice":96900,"discount":45,"reviews":64,"reviewScore":4.8,"soldOut":false,"gender":"여성","rankedDays":9,"bestRank":80},
+  {"id":"7124767","name":"[기모선택] Swift 헤비테리 후드 집업","price":53210,"normalPrice":96900,"discount":45,"reviews":65,"reviewScore":4.8,"soldOut":false,"gender":"여성","rankedDays":9,"bestRank":80},
   {"id":"7157001","name":"후드 롱 슬리브 티셔츠","price":39900,"normalPrice":52900,"discount":25,"reviews":2,"reviewScore":4.5,"soldOut":false,"gender":"여성"},
   {"id":"7124763","name":"[기모선택] Weed 헤비테리 후드 집업","price":62900,"normalPrice":96900,"discount":35,"reviews":2,"reviewScore":3,"soldOut":false,"gender":"공용"},
   {"id":"5543992","name":"[기모선택] My Youth 헤비테리 맨투맨","price":44910,"normalPrice":79900,"discount":44,"reviews":285,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":15},
   {"id":"5369192","name":"S2 Dot 레글런 롱 슬리브 티셔츠","price":29900,"normalPrice":44900,"discount":33,"reviews":12,"reviewScore":4.3,"soldOut":false,"gender":"공용"},
   {"id":"5771917","name":"[기모선택] Cupid 우먼 세미 크롭 맨투맨","price":23900,"normalPrice":64900,"discount":63,"reviews":6,"reviewScore":4.3,"soldOut":false,"gender":"여성"},
-  {"id":"5352832","name":"[기모선택] My Youth 헤비테리 후드","price":52900,"normalPrice":74900,"discount":29,"reviews":954,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":34,"bestRank":100},
+  {"id":"5352832","name":"[기모선택] My Youth 헤비테리 후드","price":52900,"normalPrice":74900,"discount":29,"reviews":955,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":35,"bestRank":100},
   {"id":"7179201","name":"Enough 에코백","price":29900,"normalPrice":55900,"discount":47,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"5949404","name":"Ac Seven 헤비테리 후드","price":56900,"normalPrice":93900,"discount":39,"reviews":16,"reviewScore":4.7,"soldOut":false,"gender":"공용"},
   {"id":"5968876","name":"[기모선택] Flash 헤비테리 후드 집업","price":62990,"normalPrice":96900,"discount":35,"reviews":30,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
