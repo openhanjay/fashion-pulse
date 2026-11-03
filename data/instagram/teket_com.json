@@ -2,10 +2,34 @@
   "username": "teket_com",
   "name": "TEKET",
   "profilePicUrl": "data/instagram/images/teket_com/profile.jpg",
-  "followersCount": 137301,
-  "postsCount": 710,
-  "fetchedAt": "2026-11-02T13:31:10+09:00",
+  "followersCount": 137294,
+  "postsCount": 712,
+  "fetchedAt": "2026-11-03T14:25:43+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DfQpuphlO0V/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/teket_com/DfQpuphlO0V.jpg",
+      "caption": "©Teket 26 Winter\r\nPlan.18 Editorial ‘Turn Inward’\r\n\r\n• CT Curve Lightweight Down Jacket\r\n\r\nwww.te-ket.com",
+      "likesCount": null,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-11-03T01:00:02.000Z",
+      "id": "DfQpuphlO0V"
+    },
+    {
+      "url": "https://www.instagram.com/p/DfPQd_EFHDl/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/teket_com/DfPQd_EFHDl.jpg",
+      "caption": "©Teket 26 Winter\r\nPlan.18 Editorial ‘Turn Inward’\r\n\r\nMade for slower days.\r\nNow at www.te-ket.com",
+      "likesCount": null,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-11-02T12:00:02.000Z",
+      "id": "DfPQd_EFHDl"
+    },
     {
       "url": "https://www.instagram.com/p/DfOE7QClKg9/",
       "type": "Sidecar",
@@ -29,30 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-10-31T01:00:03.000Z",
       "id": "DfGkQrIk_zx"
-    },
-    {
-      "url": "https://www.instagram.com/p/DfGWhD6k5mY/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/teket_com/DfGWhD6k5mY.jpg",
-      "caption": "©Teket 26 Winter\nPlan.18 Editorial ‘Turn Inward’\n\nFor a warmth that hits different.\n\n• CT Curve Lightweight Down Jacket\n• CT Curve Fleece Jogger Pants\n\nNow at www.te-ket.com",
-      "likesCount": null,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-10-30T01:00:01.000Z",
-      "id": "DfGWhD6k5mY"
-    },
-    {
-      "url": "https://www.instagram.com/p/DevZrveoP1_/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/teket_com/DevZrveoP1_.jpg",
-      "caption": "©Teket 26 Winter\n\nWarmth hits different.\nPlan18. Inside Curve Online Now\n\nwww.te-ket.com",
-      "likesCount": null,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-10-21T03:05:02.000Z",
-      "id": "DevZrveoP1_"
     }
   ]
 }

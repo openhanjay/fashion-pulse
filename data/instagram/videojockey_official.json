@@ -3,9 +3,21 @@
   "name": "Vidiojockey",
   "profilePicUrl": "data/instagram/images/videojockey_official/profile.jpg",
   "followersCount": 17152,
-  "postsCount": 406,
-  "fetchedAt": "2026-11-02T13:31:10+09:00",
+  "postsCount": 407,
+  "fetchedAt": "2026-11-03T14:25:43+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DfQ65UOmcgs/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/videojockey_official/DfQ65UOmcgs.jpg",
+      "caption": "26FW COLLECTION “VIKEY‘S COZY HOURS”\n\n✩ DOT FLEECE DUFFLE COAT [CHARCOAL / BROWN]\n\n videojockey.co.kr\n#videojockey #비디오자키",
+      "likesCount": null,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-11-03T03:30:02.000Z",
+      "id": "DfQ65UOmcgs"
+    },
     {
       "url": "https://www.instagram.com/p/DfLxX43maiS/",
       "type": "Sidecar",
@@ -41,18 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-10-27T03:45:02.000Z",
       "id": "De-7HZtHw2f"
-    },
-    {
-      "url": "https://www.instagram.com/p/De5sSEUGR9I/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/De5sSEUGR9I.jpg",
-      "caption": "26FW COLLECTION\n“VIKEY‘S COZY HOURS” STYLING 🕰️ ｡✮\n\nvideojockey.co.kr\n#videojockey #비디오자키",
-      "likesCount": null,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-10-25T03:00:04.000Z",
-      "id": "De5sSEUGR9I"
     }
   ]
 }

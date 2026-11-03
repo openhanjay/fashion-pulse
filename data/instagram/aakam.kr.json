@@ -2,18 +2,30 @@
   "username": "aakam.kr",
   "name": "AAKAM",
   "profilePicUrl": "data/instagram/images/aakam.kr/profile.jpg",
-  "followersCount": 115233,
-  "postsCount": 359,
-  "fetchedAt": "2026-11-02T13:31:10+09:00",
+  "followersCount": 115248,
+  "postsCount": 360,
+  "fetchedAt": "2026-11-03T14:25:43+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DfPCZzNk3d1/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/aakam.kr/DfPCZzNk3d1.jpg",
+      "caption": "AAKAM STABLE STORE SEONGSU GRAND OPEN🐴🤎\n\n아캄 스테이블 스토어 오픈을 기념하여 특별한 혜택을 준비했습니다. 오직 성수점에서만 만나볼 수 있는 다양한 이벤트와 프로모션을 확인해보세요 ! 💝\n\n📍기간\n2026.11.07 (SAT) – 2026.11.08 (SUN)\n\n📍장소\n서울 성동구 연무장5길 9-16, 1층\n\n📍이벤트 & 프로모션\n\n1️⃣ 선착순 구매 사은품\n구매 고객 선착순 100명 한정 AAKAM MILITARY TAG NECKLACE 증정\n\n- SEONGSU EXCLUSIVE CROS2 PATCH BEANIE 단독 구매 건은 증정 대상에서 제외됩니다.\n\n2️⃣ 구매 금액별 사은품\n10만 원 이상 구매 시 AAKAM SIGNATURE KEYRING 4종 중 1종 증정\n15만 원 이상 구매 시 EXCLUSIVE NECKLACE 2종 중 1종 증정\n20만 원 이상 구매 시 EXCLUSIVE BANGLE 2종 중 1종 증정\n\n3️⃣ 성수점에서만 구매할 수 있는 익스클루시브 아이템\n크로스 패치 비니 49,000원 -> 9,900원\n3가지 컬러 중 선택 가능\n\n4️⃣AAKAM 26WINTER 컬렉션 단독 발매\n\n5️⃣ EARLY BLACK FRIDAY\n신제품 포함 전 제품 30% OFF\n\n#AAKAM #아캄",
+      "likesCount": 349,
+      "commentsCount": 3,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-11-02T09:57:31.000Z",
+      "id": "DfPCZzNk3d1"
+    },
     {
       "url": "https://www.instagram.com/p/DfE2YRhTqoR/",
       "type": "Video",
       "displayUrl": "data/instagram/images/aakam.kr/DfE2YRhTqoR.jpg",
       "caption": "AAKAM SEONGSU STABLE STORE\n\n아캄의 새로운 스토어가 성수에 곧 오픈합니다!🐴🤎\n\nGRAND OPENING\n2026.11.07 (SAT)\n\n#aakam",
-      "likesCount": 871,
+      "likesCount": 905,
       "commentsCount": 3,
-      "videoPlayCount": 81338,
+      "videoPlayCount": 91345,
       "videoViewCount": null,
       "timestamp": "2026-10-29T11:04:51.000Z",
       "id": "DfE2YRhTqoR"
@@ -23,7 +35,7 @@
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/aakam.kr/De0czeuE-Mo.jpg",
       "caption": "みなさん、こんにちは！🇯🇵\n\nAAKAMが大阪にやってきました！\n\n今日からMUSINSA POP-UP STORE OSAKAに参加しています。\n\nみなさんにお会いできるのを楽しみにしています！\n\nお近くに来た際は、ぜひ気軽に遊びに来てくださいね！💖\n\n📍 GRAND GREEN OSAKA VS.\n大阪府大阪市北区大深町6-86\n\n📅 2026.10.23 – 11.08",
-      "likesCount": 1108,
+      "likesCount": 1122,
       "commentsCount": 2,
       "videoPlayCount": null,
       "videoViewCount": null,
@@ -35,24 +47,12 @@
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/aakam.kr/Deyx-gdgRV8.jpg",
       "caption": "26FW 3RD WITH FRIENDS\n \n#aakam #아캄",
-      "likesCount": 299,
+      "likesCount": 302,
       "commentsCount": 0,
       "videoPlayCount": null,
       "videoViewCount": null,
       "timestamp": "2026-10-22T10:35:15.000Z",
       "id": "Deyx-gdgRV8"
-    },
-    {
-      "url": "https://www.instagram.com/p/DewJMz6kW-s/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/aakam.kr/DewJMz6kW-s.jpg",
-      "caption": "26FW-3🧡\n \n#aakam #아캄",
-      "likesCount": 436,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-10-21T10:00:02.000Z",
-      "id": "DewJMz6kW-s"
     }
   ]
 }
