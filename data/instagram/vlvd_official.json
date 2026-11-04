@@ -2,16 +2,28 @@
   "username": "vlvd_official",
   "name": "VIVA LA VIDA",
   "profilePicUrl": "data/instagram/images/vlvd_official/profile.jpg",
-  "followersCount": 5085,
-  "postsCount": 301,
-  "fetchedAt": "2026-11-03T14:25:43+09:00",
+  "followersCount": 5084,
+  "postsCount": null,
+  "fetchedAt": "2026-11-04T13:54:20+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DfTmIxkGCwC/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/vlvd_official/DfTmIxkGCwC.jpg",
+      "caption": "▰NEW DROP: New arrivals artwork henleys just landed ▰\n\n[Ripplet Dia Light Padding Jacket]\n리플릿 다이아 라이트 패딩 자켓\n\n⊹ Size : M / L / XL\n⊹ Color : Light Gray / Charcoal / Black\n\nVLVD.kr / MUSINSA / 29CM\nAvailable on our official website, Musinsa, and 29CM.\n\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
+      "likesCount": 1,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-11-04T04:26:44.000Z",
+      "id": "DfTmIxkGCwC"
+    },
     {
       "url": "https://www.instagram.com/p/DfOpgg8FFnD/",
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/vlvd_official/DfOpgg8FFnD.jpg",
       "caption": "[Sticky Dia Light Padding Jacket]\n스티키 다이아 라이트 패딩 자켓\n\n⊹ Size : M / L / XL\n⊹ Color : Light Gray / Charcoal / Black\n\nVLVD.kr / MUSINSA / 29CM\nAvailable on our official website, Musinsa, and 29CM.",
-      "likesCount": 5,
+      "likesCount": 4,
       "commentsCount": 0,
       "videoPlayCount": null,
       "videoViewCount": null,
@@ -23,7 +35,7 @@
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/vlvd_official/DfG4vQ0FOne.jpg",
       "caption": "[Fleeting Heavy Terry Hoodie]\n플리팅 후드 티셔츠\n\n⊹ Size : 1 / 2\n⊹ Color : White / Melange / Deep Blue / Black\n\nVLVD.kr / MUSINSA / 29CM\nAvailable on our official website, Musinsa, and 29CM.\n\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
-      "likesCount": 4,
+      "likesCount": 5,
       "commentsCount": 0,
       "videoPlayCount": null,
       "videoViewCount": null,
@@ -41,18 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-10-28T06:58:43.000Z",
       "id": "DfB193wFA4j"
-    },
-    {
-      "url": "https://www.instagram.com/p/De_fDYzmEt8/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/vlvd_official/De_fDYzmEt8.jpg",
-      "caption": "[Ocean Heavy Terry Sweat Shirt]\n오션 헤비테리 맨투맨 티셔츠\n\n⊹ Size : M / L / XL\n⊹ Color : White Melange / Melange / Yellow / Blue / Navy / Black\n\nVLVD.kr / MUSINSA / 29CM\nAvailable on our official website, Musinsa, and 29CM.\n\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
-      "likesCount": 5,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-10-27T09:00:03.000Z",
-      "id": "De_fDYzmEt8"
     }
   ]
 }
