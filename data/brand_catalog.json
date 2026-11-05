@@ -1,5 +1,5 @@
 {
-"vivalavida":{"brandName":"비바라비다","total":433,"snapshotDays":92,"updatedAt":"2026-11-04","items":[
+"vivalavida":{"brandName":"비바라비다","total":433,"snapshotDays":92,"updatedAt":"2026-11-05","items":[
   {"id":"7388978","name":"Wildness 헨리넥 롱 슬리브 티셔츠","price":34900,"normalPrice":61900,"discount":44,"reviews":5,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7443151","name":"Skewer 헨리넥 롱 슬리브 티셔츠","price":39900,"normalPrice":61900,"discount":36,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7388981","name":"Spiral 배색 트리밍 롱 슬리브 티셔츠","price":39900,"normalPrice":73900,"discount":46,"reviews":6,"reviewScore":4.5,"soldOut":false,"gender":"공용","rankedDays":1},
@@ -9,7 +9,7 @@
   {"id":"7103603","name":"Buddy 롱 슬리브 티셔츠","price":34900,"normalPrice":49900,"discount":30,"reviews":17,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
   {"id":"7103387","name":"Seestern 롱 슬리브 티셔츠","price":34900,"normalPrice":49900,"discount":30,"reviews":23,"reviewScore":4.9,"soldOut":false,"gender":"공용","rankedDays":1},
   {"id":"7105528","name":"[기모선택] Rodea 헤비테리 후드","price":56900,"normalPrice":93900,"discount":39,"reviews":32,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":18},
-  {"id":"7107045","name":"[기모선택] Penta 헤비테리 후드","price":56900,"normalPrice":93900,"discount":39,"reviews":23,"reviewScore":4.7,"soldOut":false,"gender":"공용","rankedDays":10},
+  {"id":"7107045","name":"[기모선택] Penta 헤비테리 후드","price":56900,"normalPrice":93900,"discount":39,"reviews":24,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":10},
   {"id":"7106820","name":"[기모선택] Shifter 헤비테리 후드","price":56900,"normalPrice":93900,"discount":39,"reviews":8,"reviewScore":4.6,"soldOut":false,"gender":"공용","rankedDays":1},
   {"id":"7107060","name":"[기모선택] Sunburst 헤비테리 후드","price":56900,"normalPrice":93900,"discount":39,"reviews":22,"reviewScore":4.7,"soldOut":false,"gender":"공용","rankedDays":1},
   {"id":"7107017","name":"[기모선택] Rhythm 헤비테리 후드","price":56900,"normalPrice":93900,"discount":39,"reviews":27,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":7},
@@ -22,7 +22,7 @@
   {"id":"7426609","name":"Crufi 우먼 롱 슬리브 티셔츠","price":29900,"normalPrice":46900,"discount":36,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"여성"},
   {"id":"7119793","name":"[기모선택] Burst 헤비테리 맨투맨","price":54900,"normalPrice":79900,"discount":31,"reviews":4,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7377722","name":"하프 버튼 플리스 풀오버","price":57900,"normalPrice":96900,"discount":40,"reviews":6,"reviewScore":4.3,"soldOut":false,"gender":"공용"},
-  {"id":"7399405","name":"[기모선택] Roam 헤비테리 후드 집업","price":59900,"normalPrice":96900,"discount":38,"reviews":8,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
+  {"id":"7399405","name":"[기모선택] Roam 헤비테리 후드 집업","price":59900,"normalPrice":96900,"discount":38,"reviews":9,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
   {"id":"7103609","name":"Muted 레글런 롱 슬리브 티셔츠","price":34900,"normalPrice":49900,"discount":30,"reviews":14,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
   {"id":"7399490","name":"[기모선택] Fossi 헤비테리 후드","price":56900,"normalPrice":86900,"discount":35,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7124767","name":"[기모선택] Swift 헤비테리 후드 집업","price":63900,"normalPrice":96900,"discount":34,"reviews":70,"reviewScore":4.8,"soldOut":false,"gender":"여성","rankedDays":9,"bestRank":80},
@@ -30,7 +30,7 @@
   {"id":"4517945","name":"[기모선택] Element 헤비테리 후드","price":56900,"normalPrice":78900,"discount":28,"reviews":37,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
   {"id":"5395562","name":"Else 롱 슬리브 티셔츠","price":31430,"normalPrice":44900,"discount":30,"reviews":110,"reviewScore":4.7,"soldOut":false,"gender":"공용","rankedDays":1},
   {"id":"7426592","name":"Whisk 우먼 롱 슬리브 티셔츠","price":29900,"normalPrice":46900,"discount":36,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"여성"},
-  {"id":"5395574","name":"044 레글런 롱 슬리브 티셔츠","price":31900,"normalPrice":44900,"discount":29,"reviews":384,"reviewScore":4.7,"soldOut":false,"gender":"공용","rankedDays":35,"bestRank":78},
+  {"id":"5395574","name":"044 레글런 롱 슬리브 티셔츠","price":31900,"normalPrice":44900,"discount":29,"reviews":385,"reviewScore":4.7,"soldOut":false,"gender":"공용","rankedDays":35,"bestRank":78},
   {"id":"7382806","name":"Tish 포켓 라이트 패딩 자켓","price":93900,"normalPrice":162900,"discount":42,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"4448438","name":"[기모선택]Aether 우먼 세미 크롭 맨투맨","price":25960,"normalPrice":64900,"discount":60,"reviews":31,"reviewScore":5,"soldOut":false,"gender":"여성"},
   {"id":"5543992","name":"[기모선택] My Youth 헤비테리 맨투맨","price":52900,"normalPrice":79900,"discount":34,"reviews":291,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":16},
@@ -45,7 +45,7 @@
   {"id":"7124764","name":"[기모선택] Tart 헤비테리 후드 집업","price":62900,"normalPrice":96900,"discount":35,"reviews":16,"reviewScore":4.9,"soldOut":false,"gender":"공용","rankedDays":2},
   {"id":"7398969","name":"Aero 토트백","price":39900,"normalPrice":59900,"discount":33,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"남성"},
   {"id":"5190514","name":"Marker 나일론 스트링 카고 와이드 팬츠","price":31900,"normalPrice":52900,"discount":40,"reviews":381,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":3},
-  {"id":"6227651","name":"Things 에코백","price":29900,"normalPrice":55900,"discount":47,"reviews":165,"reviewScore":4.9,"soldOut":false,"gender":"공용","rankedDays":19},
+  {"id":"6227651","name":"Things 에코백","price":29900,"normalPrice":55900,"discount":47,"reviews":166,"reviewScore":4.9,"soldOut":false,"gender":"공용","rankedDays":19},
   {"id":"6108801","name":"Seastar 링거 반팔 티셔츠","price":27900,"normalPrice":46900,"discount":41,"reviews":871,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":16,"bestRank":81},
   {"id":"7103604","name":"Seeker 레글런 롱 슬리브 티셔츠","price":34900,"normalPrice":49900,"discount":30,"reviews":3,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7103607","name":"Reason 레글런 롱 슬리브 티셔츠","price":34900,"normalPrice":49900,"discount":30,"reviews":12,"reviewScore":4.4,"soldOut":false,"gender":"공용"},
