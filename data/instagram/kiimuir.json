@@ -2,10 +2,22 @@
   "username": "kiimuir",
   "name": "kiimuir",
   "profilePicUrl": "data/instagram/images/kiimuir/profile.jpg",
-  "followersCount": 14185,
-  "postsCount": 60,
-  "fetchedAt": "2026-11-05T14:12:42+09:00",
+  "followersCount": 14190,
+  "postsCount": 61,
+  "fetchedAt": "2026-11-06T14:12:18+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DfWjWzWnDmi/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/kiimuir/DfWjWzWnDmi.jpg",
+      "caption": "𝗖𝗼𝗿𝗱𝘂𝗿𝗼𝘆 𝗛𝗮𝗿𝗿𝗶𝗻𝗴𝘁𝗼𝗻 𝗗𝗼𝘄𝗻 𝗝𝘂𝗺𝗽𝗲𝗿\n\n지난겨울부터 꾸준히 사랑받아 온 키뮤어 시그니처 아우터.\n\n빈티지한 코듀로이 텍스처에 덕 다운의 보온성을 더해,\n다채로운 컬러로 취향에 맞게 즐겨보세요.",
+      "likesCount": null,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-11-05T08:00:09.000Z",
+      "id": "DfWjWzWnDmi"
+    },
     {
       "url": "https://www.instagram.com/p/DfRaS-NAVn7/",
       "type": "Sidecar",
@@ -23,7 +35,7 @@
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/kiimuir/De9IDMZDwnV.jpg",
       "caption": "#제작지원 추운 겨울, 경영학과 대학생이 추천하는 아우터 중심 캠퍼스룩 ❄️\n\n날씨는 쌀쌀하지만 스타일은 절대 포기할 수 없는 겨울 학기! 겨울 캠퍼스룩은 제대로 된 아우터 하나만 잘 골라줘도 매일의 분위기를 완벽하게 완성할 수 있어요.\n\n발표 준비부터 시험공부까지 바쁜 일상 속에서도, 툭 걸쳐주기만 하면 감각적인 룩을 연출해 주는 키뮤어의 겨울 아우터 스타일링을 소개합니다!\n\n[Styling Item] \n❶ (우먼) 무스탕 하프코트\n❷ [Drape Wool] (우먼) 캐시미어블렌드 세미오버핏 발마칸 로브코트\n\n올겨울, 따뜻함과 스타일을 모두 잡은 키뮤어의 아우터로 포근하고 원해지는 겨울 캠퍼스 라이프를 완성해 보세요! ✨\n\nBrand l @kiimuir\nModel l @xeonlyu\n#키뮤어 #kiimuir #코트 #무스탕",
-      "likesCount": 288,
+      "likesCount": 297,
       "commentsCount": 0,
       "videoPlayCount": null,
       "videoViewCount": null,
@@ -41,18 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-10-23T08:56:44.000Z",
       "id": "De1Lf5FAbWf"
-    },
-    {
-      "url": "https://www.instagram.com/p/DeieFceEwVD/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/kiimuir/DeieFceEwVD.jpg",
-      "caption": "ꜰʟᴇᴇᴄᴇ ʜᴀʟꜰ ᴢɪᴘ-ᴜᴘ : ᴀᴜᴛᴜᴍɴ ᴛᴏ ᴡɪɴᴛᴇʀ\n\n가을과 겨울 사이,\n가볍게 툭 걸치기 좋은 플리스 하프 집업\n\n부드러운 플리스 텍스처와 여유로운 핏으로 어떤 룩에도 자연스럽게 어우러져 가을부터 겨울까지 매일 함께해 보세요.",
-      "likesCount": null,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-10-16T02:33:35.000Z",
-      "id": "DeieFceEwVD"
     }
   ]
 }
