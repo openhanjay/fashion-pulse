@@ -2,10 +2,22 @@
   "username": "videojockey_official",
   "name": "Vidiojockey",
   "profilePicUrl": "data/instagram/images/videojockey_official/profile.jpg",
-  "followersCount": 17189,
-  "postsCount": 408,
-  "fetchedAt": "2026-11-07T13:43:20+09:00",
+  "followersCount": 17190,
+  "postsCount": 409,
+  "fetchedAt": "2026-11-08T13:32:01+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/Dfdy11Hn9vc/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/videojockey_official/Dfdy11Hn9vc.jpg",
+      "caption": "26FW COLLECTION\n:: LIGHT SHELL FUR PADDING JACKET\n[CHARCOAL / BROWN / BUTTER]\n\n포근한 퍼 디테일과 부드러운 컬러감의 라이트 쉘 퍼 패딩 자켓.\n\n탈부착 가능한 퍼 장식과\nXS, M 두 가지 사이즈 구성으로\n원하는 실루엣에 맞춰 편안하게 착용해 보세요.\n\n공식 홈페이지 및 무신사 스토어에서 지금 바로 만나보실 수 있습니다.\n\nvideojockey.co.kr\n#videojockey #비디오자키",
+      "likesCount": 3,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-11-08T03:30:02.000Z",
+      "id": "Dfdy11Hn9vc"
+    },
     {
       "url": "https://www.instagram.com/p/DfWEdabmZhn/",
       "type": "Sidecar",
@@ -41,18 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-11-01T03:30:02.000Z",
       "id": "DfLxX43maiS"
-    },
-    {
-      "url": "https://www.instagram.com/p/DfEC-5hmaeW/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/DfEC-5hmaeW.jpg",
-      "caption": "26FW COLLECTION “VIKEY‘S COZY HOURS”\n\n✩ DOT FLEECE SWEAT SHIRTS & PANTS [IVORY / BROWN]\n\n videojockey.co.kr\n#videojockey #비디오자키",
-      "likesCount": null,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-10-29T03:30:03.000Z",
-      "id": "DfEC-5hmaeW"
     }
   ]
 }

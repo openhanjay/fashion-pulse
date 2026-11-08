@@ -2,18 +2,30 @@
   "username": "vlvd_official",
   "name": "VIVA LA VIDA",
   "profilePicUrl": "data/instagram/images/vlvd_official/profile.jpg",
-  "followersCount": 5098,
-  "postsCount": 304,
-  "fetchedAt": "2026-11-07T13:43:20+09:00",
+  "followersCount": 5107,
+  "postsCount": 305,
+  "fetchedAt": "2026-11-08T13:32:01+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DfbpiZ1FN7g/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/vlvd_official/DfbpiZ1FN7g.jpg",
+      "caption": "[Tish Pocket Light Padding Jacket]\n티쉬 포켓 라이트 패딩 자켓\n\n⊹ Size : M / L / XL\n⊹ Color : Light Gray / Sky Blue / Black\n\nVLVD.kr / MUSINSA / 29CM\nAvailable on our official website, Musinsa, and 29CM.\n\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
+      "likesCount": 4,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-11-07T07:30:01.000Z",
+      "id": "DfbpiZ1FN7g"
+    },
     {
       "url": "https://www.instagram.com/p/DfZEtjwzn9W/",
       "type": "Video",
       "displayUrl": "data/instagram/images/vlvd_official/DfZEtjwzn9W.jpg",
       "caption": "[Sticky Dia Light Padding Jacket]\n스티키 다이아 라이트 패딩 자켓\n\n⊹ Size : M / L / XL\n⊹ Color : Light Gray / Charcoal / Black\n\nVLVD.kr / MUSINSA / 29CM\nAvailable on our official website, Musinsa, and 29CM.\n\n공식 웹사이트와 무신사,29cm에서 만나보실 수 있습니다.",
-      "likesCount": 9,
+      "likesCount": 12,
       "commentsCount": 0,
-      "videoPlayCount": 2083,
+      "videoPlayCount": 2348,
       "videoViewCount": null,
       "timestamp": "2026-11-06T07:30:07.000Z",
       "id": "DfZEtjwzn9W"
@@ -41,18 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-11-04T04:26:44.000Z",
       "id": "DfTmIxkGCwC"
-    },
-    {
-      "url": "https://www.instagram.com/p/DfOpgg8FFnD/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/vlvd_official/DfOpgg8FFnD.jpg",
-      "caption": "[Sticky Dia Light Padding Jacket]\n스티키 다이아 라이트 패딩 자켓\n\n⊹ Size : M / L / XL\n⊹ Color : Light Gray / Charcoal / Black\n\nVLVD.kr / MUSINSA / 29CM\nAvailable on our official website, Musinsa, and 29CM.",
-      "likesCount": 6,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-11-02T06:19:59.000Z",
-      "id": "DfOpgg8FFnD"
     }
   ]
 }
