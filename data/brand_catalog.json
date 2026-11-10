@@ -1,5 +1,5 @@
 {
-"vivalavida":{"brandName":"비바라비다","total":434,"snapshotDays":97,"updatedAt":"2026-11-10","items":[
+"vivalavida":{"brandName":"비바라비다","total":436,"snapshotDays":97,"updatedAt":"2026-11-10","items":[
   {"id":"7388978","name":"Wildness 헨리넥 롱 슬리브 티셔츠","price":34900,"normalPrice":61900,"discount":44,"reviews":6,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7443151","name":"Skewer 헨리넥 롱 슬리브 티셔츠","price":39900,"normalPrice":61900,"discount":36,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7388981","name":"Spiral 배색 트리밍 롱 슬리브 티셔츠","price":39900,"normalPrice":73900,"discount":46,"reviews":7,"reviewScore":4.6,"soldOut":false,"gender":"공용","rankedDays":1},
@@ -40,7 +40,7 @@
   {"id":"5543992","name":"[기모선택] My Youth 헤비테리 맨투맨","price":52900,"normalPrice":79900,"discount":34,"reviews":296,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":17},
   {"id":"7444910","name":"Ainst 토트백","price":39900,"normalPrice":59900,"discount":33,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7388975","name":"Equine 투톤 레이어드 롱 슬리브 티셔츠","price":38900,"normalPrice":65900,"discount":41,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"공용"},
-  {"id":"5352832","name":"[기모선택] My Youth 헤비테리 후드","price":54900,"normalPrice":74900,"discount":27,"reviews":976,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":41,"bestRank":100},
+  {"id":"5352832","name":"[기모선택] My Youth 헤비테리 후드","price":54900,"normalPrice":74900,"discount":27,"reviews":978,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":41,"bestRank":100},
   {"id":"7613427","name":"[기모선택] IZNot 헤비테리 후드","price":65180,"normalPrice":86900,"discount":25,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
   {"id":"5773185","name":"[기모선택] Young Days 우먼 세미 크롭 맨투맨","price":23900,"normalPrice":64900,"discount":63,"reviews":12,"reviewScore":4.5,"soldOut":false,"gender":"여성"},
   {"id":"7124764","name":"[기모선택] Tart 헤비테리 후드 집업","price":62900,"normalPrice":96900,"discount":35,"reviews":19,"reviewScore":4.9,"soldOut":false,"gender":"공용","rankedDays":2},
@@ -63,7 +63,7 @@
   {"id":"5353422","name":"[기모선택] Storm 헤비테리 후드","price":56900,"normalPrice":93900,"discount":39,"reviews":22,"reviewScore":4.8,"soldOut":false,"gender":"공용"},
   {"id":"6108783","name":"Chaser 링거 반팔 티셔츠","price":27900,"normalPrice":46900,"discount":41,"reviews":368,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":11,"bestRank":35},
   {"id":"5853639","name":"[기모선택] Otherz 헤비테리 후드 집업","price":62900,"normalPrice":96900,"discount":35,"reviews":56,"reviewScore":4.9,"soldOut":false,"gender":"공용","rankedDays":1},
-  {"id":"5855820","name":"[기모선택] Scheme 헤비테리 후드 집업","price":62900,"normalPrice":96900,"discount":35,"reviews":100,"reviewScore":4.8,"soldOut":false,"gender":"공용","bestRank":27,"rankedDays":2},
+  {"id":"5855820","name":"[기모선택] Scheme 헤비테리 후드 집업","price":62900,"normalPrice":96900,"discount":35,"reviews":101,"reviewScore":4.8,"soldOut":false,"gender":"공용","bestRank":27,"rankedDays":2},
   {"id":"7103604","name":"Seeker 레글런 롱 슬리브 티셔츠","price":34900,"normalPrice":49900,"discount":30,"reviews":3,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"5771917","name":"[기모선택] Cupid 우먼 세미 크롭 맨투맨","price":23900,"normalPrice":64900,"discount":63,"reviews":6,"reviewScore":4.3,"soldOut":false,"gender":"여성"},
   {"id":"5855438","name":"[기모선택] Tristar 헤비테리 후드 집업 버건디","price":62900,"normalPrice":96900,"discount":35,"reviews":5,"reviewScore":5,"soldOut":false,"gender":"공용"},
@@ -77,7 +77,7 @@
   {"id":"7179201","name":"Enough 에코백","price":29900,"normalPrice":55900,"discount":47,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"여성"},
   {"id":"7222074","name":"커브드 와이드 데님 팬츠","price":57900,"normalPrice":79900,"discount":28,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"5741496","name":"Certain 우먼 크롭 패딩 자켓","price":23900,"normalPrice":59900,"discount":60,"reviews":29,"reviewScore":4.4,"soldOut":false,"gender":"여성"},
-  {"id":"4540391","name":"[기모선택]Aesthetic 헤비테리 맨투맨","price":54900,"normalPrice":79900,"discount":31,"reviews":60,"reviewScore":4.9,"soldOut":false,"gender":"여성"},
+  {"id":"4540391","name":"[기모선택] Aesthetic 헤비테리 맨투맨","price":54900,"normalPrice":79900,"discount":31,"reviews":60,"reviewScore":4.9,"soldOut":false,"gender":"여성"},
   {"id":"5855430","name":"[기모선택] Tristar 헤비테리 후드 집업 블랙","price":62900,"normalPrice":96900,"discount":35,"reviews":8,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"6227622","name":"Archive 에코백","price":29900,"normalPrice":55900,"discount":47,"reviews":74,"reviewScore":4.9,"soldOut":false,"gender":"공용","rankedDays":5},
   {"id":"6109669","name":"Youthful 반팔 티셔츠","price":27900,"normalPrice":39900,"discount":30,"reviews":134,"reviewScore":4.8,"soldOut":false,"gender":"공용"},
@@ -159,6 +159,7 @@
   {"id":"5677916","name":"레글런 롱 슬리브 티셔츠","price":27930,"normalPrice":39900,"discount":30,"reviews":3,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"6653485","name":"Together 링거 반팔 티셔츠","price":27900,"normalPrice":51900,"discount":46,"reviews":7,"reviewScore":4.7,"soldOut":false,"gender":"공용"},
   {"id":"6898250","name":"Hope 우먼 슬림 반팔 티셔츠","price":27900,"normalPrice":48900,"discount":43,"reviews":4,"reviewScore":4.8,"soldOut":false,"gender":"여성"},
+  {"id":"4517947","name":"[기모선택] Element 헤비테리 맨투맨","price":54900,"normalPrice":64900,"discount":15,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"5810220","name":"[기모선택] Helion 헤비테리 후드 집업","price":62900,"normalPrice":96900,"discount":35,"reviews":4,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"6021827","name":"Faith 우먼 집업 후디","price":49900,"normalPrice":80900,"discount":38,"reviews":7,"reviewScore":4.9,"soldOut":false,"gender":"여성"},
   {"id":"7388530","name":"컬러 블록 롱 슬리브 티셔츠","price":29900,"normalPrice":43900,"discount":32,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"남성"},
@@ -433,6 +434,7 @@
   {"id":"6330505","name":"Sync 에코백","price":29900,"normalPrice":47900,"discount":38,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
   {"id":"6316260","name":"Flow 에코백","price":29900,"normalPrice":47900,"discount":38,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
   {"id":"6120428","name":"Alone 우먼 롱 슬리브 티셔츠","price":24900,"normalPrice":46900,"discount":47,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"여성"},
-  {"id":"6935833","name":"Flaw 우먼 슬림 반팔 티셔츠","price":27900,"normalPrice":48900,"discount":43,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"여성"}
+  {"id":"6935833","name":"Flaw 우먼 슬림 반팔 티셔츠","price":27900,"normalPrice":48900,"discount":43,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"여성"},
+  {"id":"7749156","name":"Fleeting 후드 롱 슬리브 티셔츠","price":64900,"normalPrice":64900,"discount":0,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"}
 ]}
 }
