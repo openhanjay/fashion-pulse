@@ -91,6 +91,12 @@ jobs:
         if: steps.guard.outputs.skip != 'true'
         run: node scrape_brand_catalog.js
 
+      # 랭킹에서 들어오고 빠지는 디자인(핏/총장)을 미리 계산해 data/design_trend.json으로 낸다.
+      # 주차별 스냅샷 16개와 상품 속성 10MB를 읽어야 나오는 분석이라 브라우저에서 매번 돌릴 수 없다.
+      - name: Build design trend
+        if: steps.guard.outputs.skip != 'true'
+        run: node build_design_trend.js
+
       - name: Commit and push new data
         if: steps.guard.outputs.skip != 'true'
         run: |
