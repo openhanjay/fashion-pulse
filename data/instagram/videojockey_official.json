@@ -2,10 +2,22 @@
   "username": "videojockey_official",
   "name": "Vidiojockey",
   "profilePicUrl": "data/instagram/images/videojockey_official/profile.jpg",
-  "followersCount": 17201,
-  "postsCount": 409,
-  "fetchedAt": "2026-11-10T14:59:11+09:00",
+  "followersCount": 17204,
+  "postsCount": 410,
+  "fetchedAt": "2026-11-11T13:46:46+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DflgFQ0mZCs/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/videojockey_official/DflgFQ0mZCs.jpg",
+      "caption": "인플루언서 픽, 추천 스타일링 *…🩶\n\n✩ LIGHT SHELL FUR PADDING JACKET\n\n공식 홈페이지 및 무신사 스토어에서 만나보세요.\n\nvideojockey.co.kr\n#videojockey #비디오자키",
+      "likesCount": null,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-11-11T03:20:02.000Z",
+      "id": "DflgFQ0mZCs"
+    },
     {
       "url": "https://www.instagram.com/p/Dfdy11Hn9vc/",
       "type": "Sidecar",
@@ -41,18 +53,6 @@
       "videoViewCount": null,
       "timestamp": "2026-11-03T03:30:02.000Z",
       "id": "DfQ65UOmcgs"
-    },
-    {
-      "url": "https://www.instagram.com/p/DfLxX43maiS/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/videojockey_official/DfLxX43maiS.jpg",
-      "caption": "많은 분들께 사랑받은 \nSTAR BERRY 시리즈의 머플러와 비니가 \n새로운 컬러 구성으로 출시되었습니다.\n\n🎶 NEW COLOR\n\n✩ MUFFLER\n[WHITE GREY / MAGENTA / GREY BLACK]\n\n✩ BEANIE\n[BROWN YELLOW / MAGENTA / WHITE GREY / GREY BLACK / BLACK GREY]\n\n새롭게 추가된 컬러의 STAR BERRY 아이템을\n공식 홈페이지 및 무신사 스토어에서 만나보세요!\n\nvideojockey.co.kr\n#videojockey #비디오자키",
-      "likesCount": null,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-11-01T03:30:02.000Z",
-      "id": "DfLxX43maiS"
     }
   ]
 }

@@ -2,16 +2,28 @@
   "username": "aakam.kr",
   "name": "AAKAM",
   "profilePicUrl": "data/instagram/images/aakam.kr/profile.jpg",
-  "followersCount": 116034,
-  "postsCount": 364,
-  "fetchedAt": "2026-11-10T14:59:11+09:00",
+  "followersCount": 116079,
+  "postsCount": 365,
+  "fetchedAt": "2026-11-11T13:46:46+09:00",
   "posts": [
+    {
+      "url": "https://www.instagram.com/p/DfkC1YgE1rT/",
+      "type": "Sidecar",
+      "displayUrl": "data/instagram/images/aakam.kr/DfkC1YgE1rT.jpg",
+      "caption": "Leather Trim Mustang\n\nHigh-Neck Double Peacoat\n\nFur-Collar Flight Jacket\n\nFur-Collar Flight Jacket\n\nCut-Off Zip-Up Hoodie\n\nStripe Fade Zip-Up Hoodie\n\nTactical Leather Patch Jacket\n\nRacing Track Jacket\n\nWestern Piping Leather Blouson\n\nAKM Archive Long Sleeve",
+      "likesCount": 194,
+      "commentsCount": 0,
+      "videoPlayCount": null,
+      "videoViewCount": null,
+      "timestamp": "2026-11-10T13:45:20.000Z",
+      "id": "DfkC1YgE1rT"
+    },
     {
       "url": "https://www.instagram.com/p/Dfenq-ME4-W/",
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/aakam.kr/Dfenq-ME4-W.jpg",
       "caption": "Love is warm ! 🧡🍊\n29WEEK with AAKAM\n\n2026.11.09(MON) – 2026.11.19(THU)\n\n29CM의 블랙프라이데이 “이구위크”에서 따뜻한 커플 아이템들을 최대 50% 할인된 가격과 다양한 혜택으로 만나보세요 ! 💘\n\n#aakam",
-      "likesCount": 815,
+      "likesCount": 871,
       "commentsCount": 6,
       "videoPlayCount": null,
       "videoViewCount": null,
@@ -23,7 +35,7 @@
       "type": "Sidecar",
       "displayUrl": "data/instagram/images/aakam.kr/Dfbw3xKEzrI.jpg",
       "caption": "AAKAM SEONGSU STABLE STORE🐴🧡\n\n9-16, Yeonmujang 5-gil, Seongdong-gu, Seoul\n\nOPEN DAILY\n12:00 PM – 8:30 PM\n\n#aakam",
-      "likesCount": 624,
+      "likesCount": 643,
       "commentsCount": 0,
       "videoPlayCount": null,
       "videoViewCount": null,
@@ -35,24 +47,12 @@
       "type": "Video",
       "displayUrl": "data/instagram/images/aakam.kr/DfTfPEQz1Sv.jpg",
       "caption": "AAKAM SEONGSU STABLE STORE \n\nGRAND OPENING 🛸\n\n26.11.07 (SAT)",
-      "likesCount": 288,
+      "likesCount": 290,
       "commentsCount": 5,
-      "videoPlayCount": 36733,
+      "videoPlayCount": 37254,
       "videoViewCount": null,
       "timestamp": "2026-11-04T03:27:58.000Z",
       "id": "DfTfPEQz1Sv"
-    },
-    {
-      "url": "https://www.instagram.com/p/DfRP-0Jk02f/",
-      "type": "Sidecar",
-      "displayUrl": "data/instagram/images/aakam.kr/DfRP-0Jk02f.jpg",
-      "caption": "26 WINTER Collection 🖤🐈‍⬛\n\nAvailable 11.07(Sat) at AAKAM SEONGSU STABLE STORE\n\n#aakam",
-      "likesCount": 322,
-      "commentsCount": 0,
-      "videoPlayCount": null,
-      "videoViewCount": null,
-      "timestamp": "2026-11-03T06:34:39.000Z",
-      "id": "DfRP-0Jk02f"
     }
   ]
 }
