@@ -87,6 +87,12 @@ jobs:
       # 자사 브랜드 카탈로그(비바라비다 419개)와 각 상품의 랭킹 진입 이력을 갱신한다.
       # 랭킹 스냅샷에는 TOP150만 있어서, 이게 있어야 브랜드 진단 패널에서
       # "올린 상품 중 몇 개가 실제로 랭킹에 들어갔나"를 볼 수 있다.
+      # 소재 고시(충전재·겉감·제조국). 상품당 요청 하나라 한 번에 다 받지 않고 조금씩 채운다.
+      # 최근 랭킹 상품부터 받으므로 중간에 멈춰도 많이 보는 쪽이 먼저 찬다.
+      - name: Collect product fabric
+        if: steps.guard.outputs.skip != 'true'
+        run: node scrape_product_fabric.js --limit 2000
+
       - name: Collect brand catalog
         if: steps.guard.outputs.skip != 'true'
         run: node scrape_brand_catalog.js
@@ -102,6 +108,11 @@ jobs:
       - name: Archive weekly design fingerprint
         if: steps.guard.outputs.skip != 'true'
         run: node build_trend_archive.js
+
+      # 품목 하나를 파고들 때 쓰는 값(소재 구성·가격·브랜드)을 미리 계산해둔다.
+      - name: Build category detail
+        if: steps.guard.outputs.skip != 'true'
+        run: node build_category_detail.js
 
       - name: Commit and push new data
         if: steps.guard.outputs.skip != 'true'
