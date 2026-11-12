@@ -97,6 +97,12 @@ jobs:
         if: steps.guard.outputs.skip != 'true'
         run: node build_design_trend.js
 
+      # 그 주의 디자인 지문(품목·핏·색상·실측·가격 구성)을 data/trend/ 아래에 쌓는다.
+      # 지나간 주는 다시 계산하지 않으므로 매 수집마다 이번 주 파일 하나만 다시 쓴다.
+      - name: Archive weekly design fingerprint
+        if: steps.guard.outputs.skip != 'true'
+        run: node build_trend_archive.js
+
       - name: Commit and push new data
         if: steps.guard.outputs.skip != 'true'
         run: |
