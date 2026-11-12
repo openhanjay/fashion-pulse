@@ -102,7 +102,10 @@ function dominantFabric(text) {
  * 구분자가 통일돼 있지 않다(쉼표, 슬래시, 줄바꿈 전부 쓰인다). 그래서 구분자로 자르는 대신
  * 라벨이 나오는 위치를 찾아 라벨과 라벨 사이를 그 라벨의 값으로 본다.
  */
-const PART_LABELS = ["겉감", "겉감지", "표면", "안감", "충전재", "충전제", "배색", "소재", "원단", "혼용률"];
+/* "혼용률"은 라벨로 쓰지 않는다. 실제로는 거의 전부가 본문 뒤에 붙는 면책 문구
+   "(색상 또는 품번에 따라 기재된 혼용률에서 허용 오차 범위 내 차이가 있을 수 있습니다)"
+   안에 들어있어서, 라벨로 치면 진짜 소재가 적힌 앞부분을 통째로 날려버린다. */
+const PART_LABELS = ["겉감", "겉감지", "표면", "안감", "충전재", "충전제", "배색", "소재", "원단"];
 const PART_RE = new RegExp("(" + PART_LABELS.join("|") + ")\\s*(?:\\([^)]*\\))?\\s*[:：]?\\s*", "g");
 
 function splitParts(value) {
@@ -115,6 +118,9 @@ function splitParts(value) {
   // 라벨이 하나도 없으면 전체를 소재 한 덩어리로 본다("폴리에스터 100%"처럼 쓰는 브랜드가 있다).
   if (!hits.length) return { 소재: text };
   const out = {};
+  // 첫 라벨 앞에도 글이 있으면 버리지 않는다 - 거기에 소재가 적힌 상품이 있다.
+  const head = text.slice(0, hits[0].from).trim().replace(/[,/;·(]\s*$/, "");
+  if (head) out["소재"] = head;
   hits.forEach((h, i) => {
     const end = i + 1 < hits.length ? hits[i + 1].from : text.length;
     const v = text.slice(h.to, end).trim().replace(/[,/;·]\s*$/, "");
@@ -124,14 +130,24 @@ function splitParts(value) {
   return out;
 }
 
+/* 소재 자리에 "상세페이지 참조"라고 써둔 상품이 많다. 소재가 아니라 '안 알려줌'이다. */
+const NO_DATA = /^(상세|제품|상품|하단|위|자세한|별도|본품)?\s*(페이지|이미지|사진|라벨|태그|tag)?\s*(참조|참고|확인|표기|없음)|^[-.·\s]*$/i;
+
 function buildRecord(essentials) {
   const get = (name) => (essentials.find((e) => e.name === name) || {}).value || null;
   const raw = get("제품 소재");
   const parts = splitParts(raw);
   if (!parts) return { none: true };
 
-  const fillText = parts["충전재"] || parts["충전제"] || null;
-  const shellText = parts["겉감"] || parts["겉감지"] || parts["표면"] || parts["소재"] || parts["원단"] || parts["혼용률"] || null;
+  const pick = (...keys) => {
+    for (const k of keys) {
+      const v = parts[k];
+      if (v && !NO_DATA.test(v)) return v;
+    }
+    return null;
+  };
+  const fillText = pick("충전재", "충전제");
+  const shellText = pick("겉감", "겉감지", "표면", "소재", "원단");
 
   return {
     // 충전재가 아예 안 적힌 상품(티셔츠 등)은 null. 패딩인데 null이면 고시를 생략한 것.
@@ -241,4 +257,4 @@ async function run() {
 }
 
 if (require.main === module) run().catch((e) => { console.error("실패:", e); process.exit(1); });
-module.exports = { splitParts, buildRecord, classify, dominantFabric, FILL_RULES, FABRIC_RULES, OUT_FILE };
+module.exports = { splitParts, buildRecord, classify, dominantFabric, NO_DATA, FILL_RULES, FABRIC_RULES, OUT_FILE };

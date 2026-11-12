@@ -107,7 +107,7 @@ function summarize(items, meta, fabric) {
   const fitM = new Map(), thickM = new Map(), sexM = new Map(), seasonM = new Map();
   const wordM = new Map(), spellM = new Map(), brandM = new Map(), brandPrice = new Map();
   const measureAcc = {};
-  let fabricKnown = 0, fillKnown = 0;
+  let fabricKnown = 0, fillKnown = 0, shellKnown = 0;
 
   const prices = [];
   // 다운이냐 아니냐로 가격이 갈리는지 보려고 두 갈래로 따로 모은다.
@@ -128,7 +128,7 @@ function summarize(items, meta, fabric) {
 
     if (f && !f.gone) {
       fabricKnown += 1;
-      bump(shellM, f.shell);
+      if (f.shell) { shellKnown += 1; bump(shellM, f.shell); }
       bump(originM, normOrigin(f.origin));
       if (f.fill) {
         fillKnown += 1;
@@ -192,7 +192,8 @@ function summarize(items, meta, fabric) {
     discount: { avg: r1(avg(items.map((i) => i.discountRatio).filter((v) => typeof v === "number"))) },
     fill: dist(fillM, fillKnown, 8),
     fillKnown,
-    shell: dist(shellM, fabricKnown, 10),
+    shell: dist(shellM, shellKnown, 10),
+    shellKnown,
     origin: dist(originM, fabricKnown, 8),
     fit: dist(fitM, [...fitM.values()].reduce((a, b) => a + b, 0), 6),
     thickness: dist(thickM, [...thickM.values()].reduce((a, b) => a + b, 0), 6),
