@@ -1,5 +1,5 @@
 {
-"vivalavida":{"brandName":"비바라비다","total":436,"snapshotDays":99,"updatedAt":"2026-11-12","items":[
+"vivalavida":{"brandName":"비바라비다","total":438,"snapshotDays":99,"updatedAt":"2026-11-12","items":[
   {"id":"7388978","name":"Wildness 헨리넥 롱 슬리브 티셔츠","price":45900,"normalPrice":61900,"discount":26,"reviews":6,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7443151","name":"Skewer 헨리넥 롱 슬리브 티셔츠","price":45900,"normalPrice":61900,"discount":26,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7388981","name":"Spiral 배색 트리밍 롱 슬리브 티셔츠","price":54900,"normalPrice":73900,"discount":26,"reviews":8,"reviewScore":4.6,"soldOut":false,"gender":"공용","rankedDays":1},
@@ -45,7 +45,7 @@
   {"id":"7444910","name":"Ainst 토트백","price":44900,"normalPrice":59900,"discount":25,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"5352832","name":"[기모선택] My Youth 헤비테리 후드","price":54680,"normalPrice":74900,"discount":27,"reviews":981,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":42,"bestRank":100},
   {"id":"5773185","name":"[기모선택] Young Days 우먼 세미 크롭 맨투맨","price":47380,"normalPrice":64900,"discount":27,"reviews":12,"reviewScore":4.5,"soldOut":false,"gender":"여성"},
-  {"id":"7124764","name":"[기모선택] Tart 헤비테리 후드 집업","price":72900,"normalPrice":96900,"discount":25,"reviews":19,"reviewScore":4.9,"soldOut":false,"gender":"공용","rankedDays":2},
+  {"id":"7124764","name":"[기모선택] Tart 헤비테리 후드 집업","price":72900,"normalPrice":96900,"discount":25,"reviews":20,"reviewScore":4.9,"soldOut":false,"gender":"공용","rankedDays":2},
   {"id":"7579953","name":"Union Jack 롱 슬리브 티셔츠","price":36800,"normalPrice":49900,"discount":26,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
   {"id":"7382760","name":"Hexa 다이아 라이트 패딩 자켓","price":115430,"normalPrice":164900,"discount":30,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7388979","name":"배색 트리밍 롱 슬리브 티셔츠","price":42900,"normalPrice":57900,"discount":26,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
@@ -435,6 +435,8 @@
   {"id":"6821494","name":"Triad 반팔 티셔츠","price":30730,"normalPrice":39900,"discount":23,"reviews":12,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
   {"id":"6120428","name":"Alone 우먼 롱 슬리브 티셔츠","price":36120,"normalPrice":46900,"discount":23,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"여성"},
   {"id":"6329745","name":"AHA 에코백","price":36900,"normalPrice":47900,"discount":23,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
-  {"id":"6487397","name":"텐셀 오프숄더 롱슬리브 티셔츠","price":50750,"normalPrice":65900,"discount":23,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"여성"}
+  {"id":"6487397","name":"텐셀 오프숄더 롱슬리브 티셔츠","price":50750,"normalPrice":65900,"discount":23,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"여성"},
+  {"id":"7772584","name":"Emblem 자카드 비니","price":18900,"normalPrice":24900,"discount":24,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
+  {"id":"7772562","name":"Snug 니트 머플러","price":27900,"normalPrice":37900,"discount":26,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"}
 ]}
 }
