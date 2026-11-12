@@ -4169,15 +4169,15 @@ function TrendArchivePanel() {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   품목 상세: 품목 하나를 골라 그 안을 들여다본다.
+   품목 상세: 기간을 고르고, 그 기간에 그 품목이 어땠는지를 들여다본다.
 
    아카이브는 "경량 패딩이 3.9%"까지만 말해준다. 기획에 필요한 건 그 다음이다 -
    그중 다운이 몇 개고 아닌 게 몇 개인지, 평균 얼마에 팔리는지, 제일 싼 건 어느 브랜드인지.
-   계산은 build_category_detail.js가 수집 때 미리 해서 data/category_detail.json으로 떨군다.
+   계산은 build_category_detail.js가 기간마다 따로 해서 data/category/ 아래에 쌓는다.
 
-   소재(충전재·겉감·제조국)는 상품마다 따로 받아와야 하는 값이라 아직 다 차지 않았다.
-   그래서 블록마다 "확인된 상품 수"를 같이 적는다 - 10개 중 3개만 보고 "다운이 30%"라고
-   읽으면 안 되기 때문이다.
+   가격 표기 주의: 랭킹 스냅샷에 적힌 값은 쿠폰까지 적용된 금액인데 상품 페이지의 큰
+   글씨는 판매가다. 그래서 가장 최근 기간의 최저가/최고가는 현재 가격을 다시 받아
+   판매가 기준으로 보여준다. 지나간 기간은 그때 기록이라 쿠폰 적용가 그대로다.
    ───────────────────────────────────────────────────────────────────────── */
 const won = (v) => (typeof v === "number" ? v.toLocaleString() + "원" : "–");
 
@@ -4192,11 +4192,17 @@ function PriceList({ title, rows, note }) {
           style={{ borderBottom: `1px solid ${C.line}` }}>
           <span className="min-w-0">
             <span className="text-[12px] font-bold block" style={{ color: C.ink }}>{r.brand}</span>
-            <span className="text-[11px] block truncate" style={{ color: C.mute, maxWidth: 260 }}>{r.name}</span>
+            <span className="text-[11px] block truncate" style={{ color: C.mute, maxWidth: 240 }}>{r.name}</span>
+            {r.fill && <span className="text-[10px]" style={{ color: C.mute }}>{r.fill}</span>}
           </span>
           <span className="text-right shrink-0">
-            <span className="text-[13px] font-extrabold tabular-nums block" style={{ color: C.ink }}>{won(r.price)}</span>
-            {r.fill && <span className="text-[10px]" style={{ color: C.mute }}>{r.fill}</span>}
+            <span className="text-[13px] font-extrabold tabular-nums block" style={{ color: C.ink }}>{won(r.shown)}</span>
+            {r.couponPrice && (
+              <span className="text-[10px] tabular-nums block" style={{ color: C.signal }}>쿠폰가 {won(r.couponPrice)}</span>
+            )}
+            <span className="text-[10px] block" style={{ color: C.mute }}>
+              {r.live ? "오늘 확인" : `${String(r.seenAt || "").slice(5)} 쿠폰가`}
+            </span>
           </span>
         </a>
       ))}
@@ -4222,21 +4228,25 @@ function BrandTable({ sec }) {
           <span className="text-[12px] tabular-nums shrink-0 text-right" style={{ color: C.ink, width: 74 }}>{won(r.avgPrice)}</span>
         </div>
       ))}
-      <p className="text-[11px] mt-2" style={{ color: C.mute }}>오른쪽 금액은 그 브랜드가 이 품목을 내놓는 평균가예요.</p>
+      <p className="text-[11px] mt-2" style={{ color: C.mute }}>오른쪽 금액은 그 브랜드가 이 품목을 내놓은 평균가예요(쿠폰 적용가).</p>
     </div>
   );
 }
 
 function CategoryDetailPanel() {
-  const [data, setData] = useState(undefined);
+  const [index, setIndex] = useState(undefined);
+  const [kind, setKind] = useState("month");
+  const [period, setPeriod] = useState(null);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [cat, setCat] = useState(null);
   const [steady, setSteady] = useState(null);
 
   useEffect(() => {
-    fetch(`data/category_detail.json?t=${Date.now()}`)
+    fetch(`data/category/index.json?t=${Date.now()}`)
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => { setData(d); if (d && d.order.length) setCat(d.order[0]); })
-      .catch(() => setData(null));
+      .then(setIndex)
+      .catch(() => setIndex(null));
     // 이 품목에서 오래 버틴 상품도 같이 보여준다 - 평균값 옆에 실물이 있어야 읽힌다.
     fetch(`data/steady_items.json?t=${Date.now()}`)
       .then((r) => (r.ok ? r.json() : null))
@@ -4244,10 +4254,32 @@ function CategoryDetailPanel() {
       .catch(() => setSteady(null));
   }, []);
 
-  if (data === undefined) {
+  const list = index ? (kind === "month" ? index.months : index.weeks) : [];
+
+  useEffect(() => {
+    if (list.length) setPeriod(list[list.length - 1].period);
+  }, [kind, index]);
+
+  useEffect(() => {
+    const at = list.findIndex((p) => p.period === period);
+    // 종류를 바꾼 직후에는 기간이 아직 이전 종류의 것이다. 목록에 없으면 다음 렌더를 기다린다.
+    if (!period || at < 0) return;
+    setLoading(true);
+    fetch(`data/category/${kind === "month" ? "monthly" : "weekly"}/${period}.json?t=${Date.now()}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        setData(d);
+        setLoading(false);
+        // 기간을 바꿔도 보던 품목을 그대로 보여준다. 그 기간에 없는 품목이면 가장 큰 것으로.
+        if (d) setCat((prev) => (prev && d.categories[prev] ? prev : d.order[0]));
+      })
+      .catch(() => { setData(null); setLoading(false); });
+  }, [period, kind]);
+
+  if (index === undefined) {
     return <div className="rounded-2xl p-8 text-center text-sm font-medium" style={{ background: C.white, border: `1px solid ${C.line}`, color: C.mute }}>불러오는 중...</div>;
   }
-  if (!data) {
+  if (!index || !list.length) {
     return (
       <div className="rounded-2xl p-8 text-center text-sm font-medium" style={{ background: C.white, border: `1px solid ${C.line}`, color: C.mute }}>
         아직 품목 데이터가 없어요. <code>node build_category_detail.js</code>를 먼저 실행해주세요.
@@ -4255,15 +4287,22 @@ function CategoryDetailPanel() {
     );
   }
 
-  const d = cat && data.categories[cat];
-  // 품목이 70개가 넘어 칩으로 늘어놓으면 읽히지 않는다. 대분류로 묶어 고르게 한다.
-  const groups = {};
-  for (const c of data.order) {
-    const g = data.cat1[c] || "기타";
-    (groups[g] = groups[g] || []).push(c);
-  }
-
   const card = { background: C.white, border: `1px solid ${C.line}` };
+  const pill = (on) => ({
+    background: on ? C.ink : C.white, color: on ? C.white : C.mute,
+    border: `1px solid ${on ? C.ink : C.line}`,
+  });
+  const meta = list.find((p) => p.period === period);
+  const d = data && cat && data.categories[cat];
+
+  // 품목이 수십 개라 칩으로 늘어놓으면 읽히지 않는다. 대분류로 묶어 고르게 한다.
+  const groups = {};
+  if (data) {
+    for (const c of data.order) {
+      const g = (data.cat1 && data.cat1[c]) || "기타";
+      (groups[g] = groups[g] || []).push(c);
+    }
+  }
   const downGap = d && d.price.downAvg && d.price.synthAvg ? d.price.downAvg - d.price.synthAvg : null;
 
   return (
@@ -4272,116 +4311,141 @@ function CategoryDetailPanel() {
         <div className="flex items-center gap-2 mb-1">
           <ShoppingBag size={16} color={C.indigo} />
           <h2 className="text-base font-bold" style={{ color: C.ink }}>품목 상세</h2>
-          <span className="text-[11px]" style={{ color: C.mute }}>{data.period.from} ~ {data.period.to} (최근 4주)</span>
+          <span className="text-[11px]" style={{ color: C.mute }}>주간 {index.weeks.length}개 · 월간 {index.months.length}개</span>
         </div>
         <p className="text-[13px] leading-relaxed" style={{ color: C.ink }}>
-          최근 4주 랭킹에 오른 상품을 품목별로 모아, <b>소재·충전재·가격·브랜드</b>를 펼쳐 봅니다.
-          가격은 그 상품이 마지막으로 랭킹에 보였을 때의 판매가예요.
+          기간을 고르면 그 기간에 랭킹에 오른 상품을 품목별로 모아 <b>소재·충전재·가격·브랜드</b>를 펼쳐 봅니다.
+          <br />
+          가격은 <b>그 기간에 랭킹에서 본 값</b>이에요. 가장 최근 기간의 최저가·최고가만
+          현재 가격을 다시 받아 <b>상품 페이지와 같은 판매가 기준</b>으로 보여줍니다.
         </p>
       </div>
 
-      <div className="rounded-2xl p-4 flex flex-wrap items-center gap-3" style={card}>
-        <span className="text-xs font-bold" style={{ color: C.mute }}>품목</span>
-        <select value={cat || ""} onChange={(e) => setCat(e.target.value)}
-          className="text-[13px] font-semibold rounded-lg px-3 py-2 outline-none"
-          style={{ background: C.paper, border: `1px solid ${C.line}`, color: C.ink, minWidth: 260 }}>
-          {Object.keys(groups).map((g) => (
-            <optgroup key={g} label={g || "기타"}>
-              {groups[g].map((c) => <option key={c} value={c}>{c} ({data.categories[c].items}개)</option>)}
-            </optgroup>
+      <div className="rounded-2xl p-4 flex flex-col gap-3" style={card}>
+        <div className="flex gap-1">
+          {[["month", "월간"], ["week", "주간"]].map(([k, t]) => (
+            <button key={k} onClick={() => setKind(k)} className="px-3 py-1.5 rounded-full text-xs font-bold transition" style={pill(kind === k)}>{t}</button>
           ))}
-        </select>
-        {d && (
-          <span className="text-[11px]" style={{ color: C.mute }}>
-            소재 확인 {d.fabricCoverage}% ({Math.round(d.items * d.fabricCoverage / 100).toLocaleString()}/{d.items.toLocaleString()}개)
-            {d.fabricCoverage < 60 && " · 수집 중이라 계속 올라갑니다"}
-          </span>
-        )}
+        </div>
+        <PeriodCalendar list={list} kind={kind} value={period} onPick={setPeriod} />
       </div>
 
-      {!d ? null : (
+      {loading || !data ? (
+        <div className="rounded-2xl p-8 text-center text-sm font-medium" style={{ background: C.white, border: `1px solid ${C.line}`, color: C.mute }}>
+          {loading ? "기간을 여는 중..." : "이 기간의 기록을 읽지 못했어요."}
+        </div>
+      ) : (
         <>
-          <div className="rounded-2xl p-5" style={card}>
-            <h3 className="text-lg font-extrabold mb-3" style={{ color: C.ink }}>{cat}</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-              {[
-                ["랭킹에 오른 상품", d.items.toLocaleString() + "개"],
-                ["평균 판매가", won(d.price.avg)],
-                ["중앙 판매가", won(d.price.median)],
-                ["최저", won(d.price.min)],
-                ["최고", won(d.price.max)],
-              ].map(([t, v]) => (
-                <div key={t}>
-                  <p className="text-[11px] font-semibold mb-1" style={{ color: C.mute }}>{t}</p>
-                  <p className="text-lg font-extrabold tabular-nums" style={{ color: C.ink }}>{v}</p>
-                </div>
+          <div className="rounded-2xl p-4 flex flex-wrap items-center gap-3" style={card}>
+            <span className="text-xs font-bold" style={{ color: C.mute }}>품목</span>
+            <select value={cat || ""} onChange={(e) => setCat(e.target.value)}
+              className="text-[13px] font-semibold rounded-lg px-3 py-2 outline-none"
+              style={{ background: C.paper, border: `1px solid ${C.line}`, color: C.ink, minWidth: 260 }}>
+              {Object.keys(groups).map((g) => (
+                <optgroup key={g} label={g || "기타"}>
+                  {groups[g].map((c) => <option key={c} value={c}>{c} ({data.categories[c].items}개)</option>)}
+                </optgroup>
               ))}
-            </div>
-            <p className="text-[11px] mt-3" style={{ color: C.mute }}>
-              평균은 비싼 몇 개에 끌려가므로 중앙값을 같이 봅니다. 평균 할인율 {d.discount.avg}%.
-            </p>
+            </select>
+            {d && (
+              <span className="text-[11px]" style={{ color: C.mute }}>
+                소재 확인 {d.fabricCoverage}% ({Math.round(d.items * d.fabricCoverage / 100).toLocaleString()}/{d.items.toLocaleString()}개)
+              </span>
+            )}
           </div>
 
-          {d.fillKnown > 0 && (
-            <div className="rounded-2xl p-5" style={card}>
-              <div className="flex items-baseline justify-between mb-1">
-                <p className="text-xs font-bold tracking-wider" style={{ color: C.mute }}>충전재</p>
-                <span className="text-[11px] tabular-nums" style={{ color: C.mute }}>충전재가 적힌 상품 {d.fillKnown.toLocaleString()}개</span>
+          {!d ? null : (
+            <>
+              <div className="rounded-2xl p-5" style={card}>
+                <div className="flex flex-wrap items-baseline gap-2 mb-3">
+                  <h3 className="text-lg font-extrabold" style={{ color: C.ink }}>{cat}</h3>
+                  <span className="text-[11px]" style={{ color: C.mute }}>
+                    {meta ? `${meta.year}년 ${meta.text}` : period} · {data.from} ~ {data.to} · 수집 {data.days}일
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+                  {[
+                    ["랭킹에 오른 상품", d.items.toLocaleString() + "개"],
+                    ["평균", won(d.price.avg)],
+                    ["중앙값", won(d.price.median)],
+                    ["최저", won(d.price.min)],
+                    ["최고", won(d.price.max)],
+                  ].map(([t, v]) => (
+                    <div key={t}>
+                      <p className="text-[11px] font-semibold mb-1" style={{ color: C.mute }}>{t}</p>
+                      <p className="text-lg font-extrabold tabular-nums" style={{ color: C.ink }}>{v}</p>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[11px] mt-3" style={{ color: C.mute }}>
+                  가격은 이 기간에 랭킹에서 본 <b>쿠폰 적용가</b> 기준이고, 평균은 비싼 몇 개에 끌려가므로 중앙값을 같이 봅니다.
+                  평균 할인율 {d.discount.avg}%.
+                </p>
               </div>
-              <p className="text-[11px] mb-2" style={{ color: C.mute }}>
-                상품정보고시의 충전재 표기를 묶은 것입니다. 충전재를 아예 안 적은 상품은 빠집니다.
-              </p>
-              {(() => {
-                const max = Math.max(...d.fill.rows.map((r) => r.pct));
-                return d.fill.rows.map((r) => <ArchiveBar key={r.k} row={r} max={max} />);
-              })()}
-              {downGap !== null && (
-                <div className="mt-3 rounded-xl p-3" style={{ background: C.paper }}>
-                  <p className="text-[12px] font-semibold" style={{ color: C.ink }}>
-                    다운 {d.price.downN}개 평균 <b>{won(d.price.downAvg)}</b> · 인공 충전재 {d.price.synthN}개 평균 <b>{won(d.price.synthAvg)}</b>
+
+              {d.fillKnown > 0 && (
+                <div className="rounded-2xl p-5" style={card}>
+                  <div className="flex items-baseline justify-between mb-1">
+                    <p className="text-xs font-bold tracking-wider" style={{ color: C.mute }}>충전재</p>
+                    <span className="text-[11px] tabular-nums" style={{ color: C.mute }}>충전재가 적힌 상품 {d.fillKnown.toLocaleString()}개</span>
+                  </div>
+                  <p className="text-[11px] mb-2" style={{ color: C.mute }}>
+                    상품정보고시의 충전재 표기를 묶은 것입니다. 충전재를 아예 안 적은 상품은 빠집니다.
                   </p>
-                  <p className="text-[11px] mt-1" style={{ color: C.mute }}>
-                    다운 쪽이 {Math.abs(downGap).toLocaleString()}원 {downGap > 0 ? "비쌉니다" : "쌉니다"}.
-                  </p>
+                  {(() => {
+                    const max = Math.max(...d.fill.rows.map((r) => r.pct));
+                    return d.fill.rows.map((r) => <ArchiveBar key={r.k} row={r} max={max} />);
+                  })()}
+                  {downGap !== null && (
+                    <div className="mt-3 rounded-xl p-3" style={{ background: C.paper }}>
+                      <p className="text-[12px] font-semibold" style={{ color: C.ink }}>
+                        다운 {d.price.downN}개 평균 <b>{won(d.price.downAvg)}</b> · 인공 충전재 {d.price.synthN}개 평균 <b>{won(d.price.synthAvg)}</b>
+                      </p>
+                      <p className="text-[11px] mt-1" style={{ color: C.mute }}>
+                        다운 쪽이 {Math.abs(downGap).toLocaleString()}원 {downGap > 0 ? "비쌉니다" : "쌉니다"}.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
-          )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
-            <ArchiveBlock title="겉감 소재" hint="혼용률이 가장 높은 소재로 대표시킵니다" sec={d.shell} />
-            <BrandTable sec={d.brands} />
-            <PriceList title="가장 싼 상품" rows={d.price.cheapest} note="클릭하면 무신사 상품 페이지로 갑니다." />
-            <ArchiveBlock title="핏" sec={d.fit} multi />
-            <ArchiveBlock title="두께" sec={d.thickness} multi />
-            <ArchiveBlock title="성별" sec={d.sex} multi />
-            <ArchiveBlock title="계절" sec={d.season} multi />
-            <ArchiveBlock title="상품명 키워드" hint="품목 이름은 빼고 센 단어" sec={d.words} />
-            <PriceList title="가장 비싼 상품" rows={d.price.priciest} />
-          </div>
-
-          {steady && steady.byCat2[cat] && (
-            <div className="rounded-2xl p-5" style={card}>
-              <p className="text-xs font-bold tracking-wider mb-1" style={{ color: C.mute }}>이 품목에서 오래 버틴 상품</p>
-              <p className="text-[11px] mb-2" style={{ color: C.mute }}>
-                최근 {steady.period.days}일 중 상위 {steady.topN}위 안에 머문 날수 기준입니다.
-              </p>
-              {steady.byCat2[cat].map((r) => <SteadyRow key={r.id} r={r} topN={steady.topN} />)}
-            </div>
-          )}
-
-          {Object.keys(d.measure).length > 0 && (
-            <div className="rounded-2xl p-5" style={card}>
-              <p className="text-xs font-bold tracking-wider mb-2" style={{ color: C.mute }}>평균 실측</p>
-              <div className="flex flex-wrap gap-x-8 gap-y-3">
-                {Object.entries(d.measure).map(([k, v]) => (
-                  <div key={k}>
-                    <p className="text-[11px] font-semibold" style={{ color: C.mute }}>{k} <span style={{ fontWeight: 400 }}>({v.n}개)</span></p>
-                    <p className="text-base font-extrabold tabular-nums" style={{ color: C.ink }}>{v.avg}cm</p>
-                  </div>
-                ))}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+                <ArchiveBlock title="겉감 소재" hint="혼용률이 가장 높은 소재로 대표시킵니다" sec={d.shell} />
+                <BrandTable sec={d.brands} />
+                <PriceList title="가장 싼 상품" rows={d.price.cheapest}
+                  note={data.live ? "판매가 기준이고 오늘 다시 확인한 값이에요. 클릭하면 상품 페이지로 갑니다." : "지나간 기간이라 그때 랭킹에 적힌 쿠폰 적용가입니다."} />
+                <PriceList title="가장 비싼 상품" rows={d.price.priciest} />
+                <ArchiveBlock title="핏" sec={d.fit} multi />
+                <ArchiveBlock title="두께" sec={d.thickness} multi />
+                <ArchiveBlock title="성별" sec={d.sex} multi />
+                <ArchiveBlock title="계절" sec={d.season} multi />
+                <ArchiveBlock title="상품명 키워드" hint="품목 이름은 빼고 센 단어" sec={d.words} />
               </div>
-            </div>
+
+              {steady && steady.byCat2[cat] && (
+                <div className="rounded-2xl p-5" style={card}>
+                  <p className="text-xs font-bold tracking-wider mb-1" style={{ color: C.mute }}>이 품목에서 오래 버틴 상품</p>
+                  <p className="text-[11px] mb-2" style={{ color: C.mute }}>
+                    고른 기간과 무관하게, 최근 {steady.period.days}일 중 상위 {steady.topN}위 안에 머문 날수 기준입니다.
+                  </p>
+                  {steady.byCat2[cat].map((r) => <SteadyRow key={r.id} r={r} topN={steady.topN} />)}
+                </div>
+              )}
+
+              {Object.keys(d.measure).length > 0 && (
+                <div className="rounded-2xl p-5" style={card}>
+                  <p className="text-xs font-bold tracking-wider mb-2" style={{ color: C.mute }}>평균 실측</p>
+                  <div className="flex flex-wrap gap-x-8 gap-y-3">
+                    {Object.entries(d.measure).map(([k, v]) => (
+                      <div key={k}>
+                        <p className="text-[11px] font-semibold" style={{ color: C.mute }}>{k} <span style={{ fontWeight: 400 }}>({v.n}개)</span></p>
+                        <p className="text-base font-extrabold tabular-nums" style={{ color: C.ink }}>{v.avg}cm</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </>
       )}
@@ -4629,7 +4693,7 @@ function SteadyPanel() {
 /* 디자인 트렌드 화면은 질문이 서로 다른 다섯 가지를 한 자리에 둔다.
    - 기간별 구성: 그 주/달에 랭킹이 어떤 모습이었는지의 기록. 계속 쌓이고, 과거는 고정된다.
    - 품목 등락: 어떤 품목이 언제부터 빠지기 시작했고 어떤 게 올라왔는지.
-   - 품목 상세: 품목 하나를 골라 소재·가격·브랜드까지 파고든다.
+   - 품목 상세: 기간을 고르고 그 품목의 소재·가격·브랜드까지 파고든다.
    - 오래 버티는 상품: 상위권에 계속 박혀 있는 상품.
    - 변화 신호: 핏/총장이 어느 쪽으로 움직이는지 + 자사 대조. 한 시즌 안의 비교라 수명이 짧다. */
 function DesignTrendPanel() {
