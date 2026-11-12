@@ -3992,6 +3992,55 @@ function ArchiveMeasure({ cur, prev }) {
   );
 }
 
+/* 기간 고르기. 주차 번호(2026-W45)는 사람이 못 읽으므로 달력처럼 달별로 줄을 세우고
+   그 안에 주 칸을 놓는다. 칸마다 날짜 범위를 같이 적어 어느 주인지 바로 보이게 한다. */
+function PeriodCalendar({ list, kind, value, onPick }) {
+  const rows = [];
+  for (const p of list) {
+    const key = p.year + "-" + p.month;
+    let row = rows.find((r) => r.key === key);
+    if (!row) { row = { key, year: p.year, month: p.month, cells: [] }; rows.push(row); }
+    row.cells.push(p);
+  }
+  const cell = (p, main, sub) => {
+    const on = value === p.period;
+    return (
+      <button key={p.period} onClick={() => onPick(p.period)}
+        className="px-3 py-2 rounded-xl text-left transition shrink-0"
+        style={{
+          background: on ? C.ink : C.white,
+          border: `1px solid ${on ? C.ink : C.line}`,
+          minWidth: kind === "week" ? 104 : 86,
+        }}>
+        <span className="block text-[13px] font-bold" style={{ color: on ? C.white : C.ink }}>{main}</span>
+        <span className="block text-[10px] tabular-nums" style={{ color: on ? "#FFFFFFAA" : C.mute }}>{sub}</span>
+      </button>
+    );
+  };
+
+  if (kind === "month") {
+    return (
+      <div className="flex flex-wrap gap-2">
+        {list.map((p) => cell(p, p.month + "월", p.days + "일 수집"))}
+      </div>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-2">
+      {rows.map((r) => (
+        <div key={r.key} className="flex items-center gap-3">
+          <span className="text-xs font-bold shrink-0 text-right" style={{ color: C.mute, width: 54 }}>
+            {r.month}월
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {r.cells.map((p) => cell(p, p.nth + "째주", p.range.replace(/-/g, "/")))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function TrendArchivePanel() {
   const [index, setIndex] = useState(undefined);
   const [kind, setKind] = useState("month");
@@ -4041,7 +4090,8 @@ function TrendArchivePanel() {
     background: on ? C.ink : C.white, color: on ? C.white : C.mute,
     border: `1px solid ${on ? C.ink : C.line}`,
   });
-  const label = (p) => (kind === "month" ? p.period.replace("-", "년 ") + "월" : p.period.replace("-W", "년 ") + "주");
+  // 색인에 "11월 1째주"가 들어있다. 없던 시절 파일을 열었을 때만 주차 키로 떨어진다.
+  const label = (p) => (p && p.text ? `${p.year}년 ${p.text}` : (p || {}).period || "");
 
   return (
     <div className="flex flex-col gap-5">
@@ -4062,18 +4112,13 @@ function TrendArchivePanel() {
         </p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="flex gap-1 mr-2">
+      <div className="rounded-2xl p-4 flex flex-col gap-3" style={{ background: C.white, border: `1px solid ${C.line}` }}>
+        <div className="flex gap-1">
           {[["month", "월간"], ["week", "주간"]].map(([k, t]) => (
             <button key={k} onClick={() => setKind(k)} className="px-3 py-1.5 rounded-full text-xs font-bold transition" style={pill(kind === k)}>{t}</button>
           ))}
         </div>
-        {list.map((p) => (
-          <button key={p.period} onClick={() => setPeriod(p.period)}
-            className="px-3 py-1.5 rounded-full text-xs font-semibold transition tabular-nums" style={pill(period === p.period)}>
-            {label(p)}
-          </button>
-        ))}
+        <PeriodCalendar list={list} kind={kind} value={period} onPick={setPeriod} />
       </div>
 
       {loading || !cur ? (
@@ -4185,12 +4230,18 @@ function BrandTable({ sec }) {
 function CategoryDetailPanel() {
   const [data, setData] = useState(undefined);
   const [cat, setCat] = useState(null);
+  const [steady, setSteady] = useState(null);
 
   useEffect(() => {
     fetch(`data/category_detail.json?t=${Date.now()}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => { setData(d); if (d && d.order.length) setCat(d.order[0]); })
       .catch(() => setData(null));
+    // 이 품목에서 오래 버틴 상품도 같이 보여준다 - 평균값 옆에 실물이 있어야 읽힌다.
+    fetch(`data/steady_items.json?t=${Date.now()}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then(setSteady)
+      .catch(() => setSteady(null));
   }, []);
 
   if (data === undefined) {
@@ -4299,7 +4350,6 @@ function CategoryDetailPanel() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
             <ArchiveBlock title="겉감 소재" hint="혼용률이 가장 높은 소재로 대표시킵니다" sec={d.shell} />
-            <ArchiveBlock title="제조국" sec={d.origin} />
             <BrandTable sec={d.brands} />
             <PriceList title="가장 싼 상품" rows={d.price.cheapest} note="클릭하면 무신사 상품 페이지로 갑니다." />
             <ArchiveBlock title="핏" sec={d.fit} multi />
@@ -4309,6 +4359,16 @@ function CategoryDetailPanel() {
             <ArchiveBlock title="상품명 키워드" hint="품목 이름은 빼고 센 단어" sec={d.words} />
             <PriceList title="가장 비싼 상품" rows={d.price.priciest} />
           </div>
+
+          {steady && steady.byCat2[cat] && (
+            <div className="rounded-2xl p-5" style={card}>
+              <p className="text-xs font-bold tracking-wider mb-1" style={{ color: C.mute }}>이 품목에서 오래 버틴 상품</p>
+              <p className="text-[11px] mb-2" style={{ color: C.mute }}>
+                최근 {steady.period.days}일 중 상위 {steady.topN}위 안에 머문 날수 기준입니다.
+              </p>
+              {steady.byCat2[cat].map((r) => <SteadyRow key={r.id} r={r} topN={steady.topN} />)}
+            </div>
+          )}
 
           {Object.keys(d.measure).length > 0 && (
             <div className="rounded-2xl p-5" style={card}>
@@ -4329,13 +4389,252 @@ function CategoryDetailPanel() {
   );
 }
 
-/* 디자인 트렌드 화면은 성격이 다른 두 가지를 한 자리에 둔다.
+/* ─────────────────────────────────────────────────────────────────────────
+   품목 등락: 어떤 품목이 언제부터 랭킹에서 빠지기 시작했고, 어떤 게 올라왔는지.
+
+   계산은 build_category_timeline.js가 수집 때 미리 한다. 주마다 그 품목이 랭킹에
+   몇 종 올라왔는지를 이어 붙이고, 평평하던 구간을 벗어나는 주를 "시작한 때"로 잡는다.
+
+   두 번 강조해야 하는 한계:
+   - 이건 판매량이 아니다. 랭킹 150칸을 그 품목이 몇 칸 차지했는지다.
+   - 한 시즌치뿐이라 계절과 유행이 안 갈린다. 반팔이 8월부터 빠지는 건 유행이 아니다.
+   ───────────────────────────────────────────────────────────────────────── */
+function Spark({ series, weeks, dir }) {
+  const max = Math.max(...series.map((s) => s.pct), 0.1);
+  const color = dir === "down" ? C.signal : dir === "up" ? "#2563EB" : C.mute;
+  return (
+    <div>
+      <div className="flex items-end gap-[2px]" style={{ height: 56 }}>
+        {series.map((s, i) => (
+          <div key={s.w} className="flex-1 rounded-t" title={`${(weeks[i] || {}).text || s.w} · ${s.pct}% (${s.n}개)`}
+            style={{ height: Math.max(2, (s.pct / max) * 100) + "%", background: color, opacity: 0.35 + (i / series.length) * 0.65 }} />
+        ))}
+      </div>
+      <div className="flex mt-1">
+        {series.map((s, i) => {
+          const w = weeks[i] || {};
+          // 달이 바뀌는 칸에만 달 이름을 적는다. 16칸에 전부 적으면 읽히지 않는다.
+          const first = i === 0 || (weeks[i - 1] || {}).month !== w.month;
+          return <span key={s.w} className="flex-1 text-[9px] text-center" style={{ color: C.mute }}>{first ? w.month + "월" : ""}</span>;
+        })}
+      </div>
+    </div>
+  );
+}
+
+function TurnRow({ cat, info, weeks, onPick, active }) {
+  const t = info.turn;
+  const when = t.at ? (weeks.find((w) => w.w === t.at) || {}).text : null;
+  const tone = t.dir === "down" ? C.signal : t.dir === "up" ? "#2563EB" : C.mute;
+  return (
+    <button onClick={() => onPick(cat)} className="w-full text-left py-2 px-2 rounded-lg transition"
+      style={{ background: active ? C.paper : "transparent", borderBottom: `1px solid ${C.line}` }}>
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-[13px] font-bold truncate" style={{ color: C.ink }}>{cat}</span>
+        <span className="text-[12px] tabular-nums shrink-0" style={{ color: tone }}>
+          {t.from}% → <b>{t.now}%</b>
+        </span>
+      </div>
+      <span className="text-[11px]" style={{ color: C.mute }}>
+        {t.dir === "flat" ? "뚜렷한 변화 없음"
+          : t.atStart ? `수집을 시작한 ${when}에 이미 ${t.dir === "down" ? "빠지는" : "오르는"} 중`
+          : `${when}부터 ${t.dir === "down" ? "빠지기" : "오르기"} 시작`}
+      </span>
+    </button>
+  );
+}
+
+function CategoryTimelinePanel() {
+  const [data, setData] = useState(undefined);
+  const [pick, setPick] = useState(null);
+
+  useEffect(() => {
+    fetch(`data/category_timeline.json?t=${Date.now()}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { setData(d); if (d && d.order.length) setPick(d.order[0]); })
+      .catch(() => setData(null));
+  }, []);
+
+  if (data === undefined) {
+    return <div className="rounded-2xl p-8 text-center text-sm font-medium" style={{ background: C.white, border: `1px solid ${C.line}`, color: C.mute }}>불러오는 중...</div>;
+  }
+  if (!data) {
+    return (
+      <div className="rounded-2xl p-8 text-center text-sm font-medium" style={{ background: C.white, border: `1px solid ${C.line}`, color: C.mute }}>
+        아직 등락 데이터가 없어요. <code>node build_category_timeline.js</code>를 먼저 실행해주세요.
+      </div>
+    );
+  }
+
+  const card = { background: C.white, border: `1px solid ${C.line}` };
+  const down = data.order.filter((c) => data.categories[c].turn.dir === "down").slice(0, 10);
+  const up = data.order.filter((c) => data.categories[c].turn.dir === "up").slice(0, 10);
+  const cur = pick && data.categories[pick];
+  const first = data.weeks[0], last = data.weeks[data.weeks.length - 1];
+
+  return (
+    <div className="flex flex-col gap-5">
+      <div className="rounded-2xl p-5" style={{ background: C.indigoSoft, border: `1px solid ${C.indigo}33` }}>
+        <div className="flex items-center gap-2 mb-1">
+          <TrendingUp size={16} color={C.indigo} />
+          <h2 className="text-base font-bold" style={{ color: C.ink }}>품목 등락</h2>
+          <span className="text-[11px]" style={{ color: C.mute }}>{first.text} ~ {last.text} ({data.weeks.length}주)</span>
+        </div>
+        <p className="text-[13px] leading-relaxed" style={{ color: C.ink }}>
+          품목이 <b>언제부터</b> 랭킹에서 빠지기 시작했는지, 어떤 게 올라왔는지를 주 단위로 봅니다.
+          <br />
+          숫자는 <b>판매량이 아니라</b> 랭킹 150칸 중 그 품목이 차지한 비중이에요.
+          그리고 아직 한 시즌치뿐이라 <b>계절과 유행이 갈리지 않습니다</b> —
+          반팔이 8월부터 빠지는 건 유행이 아니라 가을이 온 것이고, 그 둘은 작년 같은 달과
+          비교할 수 있을 때 비로소 갈립니다.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+        <div className="rounded-2xl p-5" style={card}>
+          <p className="text-xs font-bold tracking-wider mb-2" style={{ color: C.mute }}>빠지는 품목</p>
+          {down.length === 0 ? <p className="text-xs" style={{ color: C.mute }}>뚜렷하게 빠지는 품목이 없어요.</p>
+            : down.map((c) => <TurnRow key={c} cat={c} info={data.categories[c]} weeks={data.weeks} onPick={setPick} active={pick === c} />)}
+        </div>
+        <div className="rounded-2xl p-5" style={card}>
+          <p className="text-xs font-bold tracking-wider mb-2" style={{ color: C.mute }}>올라오는 품목</p>
+          {up.length === 0 ? <p className="text-xs" style={{ color: C.mute }}>뚜렷하게 올라오는 품목이 없어요.</p>
+            : up.map((c) => <TurnRow key={c} cat={c} info={data.categories[c]} weeks={data.weeks} onPick={setPick} active={pick === c} />)}
+        </div>
+      </div>
+
+      {cur && (
+        <div className="rounded-2xl p-5" style={card}>
+          <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
+            <h3 className="text-lg font-extrabold" style={{ color: C.ink }}>{pick}</h3>
+            <select value={pick} onChange={(e) => setPick(e.target.value)}
+              className="text-[13px] font-semibold rounded-lg px-3 py-2 outline-none"
+              style={{ background: C.paper, border: `1px solid ${C.line}`, color: C.ink, minWidth: 220 }}>
+              {data.order.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <Spark series={cur.series} weeks={data.weeks} dir={cur.turn.dir} />
+          <div className="flex flex-wrap gap-x-8 gap-y-2 mt-4">
+            {[
+              ["가장 많던 주", Math.max(...cur.series.map((s) => s.pct)) + "%"],
+              ["최근 3주 평균", cur.turn.now + "%"],
+              ["주당 상품 수(최근)", Math.round(cur.nowN) + "종"],
+              ["가장 많던 주 상품 수", cur.peakN + "종"],
+            ].map(([t, v]) => (
+              <div key={t}>
+                <p className="text-[11px] font-semibold" style={{ color: C.mute }}>{t}</p>
+                <p className="text-base font-extrabold tabular-nums" style={{ color: C.ink }}>{v}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-[11px] mt-3" style={{ color: C.mute }}>
+            막대 하나가 한 주입니다. 주마다 랭킹에 오른 서로 다른 상품을 세고, 그 주 전체에서 차지한 비중을 그립니다.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   스테디셀러: 상위권에 오래 박혀 있는 상품.
+
+   랭킹을 하루치만 보면 1위가 누구인지는 알아도 그게 어제 올라온 건지 두 달째 버티는
+   건지 알 수 없다. 기획에 참고할 대상은 반짝이 아니라 계속 팔리는 쪽이다.
+   ───────────────────────────────────────────────────────────────────────── */
+function SteadyRow({ r, topN }) {
+  return (
+    <a href={r.url} target="_blank" rel="noreferrer"
+      className="flex items-center gap-3 py-2 hover:opacity-70 transition" style={{ borderBottom: `1px solid ${C.line}` }}>
+      {r.image && <img src={r.image} alt="" className="rounded-lg shrink-0" style={{ width: 44, height: 56, objectFit: "cover", background: C.paperDark }} loading="lazy" />}
+      <span className="min-w-0 flex-1">
+        <span className="text-[12px] font-bold block" style={{ color: C.ink }}>{r.brand}</span>
+        <span className="text-[11px] block truncate" style={{ color: C.mute }}>{r.name}</span>
+        <span className="text-[10px]" style={{ color: C.mute }}>
+          {r.cat2 || "–"} · {typeof r.price === "number" ? r.price.toLocaleString() + "원" : "–"}
+        </span>
+      </span>
+      <span className="text-right shrink-0">
+        <span className="text-[14px] font-extrabold tabular-nums block" style={{ color: C.ink }}>{r.days}일</span>
+        <span className="text-[10px] block" style={{ color: C.mute }}>최고 {r.best}위 · 평균 {r.avg}위</span>
+        {r.live
+          ? <span className="text-[10px] font-bold" style={{ color: "#2563EB" }}>유지 중 {r.streak}일째</span>
+          : <span className="text-[10px]" style={{ color: C.mute }}>{r.to.slice(5)} 이탈</span>}
+      </span>
+    </a>
+  );
+}
+
+function SteadyPanel() {
+  const [data, setData] = useState(undefined);
+  const [cat, setCat] = useState("");
+
+  useEffect(() => {
+    fetch(`data/steady_items.json?t=${Date.now()}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then(setData)
+      .catch(() => setData(null));
+  }, []);
+
+  if (data === undefined) {
+    return <div className="rounded-2xl p-8 text-center text-sm font-medium" style={{ background: C.white, border: `1px solid ${C.line}`, color: C.mute }}>불러오는 중...</div>;
+  }
+  if (!data) {
+    return (
+      <div className="rounded-2xl p-8 text-center text-sm font-medium" style={{ background: C.white, border: `1px solid ${C.line}`, color: C.mute }}>
+        아직 데이터가 없어요. <code>node build_steady_items.js</code>를 먼저 실행해주세요.
+      </div>
+    );
+  }
+
+  const card = { background: C.white, border: `1px solid ${C.line}` };
+  const cats = Object.keys(data.byCat2).sort((a, b) => data.byCat2[b].length - data.byCat2[a].length);
+  const rows = cat ? data.byCat2[cat] : data.overall;
+
+  return (
+    <div className="flex flex-col gap-5">
+      <div className="rounded-2xl p-5" style={{ background: C.indigoSoft, border: `1px solid ${C.indigo}33` }}>
+        <div className="flex items-center gap-2 mb-1">
+          <Sparkles size={16} color={C.indigo} />
+          <h2 className="text-base font-bold" style={{ color: C.ink }}>오래 버티는 상품</h2>
+          <span className="text-[11px]" style={{ color: C.mute }}>{data.period.from} ~ {data.period.to} ({data.period.days}일)</span>
+        </div>
+        <p className="text-[13px] leading-relaxed" style={{ color: C.ink }}>
+          최근 {data.period.days}일 동안 <b>상위 {data.topN}위 안에 며칠이나 머물렀는지</b>로 줄 세웁니다.
+          어제 반짝 올라온 상품이 아니라 계속 팔리는 상품이 참고할 대상이에요.
+          순위는 랭킹 종류마다 달라서(전체 12위 / 아우터 3위) 그날 <b>가장 좋았던 순위</b>를 씁니다.
+        </p>
+      </div>
+
+      <div className="rounded-2xl p-4 flex flex-wrap items-center gap-3" style={card}>
+        <span className="text-xs font-bold" style={{ color: C.mute }}>품목</span>
+        <select value={cat} onChange={(e) => setCat(e.target.value)}
+          className="text-[13px] font-semibold rounded-lg px-3 py-2 outline-none"
+          style={{ background: C.paper, border: `1px solid ${C.line}`, color: C.ink, minWidth: 240 }}>
+          <option value="">전체 (오래 버틴 순 {data.overall.length}개)</option>
+          {cats.map((c) => <option key={c} value={c}>{c} ({data.byCat2[c].length}개)</option>)}
+        </select>
+      </div>
+
+      <div className="rounded-2xl p-5" style={card}>
+        {rows.map((r) => <SteadyRow key={r.id} r={r} topN={data.topN} />)}
+        <p className="text-[11px] mt-2" style={{ color: C.mute }}>
+          "유지 중"은 마지막 수집일에도 상위 {data.topN}위 안에 있었다는 뜻이고, 옆의 날수는 끊기지 않고 이어진 날수예요.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* 디자인 트렌드 화면은 질문이 서로 다른 다섯 가지를 한 자리에 둔다.
    - 기간별 구성: 그 주/달에 랭킹이 어떤 모습이었는지의 기록. 계속 쌓이고, 과거는 고정된다.
+   - 품목 등락: 어떤 품목이 언제부터 빠지기 시작했고 어떤 게 올라왔는지.
    - 품목 상세: 품목 하나를 골라 소재·가격·브랜드까지 파고든다.
-   - 변화 신호: 지금 어느 쪽으로 움직이는지. 한 시즌 안에서의 비교라 수명이 짧다. */
+   - 오래 버티는 상품: 상위권에 계속 박혀 있는 상품.
+   - 변화 신호: 핏/총장이 어느 쪽으로 움직이는지 + 자사 대조. 한 시즌 안의 비교라 수명이 짧다. */
 function DesignTrendPanel() {
   const [tab, setTab] = useState("archive");
-  const tabs = [["archive", "기간별 구성"], ["detail", "품목 상세"], ["signal", "변화 신호"]];
+  const tabs = [["archive", "기간별 구성"], ["timeline", "품목 등락"], ["detail", "품목 상세"], ["steady", "오래 버티는 상품"], ["signal", "변화 신호"]];
   return (
     <div className="flex flex-col gap-5">
       <div className="flex gap-1">
@@ -4350,7 +4649,9 @@ function DesignTrendPanel() {
         ))}
       </div>
       {tab === "archive" && <TrendArchivePanel />}
+      {tab === "timeline" && <CategoryTimelinePanel />}
       {tab === "detail" && <CategoryDetailPanel />}
+      {tab === "steady" && <SteadyPanel />}
       {tab === "signal" && <DesignSignalPanel />}
     </div>
   );

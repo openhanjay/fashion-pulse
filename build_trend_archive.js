@@ -19,6 +19,9 @@
 
 const fs = require("fs");
 const path = require("path");
+// 주차 라벨은 build_category_timeline.js가 기준이다. 두 화면에서 "11월 1째주"가
+// 다른 주를 가리키면 안 되므로 규칙을 복사하지 않고 가져다 쓴다.
+const { weekLabel } = require("./build_category_timeline");
 
 const DATA_DIR = path.join(__dirname, "data");
 const TREND_DIR = path.join(DATA_DIR, "trend");
@@ -327,12 +330,21 @@ function run() {
   }
 
   /* 대시보드가 기간 목록과 핵심 추이를 한 번에 읽도록 색인을 만든다 */
-  const slim = (p) => ({
-    period: p.period, from: p.from, to: p.to, days: p.days, products: p.products,
-    fit: p.fit.rows.slice(0, 5),
-    categories: p.categories.rows.slice(0, 6),
-    priceMedian: p.price.median,
-  });
+  const slim = (p) => {
+    // 달력처럼 고르게 하려면 "2026-W45"가 몇 월 몇째 주인지가 색인에 있어야 한다.
+    const L = p.kind === "week" ? weekLabel(p.period) : null;
+    return {
+      period: p.period, kind: p.kind, from: p.from, to: p.to, days: p.days, products: p.products,
+      year: L ? L.year : Number(p.period.slice(0, 4)),
+      month: L ? L.month : Number(p.period.slice(5, 7)),
+      nth: L ? L.nth : null,
+      text: L ? L.text : Number(p.period.slice(5, 7)) + "월",
+      range: L ? L.range : p.from.slice(5) + " ~ " + p.to.slice(5),
+      fit: p.fit.rows.slice(0, 5),
+      categories: p.categories.rows.slice(0, 6),
+      priceMedian: p.price.median,
+    };
+  };
   fs.writeFileSync(path.join(TREND_DIR, "index.json"), JSON.stringify({
     updatedAt: new Date().toISOString().slice(0, 10),
     weeks: weeks.map(slim),

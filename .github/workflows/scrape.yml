@@ -109,6 +109,15 @@ jobs:
         if: steps.guard.outputs.skip != 'true'
         run: node build_trend_archive.js
 
+      # 품목이 언제부터 빠지기 시작했는지(주 단위 시계열)와 상위권에 오래 버틴 상품.
+      - name: Build category timeline
+        if: steps.guard.outputs.skip != 'true'
+        run: node build_category_timeline.js
+
+      - name: Build steady items
+        if: steps.guard.outputs.skip != 'true'
+        run: node build_steady_items.js
+
       # 품목 하나를 파고들 때 쓰는 값(소재 구성·가격·브랜드)을 미리 계산해둔다.
       - name: Build category detail
         if: steps.guard.outputs.skip != 'true'
