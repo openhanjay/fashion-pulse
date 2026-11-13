@@ -1,5 +1,5 @@
 {
-"vivalavida":{"brandName":"비바라비다","total":438,"snapshotDays":100,"updatedAt":"2026-11-13","items":[
+"vivalavida":{"brandName":"비바라비다","total":440,"snapshotDays":100,"updatedAt":"2026-11-13","items":[
   {"id":"7388978","name":"Wildness 헨리넥 롱 슬리브 티셔츠","price":45900,"normalPrice":61900,"discount":26,"reviews":7,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
   {"id":"7443151","name":"Skewer 헨리넥 롱 슬리브 티셔츠","price":45900,"normalPrice":61900,"discount":26,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7388981","name":"Spiral 배색 트리밍 롱 슬리브 티셔츠","price":54900,"normalPrice":73900,"discount":26,"reviews":8,"reviewScore":4.6,"soldOut":false,"gender":"공용","rankedDays":1},
@@ -436,6 +436,8 @@
   {"id":"6120428","name":"Alone 우먼 롱 슬리브 티셔츠","price":36120,"normalPrice":46900,"discount":23,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"여성"},
   {"id":"6329745","name":"AHA 에코백","price":36900,"normalPrice":47900,"discount":23,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
   {"id":"6487397","name":"텐셀 오프숄더 롱슬리브 티셔츠","price":50750,"normalPrice":65900,"discount":23,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"여성"},
+  {"id":"7789706","name":"Calib 피그먼트 헤비테리 후드 티셔츠","price":89900,"normalPrice":89900,"discount":0,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
+  {"id":"7789616","name":"Glyph 헨리넥 롱 슬리브 티셔츠","price":61900,"normalPrice":61900,"discount":0,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
   {"id":"7772584","name":"Emblem 자카드 비니","price":18900,"normalPrice":24900,"discount":24,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"},
   {"id":"7772562","name":"Snug 니트 머플러","price":27900,"normalPrice":37900,"discount":26,"reviews":0,"reviewScore":null,"soldOut":false,"gender":"공용"}
 ]}
