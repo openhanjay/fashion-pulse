@@ -1,5 +1,5 @@
 {
-"vivalavida":{"brandName":"비바라비다","total":440,"snapshotDays":100,"updatedAt":"2026-11-13","items":[
+"vivalavida":{"brandName":"비바라비다","total":440,"snapshotDays":101,"updatedAt":"2026-11-13","items":[
   {"id":"7388978","name":"Wildness 헨리넥 롱 슬리브 티셔츠","price":45900,"normalPrice":61900,"discount":26,"reviews":7,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
   {"id":"7443151","name":"Skewer 헨리넥 롱 슬리브 티셔츠","price":45900,"normalPrice":61900,"discount":26,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7388981","name":"Spiral 배색 트리밍 롱 슬리브 티셔츠","price":54900,"normalPrice":73900,"discount":26,"reviews":8,"reviewScore":4.6,"soldOut":false,"gender":"공용","rankedDays":1},
@@ -26,7 +26,7 @@
   {"id":"7399405","name":"[기모선택] Roam 헤비테리 후드 집업","price":67830,"normalPrice":96900,"discount":30,"reviews":9,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
   {"id":"7388980","name":"투톤 레이어드 롱 슬리브 티셔츠","price":36900,"normalPrice":49900,"discount":26,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7426609","name":"Crufi 우먼 롱 슬리브 티셔츠","price":35900,"normalPrice":46900,"discount":23,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"여성"},
-  {"id":"4448438","name":"[기모선택]Aether 우먼 세미 크롭 맨투맨","price":47380,"normalPrice":64900,"discount":27,"reviews":35,"reviewScore":5,"soldOut":false,"gender":"여성"},
+  {"id":"4448438","name":"[기모선택]Aether 우먼 세미 크롭 맨투맨","price":47380,"normalPrice":64900,"discount":27,"reviews":36,"reviewScore":5,"soldOut":false,"gender":"여성"},
   {"id":"7103609","name":"Muted 레글런 롱 슬리브 티셔츠","price":29900,"normalPrice":49900,"discount":40,"reviews":16,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
   {"id":"7119793","name":"[기모선택] Burst 헤비테리 맨투맨","price":51940,"normalPrice":79900,"discount":35,"reviews":4,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7377722","name":"하프 버튼 플리스 풀오버","price":44900,"normalPrice":96900,"discount":54,"reviews":7,"reviewScore":4.4,"soldOut":false,"gender":"공용"},
@@ -57,7 +57,7 @@
   {"id":"5190514","name":"Marker 나일론 스트링 카고 와이드 팬츠","price":33330,"normalPrice":52900,"discount":37,"reviews":384,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":3},
   {"id":"6227651","name":"Things 에코백","price":36340,"normalPrice":55900,"discount":35,"reviews":173,"reviewScore":4.9,"soldOut":false,"gender":"공용","rankedDays":21},
   {"id":"4448397","name":"[기모선택]Mitten 우먼 세미 크롭 맨투맨","price":47380,"normalPrice":64900,"discount":27,"reviews":24,"reviewScore":4.8,"soldOut":false,"gender":"여성"},
-  {"id":"5771917","name":"[기모선택] Cupid 우먼 세미 크롭 맨투맨","price":47380,"normalPrice":64900,"discount":27,"reviews":6,"reviewScore":4.3,"soldOut":false,"gender":"여성"},
+  {"id":"5771917","name":"[기모선택] Cupid 우먼 세미 크롭 맨투맨","price":47380,"normalPrice":64900,"discount":27,"reviews":7,"reviewScore":4.4,"soldOut":false,"gender":"여성"},
   {"id":"7120158","name":"[기모선택] Cockle 헤비테리 맨투맨","price":51940,"normalPrice":79900,"discount":35,"reviews":6,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7103606","name":"Nacre 레글런 롱 슬리브 티셔츠","price":36900,"normalPrice":49900,"discount":26,"reviews":1,"reviewScore":1,"soldOut":false,"gender":"공용"},
   {"id":"5968876","name":"[기모선택] Flash 헤비테리 후드 집업","price":62990,"normalPrice":96900,"discount":35,"reviews":32,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
@@ -123,7 +123,7 @@
   {"id":"4989104","name":"나일론 스트링 카고 와이드 팬츠","price":36430,"normalPrice":49900,"discount":27,"reviews":161,"reviewScore":4.8,"soldOut":false,"gender":"공용"},
   {"id":"5353414","name":"[기모선택] OWNLY 헤비테리 후드","price":64900,"normalPrice":93900,"discount":31,"reviews":28,"reviewScore":4.8,"soldOut":false,"gender":"공용"},
   {"id":"5387919","name":"Blast 나일론 바람막이","price":89360,"normalPrice":122400,"discount":27,"reviews":8,"reviewScore":4.5,"soldOut":false,"gender":"공용"},
-  {"id":"5818075","name":"[기모선택] Element 헤비테리 후드 집업","price":63900,"normalPrice":84900,"discount":25,"reviews":4,"reviewScore":4.5,"soldOut":false,"gender":"공용"},
+  {"id":"5818075","name":"[기모선택] Element 헤비테리 후드 집업","price":63900,"normalPrice":84900,"discount":25,"reviews":5,"reviewScore":4.6,"soldOut":false,"gender":"공용"},
   {"id":"5855811","name":"[기모선택] Wearness 헤비테리 후드 집업 버건디","price":72900,"normalPrice":96900,"discount":25,"reviews":6,"reviewScore":4.7,"soldOut":false,"gender":"공용"},
   {"id":"5853540","name":"[기모선택] Wearness 헤비테리 후드 집업 멜란지","price":72900,"normalPrice":96900,"discount":25,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"5369192","name":"S2 Dot 레글런 롱 슬리브 티셔츠","price":32780,"normalPrice":44900,"discount":27,"reviews":12,"reviewScore":4.3,"soldOut":false,"gender":"공용"},
