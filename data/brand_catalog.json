@@ -1,5 +1,5 @@
 {
-"vivalavida":{"brandName":"비바라비다","total":440,"snapshotDays":102,"updatedAt":"2026-11-14","items":[
+"vivalavida":{"brandName":"비바라비다","total":440,"snapshotDays":102,"updatedAt":"2026-11-15","items":[
   {"id":"7388978","name":"Wildness 헨리넥 롱 슬리브 티셔츠","price":45900,"normalPrice":61900,"discount":26,"reviews":7,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
   {"id":"7443151","name":"Skewer 헨리넥 롱 슬리브 티셔츠","price":45900,"normalPrice":61900,"discount":26,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7388981","name":"Spiral 배색 트리밍 롱 슬리브 티셔츠","price":54900,"normalPrice":73900,"discount":26,"reviews":8,"reviewScore":4.6,"soldOut":false,"gender":"공용","rankedDays":1},
@@ -66,7 +66,7 @@
   {"id":"5190514","name":"Marker 나일론 스트링 카고 와이드 팬츠","price":33330,"normalPrice":52900,"discount":37,"reviews":384,"reviewScore":4.8,"soldOut":false,"gender":"공용","rankedDays":3},
   {"id":"5855820","name":"[기모선택] Scheme 헤비테리 후드 집업","price":72900,"normalPrice":96900,"discount":25,"reviews":101,"reviewScore":4.8,"soldOut":false,"gender":"공용","bestRank":27,"rankedDays":2},
   {"id":"5741477","name":"Half 우먼 크롭 패딩 자켓","price":39540,"normalPrice":59900,"discount":34,"reviews":16,"reviewScore":4.1,"soldOut":false,"gender":"여성"},
-  {"id":"5561924","name":"[기모선택] Come Over 헤비테리 맨투맨","price":51940,"normalPrice":79900,"discount":35,"reviews":14,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
+  {"id":"5561924","name":"[기모선택] Come Over 헤비테리 맨투맨","price":51940,"normalPrice":79900,"discount":35,"reviews":15,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
   {"id":"7103607","name":"Reason 레글런 롱 슬리브 티셔츠","price":32440,"normalPrice":49900,"discount":35,"reviews":16,"reviewScore":4.5,"soldOut":false,"gender":"공용"},
   {"id":"5855421","name":"[기모선택] Tristar 헤비테리 후드 집업 네이비","price":72900,"normalPrice":96900,"discount":25,"reviews":16,"reviewScore":4.6,"soldOut":false,"gender":"공용","rankedDays":1},
   {"id":"5855807","name":"[기모선택] Dest 헤비테리 후드 집업","price":72900,"normalPrice":89900,"discount":19,"reviews":65,"reviewScore":4.9,"soldOut":false,"gender":"공용","rankedDays":4},
