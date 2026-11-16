@@ -97,17 +97,11 @@ jobs:
         if: steps.guard.outputs.skip != 'true'
         run: node scrape_brand_catalog.js
 
-      # 랭킹에서 들어오고 빠지는 디자인(핏/총장)을 미리 계산해 data/design_trend.json으로 낸다.
-      # 주차별 스냅샷 16개와 상품 속성 10MB를 읽어야 나오는 분석이라 브라우저에서 매번 돌릴 수 없다.
-      - name: Build design trend
+      # 상품명에 확실한 단서가 있는 것만 아트웍으로 표시한다(무료).
+      # 썸네일 분류(--vision)는 API 키가 필요해서 여기서 돌리지 않는다.
+      - name: Classify artwork from names
         if: steps.guard.outputs.skip != 'true'
-        run: node build_design_trend.js
-
-      # 그 주의 디자인 지문(품목·핏·색상·실측·가격 구성)을 data/trend/ 아래에 쌓는다.
-      # 지나간 주는 다시 계산하지 않으므로 매 수집마다 이번 주 파일 하나만 다시 쓴다.
-      - name: Archive weekly design fingerprint
-        if: steps.guard.outputs.skip != 'true'
-        run: node build_trend_archive.js
+        run: node classify_artwork.js
 
       # 품목이 언제부터 빠지기 시작했는지(주 단위 시계열)와 상위권에 오래 버틴 상품.
       - name: Build category timeline

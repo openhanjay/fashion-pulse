@@ -99,7 +99,37 @@ function collectPeriod(days, index) {
   return [...byId.values()];
 }
 
-function summarize(items, meta, fabric) {
+/*
+ * 아트웍(그래픽·프린트·자수 등) 유무로 갈라 가격대를 낸다.
+ *
+ * 분류는 classify_artwork.js가 미리 해둔다. 무신사 어디에도 이 정보가 없어서
+ * 이름에 확실한 단서가 있는 것만 공짜로 표시하고 나머지는 썸네일을 봐야 한다.
+ * 그래서 "미분류"가 당분간 가장 큰 칸이다 - 숨기지 않고 그대로 보여준다.
+ * 모르는 걸 아는 척하면 가격대 비교가 통째로 거짓이 된다.
+ */
+function priceGroup(list) {
+  const ps = list.map((it) => it.price).filter((v) => typeof v === "number" && v > 0);
+  if (!ps.length) return { n: list.length, min: null, avg: null, max: null };
+  return {
+    n: list.length,
+    min: Math.min(...ps),
+    avg: Math.round(ps.reduce((a, b) => a + b, 0) / ps.length),
+    max: Math.max(...ps),
+  };
+}
+
+function artworkSplit(items, artwork) {
+  const art = [], plain = [], unknown = [];
+  for (const it of items) {
+    const a = artwork[it.id];
+    if (!a) unknown.push(it);
+    else if (a.art) art.push(it);
+    else plain.push(it);
+  }
+  return { art: priceGroup(art), plain: priceGroup(plain), unknown: priceGroup(unknown) };
+}
+
+function summarize(items, meta, fabric, artwork) {
   const fillM = new Map(), shellM = new Map();
   const fitM = new Map(), thickM = new Map(), sexM = new Map(), seasonM = new Map();
   const wordM = new Map(), spellM = new Map(), brandM = new Map(), brandPrice = new Map();
@@ -213,6 +243,7 @@ function summarize(items, meta, fabric) {
         })),
     },
     measure,
+    artwork: artworkSplit(items, artwork),
   };
 }
 
@@ -293,7 +324,7 @@ function trimWithoutLive(categories) {
 
 /* ------------------------------------------------- 실행 */
 
-function buildPeriod(days, index, meta, fabric) {
+function buildPeriod(days, index, meta, fabric, artwork) {
   const items = collectPeriod(days, index);
   const byCat = new Map();
   for (const it of items) {
@@ -306,7 +337,7 @@ function buildPeriod(days, index, meta, fabric) {
   const cat1 = {};
   for (const [cat, list] of byCat) {
     if (list.length < MIN_ITEMS) continue;
-    categories[cat] = summarize(list, meta, fabric);
+    categories[cat] = summarize(list, meta, fabric, artwork);
     const sample = list.map((it) => meta[it.id]).find((m) => m && m.cat1);
     cat1[cat] = (sample && sample.cat1) || "";
   }
@@ -320,6 +351,8 @@ async function run() {
   const meta = JSON.parse(fs.readFileSync(path.join(DATA_DIR, "product_meta_slim.json"), "utf8"));
   const fabricFile = path.join(DATA_DIR, "product_fabric.json");
   const fabric = fs.existsSync(fabricFile) ? JSON.parse(fs.readFileSync(fabricFile, "utf8")) : {};
+  const artworkFile = path.join(DATA_DIR, "product_artwork.json");
+  const artwork = fs.existsSync(artworkFile) ? JSON.parse(fs.readFileSync(artworkFile, "utf8")) : {};
   fs.mkdirSync(WEEK_DIR, { recursive: true });
   fs.mkdirSync(MONTH_DIR, { recursive: true });
 
@@ -364,7 +397,7 @@ async function run() {
         continue;
       }
 
-      const built = buildPeriod(days, index, meta, fabric);
+      const built = buildPeriod(days, index, meta, fabric, artwork);
       const order = Object.keys(built.categories).sort((a, b) => built.categories[b].items - built.categories[a].items);
       if (!order.length) continue;
 
