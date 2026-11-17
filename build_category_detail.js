@@ -99,6 +99,8 @@ function collectPeriod(days, index) {
         const allRanks = (was && was.allRanks) || [];
         const catRanks = (was && was.catRanks) || [];
         if (rank < 9999) (isAll ? allRanks : catRanks).push(rank);
+        const rankDays = ((was && was.rankDays) || []).slice();
+        if (rank < 9999) rankDays.push([rank, d]);
         byId.set(id, {
           id, name: it.name, brand: it.brand, price: it.price,
           discountRatio: it.discountRatio, url: it.url, image: it.image,
@@ -107,7 +109,7 @@ function collectPeriod(days, index) {
           // 여러 랭킹·여러 날에 걸쳐 가장 좋았던 순위와, 그 순위가 나온 랭킹 이름
           bestRank: keepOld ? was.bestRank : rank,
           bestBoard: keepOld ? was.bestBoard : cat,
-          allRanks, catRanks,
+          allRanks, catRanks, rankDays,
           bestAll: Math.min((was && was.bestAll) || 9999, isAll ? rank : 9999),
           bestCat: Math.min((was && was.bestCat) || 9999, isAll ? 9999 : rank),
           bestCatBoard: (!isAll && rank < ((was && was.bestCat) || 9999)) ? cat : (was && was.bestCatBoard) || null,
@@ -116,12 +118,25 @@ function collectPeriod(days, index) {
     }
   }
   const mean = (a) => (a.length ? Math.round((a.reduce((x, y) => x + y, 0) / a.length) * 10) / 10 : null);
-  return [...byId.values()].map((it) => ({
-    ...it,
-    // 그 기간 동안의 평균 순위. 전체 판과 품목 판을 따로 낸다.
-    avgAll: mean(it.allRanks),
-    avgCat: mean(it.catRanks),
-  }));
+  const BOARD_SIZE = 150;
+  return [...byId.values()].map((it) => {
+    // 같은 날 여러 판에 걸쳐 있으면 그날 가장 좋았던 순위 하나만 쓴다.
+    const byDay = new Map();
+    for (const [rank, day] of it.rankDays) {
+      const cur = byDay.get(day);
+      if (cur === undefined || rank < cur) byDay.set(day, rank);
+    }
+    let score = 0;
+    for (const r of byDay.values()) score += Math.max(0, BOARD_SIZE + 1 - r);
+    return {
+      ...it,
+      // 그 기간 동안의 평균 순위. 전체 판과 품목 판을 따로 낸다.
+      avgAll: mean(it.allRanks), avgCat: mean(it.catRanks),
+      // 관측 일수를 같이 남긴다 - 평균만 보면 하루짜리와 열흘짜리가 같아 보인다.
+      dAll: it.allRanks.length, dCat: it.catRanks.length,
+      score,
+    };
+  });
 }
 
 /*
@@ -137,17 +152,14 @@ function priceGroup(list) {
   const ps = priced.map((it) => it.price);
   if (!ps.length) return { n: list.length, min: null, avg: null, max: null, top: null };
   // 그 갈래에서 랭킹이 가장 높았던 상품. 같은 순위면 더 최근에 본 쪽.
-  // 상품 목록(itemRows)과 같은 정렬 키를 쓴다. 두 곳이 어긋나면 안 된다.
-  const sortKey = (it) =>
-    (it.avgAll !== null && it.avgAll !== undefined) ? it.avgAll
-      : ((it.avgCat !== null && it.avgCat !== undefined) ? 1000 + it.avgCat : 9999);
+  // 상품 목록(itemRows)과 같은 기준으로 고른다. 두 곳이 어긋나면 안 된다.
   const best = priced.reduce((a, b) => {
-    const ka = sortKey(a), kb = sortKey(b);
-    if (ka !== kb) return kb < ka ? b : a;
+    if ((b.score || 0) !== (a.score || 0)) return (b.score || 0) > (a.score || 0) ? b : a;
     return b.seenAt > a.seenAt ? b : a;
   });
   const rankLabel = (it) => ({
     all: it.avgAll, cat: it.avgCat, catBoard: it.bestCatBoard,
+    dAll: it.dAll, dCat: it.dCat, score: it.score,
   });
   return {
     n: list.length,
@@ -374,10 +386,16 @@ function trimWithoutLive(categories) {
  * 한 기간의 상품 목록. 키를 짧게 쓴다 - 7,900개 x 긴 키 이름이면 파일이 두 배가 된다.
  *   i=id  n=이름  b=브랜드  p=가격  g=썸네일  a=아트웍(1/0/null)  ra=전체 평균순위  rc=품목 평균순위
  */
-const THUMB_RE = /goods_img\/(\d+)\/\d+\/\d+_(\w+)_\d+\.jpg/;
+/*
+ * 썸네일 주소가 한 줄의 절반을 먹는다. 그렇다고 꼴을 가정하고 조각만 뽑으면
+ * 안 된다 - goods_img와 prd_img 두 갈래에 .jpg/.png가 섞여 있어서, 처음에 짠
+ * 정규식이 5%를 흘렸다. 공통 접두어만 떼고 나머지는 그대로 둔다.
+ */
+const THUMB_PREFIX = "https://image.msscdn.net/images/";
 const packThumb = (url) => {
-  const m = THUMB_RE.exec(String(url || ""));
-  return m ? m[1] + "_" + m[2] : null;
+  const u = String(url || "");
+  if (!u) return null;
+  return u.startsWith(THUMB_PREFIX) ? u.slice(THUMB_PREFIX.length) : u;
 };
 
 function itemRows(items, artwork) {
@@ -386,14 +404,9 @@ function itemRows(items, artwork) {
     return {
       i: it.id, n: it.name, b: it.brand, p: it.price, g: packThumb(it.image),
       a: a ? (a.art ? 1 : 0) : null,
-      ra: it.avgAll, rc: it.avgCat,
+      ra: it.avgAll, rc: it.avgCat, da: it.dAll, dc: it.dCat, s: it.score,
     };
-  }).sort((x, y) => {
-    // 전체 평균순위가 있는 상품이 먼저, 그다음 품목 평균순위 순
-    const kx = x.ra !== null ? x.ra : (x.rc !== null ? 1000 + x.rc : 9999);
-    const ky = y.ra !== null ? y.ra : (y.rc !== null ? 1000 + y.rc : 9999);
-    return kx - ky;
-  });
+  }).sort((x, y) => y.s - x.s);
 }
 
 /* 상품 한 줄씩 쓴다. 한 줄에 다 쓰면 1.5MB가 통째로 바뀌어 git이 매번 새로 저장한다. */

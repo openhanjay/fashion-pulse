@@ -3919,22 +3919,21 @@ function manwon(v) {
 /* 썸네일 주소는 늘 같은 꼴이라 저장할 때 달라지는 조각만 남겼다. 여기서 되돌린다. */
 function thumbUrl(id, packed) {
   if (!packed) return null;
-  const [date, hash] = String(packed).split("_");
-  if (!date || !hash) return null;
-  return `https://image.msscdn.net/images/goods_img/${date}/${id}/${id}_${hash}_500.jpg`;
+  const v = String(packed);
+  return v.startsWith("http") ? v : "https://image.msscdn.net/images/" + v;
 }
 
 /*
- * "1위"만으로는 어느 랭킹의 1위인지 알 수 없다. 전체 판과 품목 판은 체급이 다르다.
- * 그리고 순위는 그 기간의 평균으로 적는다 - 한 번이라도 가장 높이 올라간 순위로
- * 적으면 하루 반짝 1등이 꾸준한 상품을 밀어낸다.
+ * "1위"만으로는 어느 랭킹의 1위인지 알 수 없다 - 전체 판과 품목 판은 체급이 다르다.
+ * 순위는 그 기간의 평균으로 적고, 며칠 머물렀는지를 반드시 같이 적는다.
+ * 평균만 적으면 하루 떠서 62등인 상품과 13일 내내 28등인 상품이 같아 보인다.
  */
 function rankText(t) {
   if (!t) return "";
   const has = (v) => v !== null && v !== undefined;
   const parts = [];
-  if (has(t.all)) parts.push(`전체 평균 ${t.all}등`);
-  if (has(t.cat) && t.catBoard) parts.push(`${t.catBoard} 평균 ${t.cat}등`);
+  if (has(t.all) && t.dAll) parts.push(`전체 ${t.all}등·${t.dAll}일`);
+  if (has(t.cat) && t.catBoard && t.dCat) parts.push(`${t.catBoard} ${t.cat}등·${t.dCat}일`);
   return parts.length ? `(${parts.join(", ")})` : "";
 }
 
@@ -4008,7 +4007,9 @@ const ARTWORK_ROWS = [
 
 function ArtworkCard({ cat, data, onAvg }) {
   const a = data.categories[cat].artwork;
-  const rows = ARTWORK_ROWS.filter((r) => a[r.key] && a[r.key].n > 0);
+  // 아트웍이 0개인 품목도 줄을 비우지 않는다. 줄 수가 달라지면 카드 높이가 어긋나
+  // 격자가 들쭉날쭉해지고, "이 품목엔 아트웍이 없다"는 사실도 안 보인다.
+  const rows = ARTWORK_ROWS.filter((r) => a[r.key]);
 
   // 세 갈래 중 랭킹이 가장 높았던 상품 하나를 카드 아래에 세운다.
   const best = rows.map((r) => a[r.key].top).filter(Boolean)
@@ -4093,7 +4094,7 @@ function ItemListModal({ open, onClose, cat, groupKey, groupLabel, kind, period,
           <div className="min-w-0">
             <h3 className="text-base font-extrabold" style={{ color: C.ink }}>{cat} · {groupLabel}</h3>
             <p className="text-[11px] mt-1" style={{ color: C.mute }}>
-              {periodText} · {picked.length.toLocaleString()}개{avg ? ` · 평균 ${manwon(avg)}` : ""} · 평균 순위가 좋은 순
+              {periodText} · {picked.length.toLocaleString()}개{avg ? ` · 평균 ${manwon(avg)}` : ""} · 랭킹에 높이·오래 있었던 순
             </p>
           </div>
           <button onClick={onClose} className="text-[13px] font-bold px-3 py-1.5 rounded-lg shrink-0"
@@ -4119,9 +4120,9 @@ function ItemListModal({ open, onClose, cat, groupKey, groupLabel, kind, period,
                   </span>
                   <span className="text-[11px] block truncate" style={{ color: C.mute }}>{r.n}</span>
                 </span>
-                <span className="text-[10px] tabular-nums shrink-0 text-right" style={{ color: C.mute, width: 96 }}>
-                  {r.ra !== null && <span className="block">전체 평균 {r.ra}등</span>}
-                  {r.rc !== null && <span className="block">품목 평균 {r.rc}등</span>}
+                <span className="text-[10px] tabular-nums shrink-0 text-right" style={{ color: C.mute, width: 112 }}>
+                  {r.ra !== null && <span className="block">전체 {r.ra}등 · {r.da}일</span>}
+                  {r.rc !== null && <span className="block">품목 {r.rc}등 · {r.dc}일</span>}
                 </span>
                 <span className="text-[12px] font-extrabold tabular-nums shrink-0 text-right" style={{ color: C.ink, width: 56 }}>{manwon(r.p)}</span>
               </a>
@@ -4130,8 +4131,9 @@ function ItemListModal({ open, onClose, cat, groupKey, groupLabel, kind, period,
         </div>
 
         <p className="text-[11px] px-5 py-3" style={{ color: C.mute, borderTop: `1px solid ${C.line}` }}>
-          평균 순위는 그 기간에 랭킹에 보인 날들의 순위를 평균한 값이에요. 전체 랭킹은 150위까지만
-          긁어오므로, 전체 판에 한 번도 안 올라온 상품은 품목 판 순위만 있습니다.
+          <b>높이·오래 있었던 순</b>입니다. 날마다 (151 − 그날 순위)를 더해 줄 세웠어요 —
+          평균 등수만 보면 하루 떠서 62등인 상품이 13일 내내 28등인 상품보다 위로 올라갑니다.
+          전체 랭킹은 150위까지만 긁어오므로, 전체 판에 한 번도 안 올라온 상품은 품목 판 순위만 있습니다.
           카드의 <b>최상위</b>는 이 목록의 첫 줄과 같은 상품입니다.
         </p>
       </div>
@@ -4246,7 +4248,7 @@ function ArtworkPanel() {
         </div>
         <p className="text-[13px] leading-relaxed" style={{ color: C.ink }}>
           품목마다 <b>아트웍이 들어간 것과 아닌 것</b>으로 나눠 네 가지 가격을 봅니다 —
-          <b>최상위</b>(그 기간 <b>평균 순위</b>가 가장 좋았던 상품의 판매가 — 괄호 안은 전체 랭킹과 품목 랭킹에서의 평균 등수), 최저, 평균, 최고.
+          <b>최상위</b>(그 기간 랭킹에 <b>가장 높이·오래</b> 있었던 상품의 판매가 — 괄호 안은 평균 등수와 머문 날수), 최저, 평균, 최고.
           <b>전체</b>는 아트웍 여부와 무관한 그 품목 전부입니다.
           가격은 그 기간에 랭킹에서 본 값(쿠폰 적용가)입니다.
         </p>
