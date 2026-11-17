@@ -78,16 +78,62 @@ const bump = (m, k) => { if (k) m.set(k, (m.get(k) || 0) + 1); };
 
 const BOARD_SIZE = 150;
 
-/*
- * 판마다 "그 기간의 순위"를 매긴다 - 데이터조회 월/주 평균과 같은 방식이다.
- * 상품별로 그 기간의 모든 스냅샷 순위를 평균 내고, 평균이 좋은 순으로 1위부터 붙인다.
- * 150위까지만 매긴다(랭킹 판이 150칸이라 그 밖은 "판 밖"이다).
- */
-function rankBoards(samples) {
+/* 판이 150칸이라, 그날 랭킹에 안 보인 상품은 "바로 밖"인 151등으로 친다. */
+const ABSENT_RANK = BOARD_SIZE + 1;
+
+/* 하루치 스냅샷들을 판별로 묶어 그날의 1~150등을 매긴다.
+   데이터조회의 averageRankings()와 같은 계산이다 - 하루에 네 번 찍은 순위를
+   먼저 평균 내서 "그날의 등수" 하나로 만든다. */
+function rankOneDay(snaps) {
+  const merged = {};
+  for (const sn of snaps) {
+    for (const board of Object.keys(sn)) {
+      if (board === "keywords") continue;
+      const bag = (merged[board] = merged[board] || new Map());
+      for (const it of (sn[board] && sn[board].all) || []) {
+        const id = idOf(it.url);
+        if (!id || !(it.rank > 0)) continue;
+        const v = bag.get(id) || { sum: 0, n: 0 };
+        v.sum += it.rank; v.n += 1;
+        bag.set(id, v);
+      }
+    }
+  }
   const out = {};
-  for (const [board, byId] of Object.entries(samples)) {
-    const rows = [...byId.entries()]
-      .map(([id, v]) => ({ id, avg: v.sum / v.n, days: v.days.size }))
+  for (const [board, bag] of Object.entries(merged)) {
+    out[board] = [...bag.entries()]
+      .map(([id, v]) => [id, v.sum / v.n])
+      .sort((a, b) => a[1] - b[1])
+      .slice(0, BOARD_SIZE)
+      .map(([id], i) => [id, i + 1]);
+  }
+  return out;
+}
+
+/*
+ * 판마다 "그 기간의 평균 등수"를 낸다 - 데이터조회 월/주 평균 팝업과 같은 계산이다.
+ *
+ * 하루 등수를 기간 내내 평균 내되, 그 상품이 안 보인 날은 151등으로 쳐서 더한다.
+ * 이 벌점이 없으면 하루 떠서 2등 한 상품이 보름 내내 7등이던 상품을 이긴다.
+ * 그 다음 평균이 좋은 순으로 1~150위를 다시 매긴다.
+ */
+function rankBoards(dayBoards) {
+  const totalDays = dayBoards.length;
+  const merged = {};
+  for (const day of dayBoards) {
+    for (const [board, ranks] of Object.entries(day)) {
+      const bag = (merged[board] = merged[board] || new Map());
+      for (const [id, r] of ranks) {
+        const v = bag.get(id) || { sum: 0, n: 0 };
+        v.sum += r; v.n += 1;
+        bag.set(id, v);
+      }
+    }
+  }
+  const out = {};
+  for (const [board, bag] of Object.entries(merged)) {
+    const rows = [...bag.entries()]
+      .map(([id, v]) => ({ id, avg: (v.sum + (totalDays - v.n) * ABSENT_RANK) / totalDays, days: v.n }))
       .sort((a, b) => a.avg - b.avg)
       .slice(0, BOARD_SIZE);
     const pos = new Map();
@@ -103,27 +149,18 @@ function rankBoards(samples) {
    같은 표본을 써야 한다. */
 function collectPeriod(days, index) {
   const byId = new Map();
-  const samples = {};
+  const dayBoards = [];
   for (const d of days) {
     const times = index[d] || [];
     if (!times.length) continue;
-    // 순위 표본: 그날의 모든 시각
+    // 순위 표본: 그날의 모든 시각을 읽어 먼저 "그날의 등수"를 만든다
+    const snaps = [];
     for (const t of times) {
       const f = path.join(DATA_DIR, `musinsa_${d}_${t}.json`);
       if (!fs.existsSync(f)) continue;
-      const sn = JSON.parse(fs.readFileSync(f, "utf8"));
-      for (const board of Object.keys(sn)) {
-        if (board === "keywords") continue;
-        const bag = (samples[board] = samples[board] || new Map());
-        for (const it of (sn[board] && sn[board].all) || []) {
-          const id = idOf(it.url);
-          if (!id || !(it.rank > 0)) continue;
-          const v = bag.get(id) || { sum: 0, n: 0, days: new Set() };
-          v.sum += it.rank; v.n += 1; v.days.add(d);
-          bag.set(id, v);
-        }
-      }
+      snaps.push(JSON.parse(fs.readFileSync(f, "utf8")));
     }
+    if (snaps.length) dayBoards.push(rankOneDay(snaps));
     const file = path.join(DATA_DIR, `musinsa_${d}_${times[times.length - 1]}.json`);
     if (!fs.existsSync(file)) continue;
     const snap = JSON.parse(fs.readFileSync(file, "utf8"));
@@ -158,7 +195,7 @@ function collectPeriod(days, index) {
       }
     }
   }
-  const boards = rankBoards(samples);
+  const boards = rankBoards(dayBoards);
   const allBoard = boards["전체"] || new Map();
   const mean = (a) => (a.length ? Math.round((a.reduce((x, y) => x + y, 0) / a.length) * 10) / 10 : null);
   return [...byId.values()].map((it) => {
@@ -192,22 +229,28 @@ function collectPeriod(days, index) {
  * 그래서 "미분류"가 당분간 가장 큰 칸이다 - 숨기지 않고 그대로 보여준다.
  * 모르는 걸 아는 척하면 가격대 비교가 통째로 거짓이 된다.
  */
-/* 그 기간 가장 높이 올라간 순위. 전체 판이든 품목 판이든 더 좋은 쪽을 쓴다. */
-const topKey = (it) => Math.min(
-  it.posAll !== null && it.posAll !== undefined ? it.posAll : 9999,
-  it.posCat !== null && it.posCat !== undefined ? it.posCat : 9999
-);
+/*
+ * 줄 세우는 자 = 데이터조회의 월/주 평균 등수. 화면에 적는 숫자와 같아야 한다.
+ * 전체 판 평균이 있으면 그걸 쓰고, 전체 판에 한 번도 못 든 상품만 품목 판
+ * 평균을 쓰되 전체 판에 든 상품 뒤로 보낸다(BOARD_SIZE를 더해서).
+ * 그래야 "최상위인데 전체 등수가 안 적혀 있다"는 카드가 안 나온다.
+ */
+const has = (v) => v !== null && v !== undefined;
+const topKey = (it) =>
+  has(it.avgAll) ? it.avgAll
+    : has(it.avgCat) ? BOARD_SIZE + it.avgCat
+      : 9999;
 
 function priceGroup(list) {
   const priced = list.filter((it) => typeof it.price === "number" && it.price > 0);
   const ps = priced.map((it) => it.price);
   if (!ps.length) return { n: list.length, min: null, avg: null, max: null, top: null };
-  // 그 갈래에서 랭킹이 가장 높았던 상품. 같은 순위면 더 최근에 본 쪽.
+  // 그 갈래에서 평균 등수가 가장 좋았던 상품. 같은 등수면 오래 머문 쪽.
   // 상품 목록(itemRows)과 같은 기준으로 고른다. 두 곳이 어긋나면 안 된다.
   const best = priced.reduce((a, b) => {
     const ka = topKey(a), kb = topKey(b);
     if (ka !== kb) return kb < ka ? b : a;
-    // 같은 순위면 오래 머문 쪽
+    // 같은 평균 등수면 오래 머문 쪽
     return (b.dAll + b.dCat) > (a.dAll + a.dCat) ? b : a;
   });
   const rankLabel = (it) => ({
@@ -457,7 +500,7 @@ function itemRows(items, artwork) {
     return {
       i: it.id, n: it.name, b: it.brand, p: it.price, g: packThumb(it.image),
       a: a ? (a.art ? 1 : 0) : null,
-      // ra/rc = 그 기간 순위(데이터조회와 같은 방식), aa/ac = 평균 등수, da/dc = 머문 날수
+      // aa/ac = 월/주 평균 등수(화면에 적는 값), ra/rc = 그 평균으로 다시 매긴 자리, da/dc = 머문 날수
       ra: it.posAll, rc: it.posCat, cb: it.catBoard,
       aa: it.avgAll, ac: it.avgCat, da: it.dAll, dc: it.dCat,
       s: topKey(it),

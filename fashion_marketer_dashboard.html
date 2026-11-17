@@ -3924,20 +3924,25 @@ function thumbUrl(id, packed) {
 }
 
 /*
- * 순위는 데이터조회의 월/주 평균 순위와 같은 자를 쓴다 - 그 기간의 모든 스냅샷에서
- * 상품별 순위를 평균 내고, 평균이 좋은 순으로 1~150위를 다시 매긴 값이다.
- * 두 화면이 다른 자를 쓰면 같은 상품이 한쪽에선 2등, 한쪽에선 150위 밖이 된다.
+ * 적는 숫자는 데이터조회의 월/주 평균 등수 그대로다 - 그 기간의 모든 스냅샷에서
+ * 그 상품의 순위를 평균 낸 값("전체 평균 5.8등"). 다시 줄 세운 자리(23위)가
+ * 아니다. 자리는 그 달 다른 상품이 뭐였냐에 따라 흔들리지만, 평균 등수는
+ * 그 상품 혼자의 성적이라 달끼리·주끼리 비교할 수 있다.
  *
  * 전체 판과 품목 판을 둘 다 적되, 전체 판에 못 든 경우를 빼버리지 않는다.
  * 안 적으면 "순위가 없는 상품"인지 "안 보여주는 것"인지 구별되지 않는다.
- * 며칠 머물렀는지도 같이 적는다 - 하루만 떠서 평균 2.0이면 순위가 높게 잡힌다.
+ * 며칠 머물렀는지도 같이 적는다 - 평균 등수만으로는 꾸준함이 안 보인다.
+ * (랭킹에 안 보인 날은 151등으로 쳐서 평균에 넣는다. 데이터조회와 같은 벌점이다 -
+ *  그게 없으면 하루 떠서 2등 한 상품이 보름 내내 7등이던 상품을 이긴다.)
  */
+const avgEtc = (v) => Number(v).toFixed(1);
+
 function rankText(t) {
   if (!t) return "";
   const has = (v) => v !== null && v !== undefined;
   const parts = [];
-  parts.push(has(t.all) ? `전체 ${t.all}위·${t.dAll}일` : "전체 150위 밖");
-  if (has(t.cat) && t.catBoard) parts.push(`${t.catBoard} ${t.cat}위·${t.dCat}일`);
+  parts.push(has(t.avgAll) ? `전체 평균 ${avgEtc(t.avgAll)}등·${t.dAll}일` : "전체 150위 밖");
+  if (has(t.avgCat) && t.catBoard) parts.push(`${t.catBoard} 평균 ${avgEtc(t.avgCat)}등·${t.dCat}일`);
   return `(${parts.join(", ")})`;
 }
 
@@ -4010,7 +4015,8 @@ function TopItemStrip({ top }) {
           style={{ width: 36, height: 46, objectFit: "cover", borderRadius: 6, background: C.paperDark, flexShrink: 0 }} />
       )}
       <span className="min-w-0 flex-1">
-        <span className="text-[10px] font-bold block" style={{ color: C.indigo }}>최상위 {rankText(top)} · {top.brand}</span>
+        <span className="text-[10px] font-bold block truncate" style={{ color: C.indigo }}
+          title={`최상위 ${rankText(top)} · ${top.brand}`}>최상위 {rankText(top)} · {top.brand}</span>
         <span className="text-[11px] block truncate" style={{ color: C.ink }} title={top.name}>{top.name}</span>
       </span>
       <span className="text-[12px] font-extrabold tabular-nums shrink-0" style={{ color: C.ink }}>{manwon(top.price)}</span>
@@ -4123,7 +4129,7 @@ function ItemListModal({ open, onClose, cat, groupKey, groupLabel, kind, period,
           <div className="min-w-0">
             <h3 className="text-base font-extrabold" style={{ color: C.ink }}>{cat} · {groupLabel}</h3>
             <p className="text-[11px] mt-1" style={{ color: C.mute }}>
-              {periodText} · {picked.length.toLocaleString()}개{avg ? ` · 평균 ${manwon(avg)}` : ""} · 그 기간 순위 순
+              {periodText} · {picked.length.toLocaleString()}개{avg ? ` · 평균 ${manwon(avg)}` : ""} · 평균 등수 순
             </p>
           </div>
           <button onClick={onClose} className="text-[13px] font-bold px-3 py-1.5 rounded-lg shrink-0"
@@ -4149,11 +4155,12 @@ function ItemListModal({ open, onClose, cat, groupKey, groupLabel, kind, period,
                   </span>
                   <span className="text-[11px] block truncate" style={{ color: C.mute }}>{r.n}</span>
                 </span>
-                <span className="text-[10px] tabular-nums shrink-0 text-right" style={{ color: C.mute, width: 116 }}>
+                <span className="text-[10px] tabular-nums shrink-0 text-right" style={{ color: C.mute, width: 128 }}>
                   <span className="block">
-                    {r.ra !== null ? `전체 ${r.ra}위 · ${r.da}일` : "전체 150위 밖"}
+                    {r.aa !== null && r.aa !== undefined ? `전체 평균 ${avgEtc(r.aa)}등 · ${r.da}일` : "전체 150위 밖"}
                   </span>
-                  {r.rc !== null && <span className="block">{r.cb || "품목"} {r.rc}위 · {r.dc}일</span>}
+                  {r.ac !== null && r.ac !== undefined &&
+                    <span className="block">{r.cb || "품목"} 평균 {avgEtc(r.ac)}등 · {r.dc}일</span>}
                 </span>
                 <span className="text-[12px] font-extrabold tabular-nums shrink-0 text-right" style={{ color: C.ink, width: 56 }}>{manwon(r.p)}</span>
               </a>
@@ -4162,12 +4169,12 @@ function ItemListModal({ open, onClose, cat, groupKey, groupLabel, kind, period,
         </div>
 
         <p className="text-[11px] px-5 py-3" style={{ color: C.mute, borderTop: `1px solid ${C.line}` }}>
-          <b>그 기간 순위 순</b>입니다. 순위는 <b>데이터조회의 월/주 평균 순위와 같은 방식</b>으로
-          냅니다 — 그 기간의 모든 스냅샷에서 상품별 순위를 평균 내고, 평균이 좋은 순으로
-          1~150위를 다시 매긴 값이에요.
-          옆의 날수는 랭킹에서 보인 날이 며칠인지입니다. <b>하루만 떠서 평균이 좋으면 순위가
-          높게 잡히므로</b> 날수를 꼭 같이 보세요.
-          판마다 150위까지만 매기므로 그 밖은 "150위 밖"입니다.
+          <b>전체 평균 등수가 좋은 순</b>입니다. 등수는 <b>데이터조회의 월/주 평균 등수와 같은 값</b>이에요 —
+          그 기간의 모든 스냅샷에서 그 상품의 순위를 평균 낸 값입니다(예: 전체 평균 5.8등).
+          전체 판에 한 번도 못 든 상품은 품목 판 평균만 있고, 전체 판에 든 상품 뒤로 갑니다.
+          랭킹에 <b>안 보인 날은 151등으로 쳐서</b> 평균에 넣습니다 — 그래야 하루 반짝 2등이
+          보름 내내 7등을 이기지 않아요. 옆의 날수는 그 기간에 랭킹에서 보인 날수입니다.
+          랭킹은 판마다 150위까지만 긁어오므로 그 밖은 "150위 밖"입니다.
           카드의 <b>최상위</b>는 이 목록의 첫 줄과 같은 상품입니다.
         </p>
       </div>
@@ -4289,7 +4296,7 @@ function ArtworkPanel() {
         </div>
         <p className="text-[13px] leading-relaxed" style={{ color: C.ink }}>
           품목마다 <b>아트웍이 들어간 것과 아닌 것</b>으로 나눠 네 가지 가격을 봅니다 —
-          <b>최상위</b>(그 기간 랭킹에서 <b>가장 높은 자리</b>였던 상품의 판매가 — 괄호 안은 전체·품목 랭킹의 순위와 머문 날수). 순위는 <b>데이터조회의 월/주 평균 순위와 같은 자</b>입니다.
+          <b>최상위</b>(그 기간 <b>전체 랭킹 평균 등수</b>가 가장 좋았던 상품의 판매가 — 괄호 안은 전체·품목 랭킹의 평균 등수와 머문 날수). 등수는 <b>데이터조회의 월/주 평균 등수와 같은 값</b>입니다.
           <b>전체</b>는 아트웍 여부와 무관한 그 품목 전부입니다.
           가격은 그 기간에 랭킹에서 본 값(쿠폰 적용가)입니다.
         </p>
