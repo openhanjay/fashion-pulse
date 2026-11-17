@@ -147,6 +147,12 @@ function collectPeriod(days, index) {
  * 그래서 "미분류"가 당분간 가장 큰 칸이다 - 숨기지 않고 그대로 보여준다.
  * 모르는 걸 아는 척하면 가격대 비교가 통째로 거짓이 된다.
  */
+/* 그 기간 가장 높이 올라간 순위. 전체 판이든 품목 판이든 더 좋은 쪽을 쓴다. */
+const topKey = (it) => Math.min(
+  it.bestAll !== undefined ? it.bestAll : 9999,
+  it.bestCat !== undefined ? it.bestCat : 9999
+);
+
 function priceGroup(list) {
   const priced = list.filter((it) => typeof it.price === "number" && it.price > 0);
   const ps = priced.map((it) => it.price);
@@ -154,12 +160,17 @@ function priceGroup(list) {
   // 그 갈래에서 랭킹이 가장 높았던 상품. 같은 순위면 더 최근에 본 쪽.
   // 상품 목록(itemRows)과 같은 기준으로 고른다. 두 곳이 어긋나면 안 된다.
   const best = priced.reduce((a, b) => {
-    if ((b.score || 0) !== (a.score || 0)) return (b.score || 0) > (a.score || 0) ? b : a;
-    return b.seenAt > a.seenAt ? b : a;
+    const ka = topKey(a), kb = topKey(b);
+    if (ka !== kb) return kb < ka ? b : a;
+    // 같은 순위면 오래 머문 쪽
+    return (b.dAll + b.dCat) > (a.dAll + a.dCat) ? b : a;
   });
   const rankLabel = (it) => ({
-    all: it.avgAll, cat: it.avgCat, catBoard: it.bestCatBoard,
-    dAll: it.dAll, dCat: it.dCat, score: it.score,
+    all: it.bestAll < 9999 ? it.bestAll : null,
+    cat: it.bestCat < 9999 ? it.bestCat : null,
+    catBoard: it.bestCatBoard,
+    dAll: it.dAll, dCat: it.dCat,
+    avgAll: it.avgAll, avgCat: it.avgCat,
   });
   return {
     n: list.length,
@@ -404,9 +415,13 @@ function itemRows(items, artwork) {
     return {
       i: it.id, n: it.name, b: it.brand, p: it.price, g: packThumb(it.image),
       a: a ? (a.art ? 1 : 0) : null,
-      ra: it.avgAll, rc: it.avgCat, da: it.dAll, dc: it.dCat, s: it.score,
+      // ra/rc = 최고 순위, aa/ac = 평균 순위, da/dc = 머문 날수
+      ra: it.bestAll < 9999 ? it.bestAll : null,
+      rc: it.bestCat < 9999 ? it.bestCat : null,
+      aa: it.avgAll, ac: it.avgCat, da: it.dAll, dc: it.dCat,
+      s: topKey(it),
     };
-  }).sort((x, y) => y.s - x.s);
+  }).sort((x, y) => (x.s - y.s) || ((y.da + y.dc) - (x.da + x.dc)));
 }
 
 /* 상품 한 줄씩 쓴다. 한 줄에 다 쓰면 1.5MB가 통째로 바뀌어 git이 매번 새로 저장한다. */
