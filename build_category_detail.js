@@ -92,6 +92,8 @@ function collectPeriod(days, index) {
           discountRatio: it.discountRatio, url: it.url, image: it.image,
           seenAt: d,
           days: (was ? was.days : 0) + 1,
+          // 여러 랭킹·여러 날에 걸쳐 가장 좋았던 순위
+          bestRank: Math.min(was && was.bestRank ? was.bestRank : 9999, it.rank > 0 ? it.rank : 9999),
         });
       }
     }
@@ -108,13 +110,20 @@ function collectPeriod(days, index) {
  * 모르는 걸 아는 척하면 가격대 비교가 통째로 거짓이 된다.
  */
 function priceGroup(list) {
-  const ps = list.map((it) => it.price).filter((v) => typeof v === "number" && v > 0);
-  if (!ps.length) return { n: list.length, min: null, avg: null, max: null };
+  const priced = list.filter((it) => typeof it.price === "number" && it.price > 0);
+  const ps = priced.map((it) => it.price);
+  if (!ps.length) return { n: list.length, min: null, avg: null, max: null, top: null };
+  // 그 갈래에서 랭킹이 가장 높았던 상품. 같은 순위면 더 최근에 본 쪽.
+  const best = priced.reduce((a, b) => {
+    if (b.bestRank !== a.bestRank) return b.bestRank < a.bestRank ? b : a;
+    return b.seenAt > a.seenAt ? b : a;
+  });
   return {
     n: list.length,
     min: Math.min(...ps),
     avg: Math.round(ps.reduce((a, b) => a + b, 0) / ps.length),
     max: Math.max(...ps),
+    top: { price: best.price, rank: best.bestRank, brand: best.brand, name: best.name, url: best.url },
   };
 }
 
