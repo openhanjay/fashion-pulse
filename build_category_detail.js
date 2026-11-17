@@ -32,6 +32,11 @@ const DATA_DIR = path.join(__dirname, "data");
 const OUT_DIR = path.join(DATA_DIR, "category");
 const WEEK_DIR = path.join(OUT_DIR, "weekly");
 const MONTH_DIR = path.join(OUT_DIR, "monthly");
+/*
+ * 상품 목록은 따로 떨군다. 평균 숫자를 눌렀을 때만 필요한 데이터인데, 품목별 요약
+ * 파일에 같이 넣으면 화면을 열 때마다 1.5MB를 받게 된다. 누를 때 받아오게 나눈다.
+ */
+const ITEM_DIR = path.join(OUT_DIR, "items");
 
 const MIN_ITEMS = 8;        // 이보다 적은 품목은 평균이 의미 없다
 const TOP_BRANDS = 12;
@@ -89,6 +94,11 @@ function collectPeriod(days, index) {
         const was = byId.get(id);
         const rank = it.rank > 0 ? it.rank : 9999;
         const keepOld = was && was.bestRank <= rank;
+        // '전체' 판과 품목 판은 체급이 달라서 따로 센다. 전체 12등과 모자 1등은 다른 자리다.
+        const isAll = cat === "전체";
+        const allRanks = (was && was.allRanks) || [];
+        const catRanks = (was && was.catRanks) || [];
+        if (rank < 9999) (isAll ? allRanks : catRanks).push(rank);
         byId.set(id, {
           id, name: it.name, brand: it.brand, price: it.price,
           discountRatio: it.discountRatio, url: it.url, image: it.image,
@@ -97,11 +107,21 @@ function collectPeriod(days, index) {
           // 여러 랭킹·여러 날에 걸쳐 가장 좋았던 순위와, 그 순위가 나온 랭킹 이름
           bestRank: keepOld ? was.bestRank : rank,
           bestBoard: keepOld ? was.bestBoard : cat,
+          allRanks, catRanks,
+          bestAll: Math.min((was && was.bestAll) || 9999, isAll ? rank : 9999),
+          bestCat: Math.min((was && was.bestCat) || 9999, isAll ? 9999 : rank),
+          bestCatBoard: (!isAll && rank < ((was && was.bestCat) || 9999)) ? cat : (was && was.bestCatBoard) || null,
         });
       }
     }
   }
-  return [...byId.values()];
+  const mean = (a) => (a.length ? Math.round((a.reduce((x, y) => x + y, 0) / a.length) * 10) / 10 : null);
+  return [...byId.values()].map((it) => ({
+    ...it,
+    // 그 기간 동안의 평균 순위. 전체 판과 품목 판을 따로 낸다.
+    avgAll: mean(it.allRanks),
+    avgCat: mean(it.catRanks),
+  }));
 }
 
 /*
@@ -121,13 +141,18 @@ function priceGroup(list) {
     if (b.bestRank !== a.bestRank) return b.bestRank < a.bestRank ? b : a;
     return b.seenAt > a.seenAt ? b : a;
   });
+  const rankLabel = (it) => ({
+    all: it.bestAll < 9999 ? it.bestAll : null,
+    cat: it.bestCat < 9999 ? it.bestCat : null,
+    catBoard: it.bestCatBoard,
+  });
   return {
     n: list.length,
     min: Math.min(...ps),
     avg: Math.round(ps.reduce((a, b) => a + b, 0) / ps.length),
     max: Math.max(...ps),
     // 썸네일까지 넣는다 - 숫자만으로는 "그래서 그게 어떤 옷인데"에 답이 안 된다.
-    top: { price: best.price, rank: best.bestRank, board: best.bestBoard, brand: best.brand, name: best.name, url: best.url, image: best.image },
+    top: { price: best.price, rank: best.bestRank, board: best.bestBoard, ...rankLabel(best), brand: best.brand, name: best.name, url: best.url, image: best.image },
   };
 }
 
@@ -139,7 +164,12 @@ function artworkSplit(items, artwork) {
     else if (a.art) art.push(it);
     else plain.push(it);
   }
-  return { art: priceGroup(art), plain: priceGroup(plain), unknown: priceGroup(unknown) };
+  // '전체'는 세 갈래를 합친 것이다. 아트웍 유무와 무관한 그 품목의 가격대를 보려는 칸이라
+  // 미분류가 남아 있어도 숫자가 흔들리지 않는다.
+  return {
+    art: priceGroup(art), plain: priceGroup(plain),
+    unknown: priceGroup(unknown), all: priceGroup(items),
+  };
 }
 
 function summarize(items, meta, fabric, artwork) {
@@ -337,6 +367,40 @@ function trimWithoutLive(categories) {
 
 /* ------------------------------------------------- 실행 */
 
+/*
+ * 한 기간의 상품 목록. 키를 짧게 쓴다 - 7,900개 x 긴 키 이름이면 파일이 두 배가 된다.
+ *   i=id  n=이름  b=브랜드  p=가격  g=썸네일  a=아트웍(1/0/null)  ra=전체 평균순위  rc=품목 평균순위
+ */
+const THUMB_RE = /goods_img\/(\d+)\/\d+\/\d+_(\w+)_\d+\.jpg/;
+const packThumb = (url) => {
+  const m = THUMB_RE.exec(String(url || ""));
+  return m ? m[1] + "_" + m[2] : null;
+};
+
+function itemRows(items, artwork) {
+  return items.map((it) => {
+    const a = artwork[it.id];
+    return {
+      i: it.id, n: it.name, b: it.brand, p: it.price, g: packThumb(it.image),
+      a: a ? (a.art ? 1 : 0) : null,
+      ra: it.avgAll, rc: it.avgCat,
+    };
+  }).sort((x, y) => {
+    // 전체 평균순위가 있는 상품이 먼저, 그다음 품목 평균순위 순
+    const kx = x.ra !== null ? x.ra : (x.rc !== null ? 1000 + x.rc : 9999);
+    const ky = y.ra !== null ? y.ra : (y.rc !== null ? 1000 + y.rc : 9999);
+    return kx - ky;
+  });
+}
+
+/* 상품 한 줄씩 쓴다. 한 줄에 다 쓰면 1.5MB가 통째로 바뀌어 git이 매번 새로 저장한다. */
+function writeItems(file, period, itemsByCat) {
+  const cats = Object.keys(itemsByCat).sort();
+  const blocks = cats.map((c) =>
+    JSON.stringify(c) + ":[\n" + itemsByCat[c].map((r) => JSON.stringify(r)).join(",\n") + "\n]");
+  fs.writeFileSync(file, "{\n\"period\":" + JSON.stringify(period) + ",\n\"items\":{\n" + blocks.join(",\n") + "\n}}\n");
+}
+
 function buildPeriod(days, index, meta, fabric, artwork) {
   const items = collectPeriod(days, index);
   const byCat = new Map();
@@ -348,13 +412,15 @@ function buildPeriod(days, index, meta, fabric, artwork) {
   }
   const categories = {};
   const cat1 = {};
+  const itemsByCat = {};
   for (const [cat, list] of byCat) {
     if (list.length < MIN_ITEMS) continue;
     categories[cat] = summarize(list, meta, fabric, artwork);
+    itemsByCat[cat] = itemRows(list, artwork);
     const sample = list.map((it) => meta[it.id]).find((m) => m && m.cat1);
     cat1[cat] = (sample && sample.cat1) || "";
   }
-  return { categories, cat1, totalItems: items.length };
+  return { categories, cat1, itemsByCat, totalItems: items.length };
 }
 
 async function run() {
@@ -368,6 +434,8 @@ async function run() {
   const artwork = fs.existsSync(artworkFile) ? JSON.parse(fs.readFileSync(artworkFile, "utf8")) : {};
   fs.mkdirSync(WEEK_DIR, { recursive: true });
   fs.mkdirSync(MONTH_DIR, { recursive: true });
+  fs.mkdirSync(path.join(ITEM_DIR, "weekly"), { recursive: true });
+  fs.mkdirSync(path.join(ITEM_DIR, "monthly"), { recursive: true });
 
   const allDays = Object.keys(index).sort();
   const byWeek = new Map(), byMonth = new Map();
@@ -404,7 +472,8 @@ async function run() {
       };
 
       // 지나간 기간은 다시 바뀌지 않는다. 가장 최근 기간만 매번 새로 만든다.
-      if (!rebuild && key !== latest && fs.existsSync(file)) {
+      const itemFile = path.join(ITEM_DIR, g.kind === "week" ? "weekly" : "monthly", key + ".json");
+      if (!rebuild && key !== latest && fs.existsSync(file) && fs.existsSync(itemFile)) {
         const old = JSON.parse(fs.readFileSync(file, "utf8"));
         idx[g.kind === "week" ? "weeks" : "months"].push({ ...label, categories: old.order.length });
         continue;
@@ -425,6 +494,7 @@ async function run() {
         ...label, live: key === latest && !noLive, totalItems: built.totalItems,
         order, cat1: built.cat1, categories: built.categories,
       }));
+      writeItems(path.join(ITEM_DIR, g.kind === "week" ? "weekly" : "monthly", key + ".json"), key, built.itemsByCat);
       idx[g.kind === "week" ? "weeks" : "months"].push({ ...label, categories: order.length });
     }
   }
