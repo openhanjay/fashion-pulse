@@ -3950,44 +3950,59 @@ function rankText(t) {
  * 만들었는지 알 수 없다.
  */
 function ArtworkRow({ label, color, g, onAvg }) {
-  const cell = (v, strong) => (
-    <span className={"text-right tabular-nums whitespace-nowrap " + (strong ? "text-[13px] font-extrabold" : "text-[11px]")}
-      style={{ color: strong ? C.ink : C.mute, width: 48 }}>{manwon(v)}</span>
-  );
+  const empty = !g || !g.n;
+  // 겉틀은 네 칸이 똑같다. 누를 수 있는 칸만 안쪽을 링크/버튼으로 바꾼다.
+  const Cell = ({ children, strong, title, onClick, href }) => {
+    const inner = (
+      <span className={"tabular-nums whitespace-nowrap " + (strong ? "text-[13px] font-extrabold" : "text-[11px]")}
+        style={{
+          color: empty ? C.line : (onClick || href) ? C.indigo : (strong ? C.ink : C.mute),
+          textDecoration: !empty && (onClick || href) ? "underline" : "none",
+          textUnderlineOffset: 2,
+        }}>{children}</span>
+    );
+    return (
+      <span className="text-right shrink-0" style={{ width: 48, lineHeight: "18px" }} title={title}>
+        {empty ? inner
+          : href ? <a href={href} target="_blank" rel="noreferrer" className="hover:opacity-60 transition">{inner}</a>
+            : onClick ? <button onClick={onClick} className="hover:opacity-60 transition align-baseline">{inner}</button>
+              : inner}
+      </span>
+    );
+  };
+
   return (
     <div className="flex items-center gap-1 py-[5px]" style={{ borderTop: `1px solid ${C.line}` }}>
-      <span className="text-[11px] font-bold shrink-0" style={{ color, width: 38 }}>{label}</span>
-      <span className="text-[10px] tabular-nums shrink-0 text-right" style={{ color: C.mute, width: 26 }}>{g.n}</span>
+      <span className="text-[11px] font-bold shrink-0" style={{ color: empty ? C.mute : color, width: 38 }}>{label}</span>
+      <span className="text-[10px] tabular-nums shrink-0 text-right" style={{ color: C.mute, width: 26 }}>{g ? g.n : 0}</span>
       <span className="flex-1" />
-      {g.top && g.top.url ? (
-        <a href={g.top.url} target="_blank" rel="noreferrer" className="text-right hover:opacity-60 transition"
-          style={{ width: 48 }} title={`${rankText(g.top)} ${g.top.brand} ${g.top.name}`}>
-          <span className="text-[13px] font-extrabold tabular-nums whitespace-nowrap" style={{ color: C.indigo, textDecoration: "underline", textUnderlineOffset: 2 }}>
-            {manwon(g.top.price)}
-          </span>
-        </a>
-      ) : cell(g.top && g.top.price, true)}
-      {cell(g.min)}
-      {g.n > 0 ? (
-        <button onClick={onAvg} className="text-right hover:opacity-60 transition" style={{ width: 48 }}
-          title="이 갈래의 상품을 평균 순위와 함께 모두 보기">
-          <span className="text-[13px] font-extrabold tabular-nums whitespace-nowrap" style={{ color: C.indigo, textDecoration: "underline", textUnderlineOffset: 2 }}>
-            {manwon(g.avg)}
-          </span>
-        </button>
-      ) : cell(g.avg, true)}
-      {cell(g.max)}
+      <Cell strong href={!empty && g.top ? g.top.url : null}
+        title={!empty && g.top ? `${rankText(g.top)} ${g.top.brand} ${g.top.name}` : null}>
+        {manwon(g && g.top && g.top.price)}
+      </Cell>
+      <Cell>{manwon(g && g.min)}</Cell>
+      <Cell strong onClick={empty ? null : onAvg} title="이 갈래의 상품을 순위와 함께 모두 보기">
+        {manwon(g && g.avg)}
+      </Cell>
+      <Cell>{manwon(g && g.max)}</Cell>
     </div>
   );
 }
 
 /* 그 품목에서 랭킹이 가장 높았던 상품. 썸네일과 이름을 같이 보여주고 누르면 상품 페이지로 간다. */
 function TopItemStrip({ top }) {
-  if (!top || !top.url) return null;
+  // 가격이 없는 품목이면 최상위를 못 고른다. 그래도 자리는 남겨야 카드 높이가 맞는다.
+  if (!top || !top.url) {
+    return (
+      <div className="flex items-center gap-2 mt-2 pt-2" style={{ borderTop: `1px solid ${C.line}`, height: 48 }}>
+        <span className="text-[11px]" style={{ color: C.mute }}>최상위 상품을 고르지 못했어요</span>
+      </div>
+    );
+  }
   return (
     <a href={top.url} target="_blank" rel="noreferrer"
       className="flex items-center gap-2 mt-2 pt-2 hover:opacity-70 transition"
-      style={{ borderTop: `1px solid ${C.line}` }}>
+      style={{ borderTop: `1px solid ${C.line}`, height: 48 }}>
       {top.image && (
         <img src={top.image} alt="" loading="lazy"
           style={{ width: 36, height: 46, objectFit: "cover", borderRadius: 6, background: C.paperDark, flexShrink: 0 }} />
@@ -4020,7 +4035,14 @@ function ArtworkCard({ cat, data, onAvg }) {
   // 아트웍과 무지가 양쪽 다 충분히 잡힌 품목만 "얼마나 비싼가"를 말할 수 있다.
   const comparable = a.art.n >= GAP_MIN_SAMPLE && a.plain.n >= GAP_MIN_SAMPLE && a.art.avg && a.plain.avg;
   const gap = comparable ? Math.round(((a.art.avg - a.plain.avg) / a.plain.avg) * 100) : null;
-  const thin = !comparable && a.art.n > 0 && a.plain.n > 0;
+  // 비교가 안 되는 이유를 한 줄로 적는다. 아무 말도 안 적으면 카드 높이가 어긋날 뿐
+  // 아니라 "비교해봤더니 차이 없음"으로 잘못 읽힌다.
+  const note = a.art.n === 0 ? "아트웍이 없는 품목"
+    : a.plain.n === 0 ? "무지가 없는 품목"
+      : `표본이 얇아 비교 보류 (아트웍 ${a.art.n} · 무지 ${a.plain.n})`;
+  const noteFull = gap !== null
+    ? `아트웍 평균 ${manwon(a.art.avg)} vs 무지 평균 ${manwon(a.plain.avg)}`
+    : `${note}${a.unknown.n ? ` · 미분류 ${a.unknown.n}개` : ""}`;
   const head = { color: C.mute, fontSize: 10, fontWeight: 600, width: 48, textAlign: "right" };
 
   return (
@@ -4045,17 +4067,20 @@ function ArtworkCard({ cat, data, onAvg }) {
           onAvg={() => onAvg(cat, r.key, r.label)} />
       ))}
 
-      {gap !== null && (
-        <p className="text-[11px] mt-2 pt-2" style={{ color: C.mute, borderTop: `1px solid ${C.line}` }}>
-          아트웍이 무지보다 <b style={{ color: gap > 0 ? C.signal : "#2563EB" }}>{Math.abs(gap)}% {gap > 0 ? "비쌉니다" : "쌉니다"}</b>
-          {a.unknown.n > 0 && <span> · 미분류 {a.unknown.n}개</span>}
-        </p>
-      )}
-      {thin && (
-        <p className="text-[11px] mt-2 pt-2" style={{ color: C.mute, borderTop: `1px solid ${C.line}` }}>
-          표본이 얇아 아트웍/무지 비교는 보류합니다 (아트웍 {a.art.n}개 · 무지 {a.plain.n}개).
-        </p>
-      )}
+      <p className="text-[11px] mt-2 pt-2 truncate" title={noteFull}
+        style={{ color: C.mute, borderTop: `1px solid ${C.line}` }}>
+        {gap !== null ? (
+          <>
+            아트웍이 무지보다 <b style={{ color: gap > 0 ? C.signal : "#2563EB" }}>{Math.abs(gap)}% {gap > 0 ? "비쌈" : "쌈"}</b>
+            {a.unknown.n > 0 && <span> · 미분류 {a.unknown.n}</span>}
+          </>
+        ) : (
+          <>
+            {note}
+            {a.unknown.n > 0 && <span> · 미분류 {a.unknown.n}</span>}
+          </>
+        )}
+      </p>
 
       <TopItemStrip top={best} />
     </div>
