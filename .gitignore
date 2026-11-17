@@ -2,3 +2,7 @@
 worker/.wrangler/
 worker/node_modules/
 node_modules/
+
+# 썸네일 판(contact sheet) 이미지는 다시 만들면 되는 중간 산출물이다.
+# 번호와 상품 id의 짝(.json)만 남겨 판별 근거를 추적할 수 있게 한다.
+data/sheets/*.png
