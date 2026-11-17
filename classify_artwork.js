@@ -14,10 +14,15 @@
  * 2단계는 API 키가 있어야 돌고 돈이 든다. Batch API + Haiku 4.5 기준 장당 약 $0.0004,
  * 최근 4주치(11,500개) 약 $4.3, 랭킹에 오른 전체(34,000개) 약 $13 정도다.
  *
+ * 3단계가 하나 더 있다. 썸네일을 격자로 붙인 판(build_contact_sheet.js)을 사람이나
+ * 에이전트가 직접 보고 번호로 답하는 길이다. API 키 없이도 되고, 한 판에 25장씩이라
+ * 한 장씩 보는 것보다 25배 빠르다. 대신 손이 가므로 많이 올라오는 품목부터 채운다.
+ *
  * 사용법:
  *   node classify_artwork.js --names            # 1단계만 (무료, 키 불필요)
  *   node classify_artwork.js --vision           # 2단계 배치 제출/수거
  *   node classify_artwork.js --vision --limit 60  # 맛보기
+ *   node classify_artwork.js --sheet tee1 --art 3,5,6   # 3단계: 판을 보고 답 꽂기
  */
 
 const fs = require("fs");
@@ -175,12 +180,43 @@ async function runVision(limit, scanAll) {
   console.log("처리는 보통 몇 분~1시간 걸립니다. 같은 명령을 다시 실행하면 결과를 거둬옵니다.");
 }
 
+/*
+ * 판(contact sheet)을 보고 매긴 답을 꽂는다.
+ * --art에 적힌 번호가 아트웍, 그 판의 나머지는 전부 무지다.
+ * "답을 안 적었다"와 "무지다"를 구분할 방법이 없으므로, 판을 볼 때 모든 칸을 보고
+ * 아트웍 번호를 빠짐없이 적는 것이 전제다. 애매한 칸은 --skip으로 빼둘 수 있다.
+ */
+function runSheet(name, artList, skipList) {
+  const mapFile = path.join(DATA_DIR, "sheets", name + ".json");
+  if (!fs.existsSync(mapFile)) { console.error("판을 찾을 수 없어요: " + mapFile); process.exit(1); }
+  const map = JSON.parse(fs.readFileSync(mapFile, "utf8"));
+  const art = new Set(artList);
+  const skip = new Set(skipList);
+  const store = load();
+  let a = 0, pl = 0, sk = 0;
+  for (const cell of map) {
+    if (cell.failed || skip.has(cell.no)) { sk += 1; continue; }
+    store[cell.id] = { art: art.has(cell.no), src: "sheet" };
+    if (art.has(cell.no)) a += 1; else pl += 1;
+  }
+  save(store);
+  console.log(`${name}: 아트웍 ${a} / 무지 ${pl}${sk ? " / 건너뜀 " + sk : ""} - 누적 ${Object.keys(store).length}개`);
+}
+
 function run() {
   const args = process.argv.slice(2);
   const scanAll = args.includes("--all");
   const li = args.indexOf("--limit");
   const limit = li !== -1 ? Number(args[li + 1]) : Infinity;
 
+  const sheet = args.indexOf("--sheet");
+  if (sheet !== -1) {
+    const nums = (k) => {
+      const i = args.indexOf(k);
+      return i === -1 ? [] : String(args[i + 1] || "").split(",").map(Number).filter((v) => v > 0);
+    };
+    return runSheet(args[sheet + 1], nums("--art"), nums("--skip"));
+  }
   if (args.includes("--vision")) return runVision(limit, scanAll);
   return runNames(scanAll);
 }
