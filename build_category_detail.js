@@ -137,14 +137,17 @@ function priceGroup(list) {
   const ps = priced.map((it) => it.price);
   if (!ps.length) return { n: list.length, min: null, avg: null, max: null, top: null };
   // 그 갈래에서 랭킹이 가장 높았던 상품. 같은 순위면 더 최근에 본 쪽.
+  // 상품 목록(itemRows)과 같은 정렬 키를 쓴다. 두 곳이 어긋나면 안 된다.
+  const sortKey = (it) =>
+    (it.avgAll !== null && it.avgAll !== undefined) ? it.avgAll
+      : ((it.avgCat !== null && it.avgCat !== undefined) ? 1000 + it.avgCat : 9999);
   const best = priced.reduce((a, b) => {
-    if (b.bestRank !== a.bestRank) return b.bestRank < a.bestRank ? b : a;
+    const ka = sortKey(a), kb = sortKey(b);
+    if (ka !== kb) return kb < ka ? b : a;
     return b.seenAt > a.seenAt ? b : a;
   });
   const rankLabel = (it) => ({
-    all: it.bestAll < 9999 ? it.bestAll : null,
-    cat: it.bestCat < 9999 ? it.bestCat : null,
-    catBoard: it.bestCatBoard,
+    all: it.avgAll, cat: it.avgCat, catBoard: it.bestCatBoard,
   });
   return {
     n: list.length,
