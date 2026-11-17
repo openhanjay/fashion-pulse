@@ -87,13 +87,16 @@ function collectPeriod(days, index) {
         const id = idOf(it.url);
         if (!id) continue;
         const was = byId.get(id);
+        const rank = it.rank > 0 ? it.rank : 9999;
+        const keepOld = was && was.bestRank <= rank;
         byId.set(id, {
           id, name: it.name, brand: it.brand, price: it.price,
           discountRatio: it.discountRatio, url: it.url, image: it.image,
           seenAt: d,
           days: (was ? was.days : 0) + 1,
-          // 여러 랭킹·여러 날에 걸쳐 가장 좋았던 순위
-          bestRank: Math.min(was && was.bestRank ? was.bestRank : 9999, it.rank > 0 ? it.rank : 9999),
+          // 여러 랭킹·여러 날에 걸쳐 가장 좋았던 순위와, 그 순위가 나온 랭킹 이름
+          bestRank: keepOld ? was.bestRank : rank,
+          bestBoard: keepOld ? was.bestBoard : cat,
         });
       }
     }
@@ -124,7 +127,7 @@ function priceGroup(list) {
     avg: Math.round(ps.reduce((a, b) => a + b, 0) / ps.length),
     max: Math.max(...ps),
     // 썸네일까지 넣는다 - 숫자만으로는 "그래서 그게 어떤 옷인데"에 답이 안 된다.
-    top: { price: best.price, rank: best.bestRank, brand: best.brand, name: best.name, url: best.url, image: best.image },
+    top: { price: best.price, rank: best.bestRank, board: best.bestBoard, brand: best.brand, name: best.name, url: best.url, image: best.image },
   };
 }
 
