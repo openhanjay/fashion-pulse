@@ -3896,7 +3896,11 @@ function BrandTable({ sec }) {
 
    랭킹에 오른 상품을 품목으로 나누고, 품목마다 아트웍(그래픽·프린트·자수 등)이
    들어간 것과 아닌 것으로 또 나눠서 가격대를 본다. "우리가 만들 이 품목은,
-   아트웍을 넣으면 얼마쯤에 놓아야 하나"에 바로 답하기 위한 표다.
+   아트웍을 넣으면 얼마쯤에 놓아야 하나"에 바로 답하기 위한 화면이다.
+
+   표로 쭉 늘어놓았더니 품목 50개 x 3줄 = 150줄이 되어 비교가 안 됐다. 그래서
+   품목마다 카드로 끊고, 세 갈래의 가격대를 같은 축 위에 막대로 겹쳐 놓는다.
+   아트웍이 무지보다 비싼지 싼지가 숫자를 읽기 전에 보이는 게 목적이다.
 
    미분류가 왜 이렇게 많은가: 무신사 어디에도 아트웍 정보가 없다. 상품 속성에도,
    소재 고시에도, 필터에도 없다. 상품명으로는 전체의 6%만 확실히 가려진다
@@ -3907,61 +3911,93 @@ function BrandTable({ sec }) {
    ───────────────────────────────────────────────────────────────────────── */
 const ARTWORK_ROWS = [
   { key: "art", label: "아트웍", color: C.indigo },
-  { key: "plain", label: "무지", color: C.ink },
+  { key: "plain", label: "무지", color: "#2563EB" },
   { key: "unknown", label: "미분류", color: C.mute },
 ];
 
-function ArtworkTable({ data, cat1 }) {
-  const cats = data.order.filter((c) => !cat1 || (data.cat1 && data.cat1[c]) === cat1);
-  if (!cats.length) {
-    return <p className="text-sm text-center py-8" style={{ color: C.mute }}>이 분류에 해당하는 품목이 없어요.</p>;
-  }
-  const money = (v) => (typeof v === "number" ? v.toLocaleString() : "–");
-  const th = { color: C.mute, fontWeight: 600, fontSize: 11, paddingBottom: 8 };
+/* 12,610 -> "1.3만", 3,650,000 -> "365만". 자릿수를 줄여야 한 줄에 세 갈래가 들어간다. */
+function manwon(v) {
+  if (typeof v !== "number" || v <= 0) return "–";
+  const m = v / 10000;
+  return (m >= 100 ? Math.round(m) : Math.round(m * 10) / 10) + "만";
+}
 
+/*
+ * 한 갈래의 가격대 막대. 축은 카드 안에서 공유하므로 세 갈래를 눈으로 겹쳐 볼 수 있다.
+ *
+ * 축 끝(hi)은 전체 최댓값이 아니라 평균들의 2.2배로 잡는다. 미분류에 365만원짜리
+ * 가방 한 점이 섞이면 전체 최댓값으로 축을 잡을 때 나머지가 전부 왼쪽 끝에 붙어
+ * 아무것도 못 읽게 되기 때문이다. 축을 넘어가는 꼬리는 끝에 화살표로 표시한다.
+ */
+function PriceRangeBar({ g, hi, color }) {
+  const clamp = (v) => Math.max(0, Math.min(100, (v / hi) * 100));
+  const left = clamp(g.min);
+  const right = clamp(g.max);
+  const over = g.max > hi;
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-[12px]" style={{ borderCollapse: "collapse", minWidth: 620 }}>
-        <thead>
-          <tr>
-            <th className="text-left pr-3" style={{ ...th, minWidth: 150 }}>품목</th>
-            <th className="text-left px-2" style={{ ...th, minWidth: 60 }}>구분</th>
-            <th className="text-right px-2" style={th}>개수</th>
-            <th className="text-right px-2" style={th}>최소</th>
-            <th className="text-right px-2" style={th}>평균</th>
-            <th className="text-right px-2" style={th}>최대</th>
-          </tr>
-        </thead>
-        <tbody>
-          {cats.map((c) => {
-            const a = data.categories[c].artwork;
-            const rows = ARTWORK_ROWS.filter((r) => a[r.key].n > 0);
-            return rows.map((r, i) => {
-              const g = a[r.key];
-              return (
-                <tr key={c + r.key} style={{ borderTop: i === 0 ? `1px solid ${C.line}` : "none" }}>
-                  <td className="py-[6px] pr-3 align-top" style={{ color: C.ink }}>
-                    {i === 0 && (
-                      <>
-                        <span className="font-bold">{c}</span>
-                        <span className="text-[10px] ml-1" style={{ color: C.mute }}>{data.categories[c].items}개</span>
-                      </>
-                    )}
-                  </td>
-                  <td className="py-[6px] px-2" style={{ color: r.color, fontWeight: r.key === "unknown" ? 400 : 700 }}>{r.label}</td>
-                  <td className="py-[6px] px-2 text-right tabular-nums" style={{ color: C.mute }}>{g.n}</td>
-                  <td className="py-[6px] px-2 text-right tabular-nums" style={{ color: C.ink }}>{money(g.min)}</td>
-                  <td className="py-[6px] px-2 text-right tabular-nums font-bold" style={{ color: C.ink }}>{money(g.avg)}</td>
-                  <td className="py-[6px] px-2 text-right tabular-nums" style={{ color: C.ink }}>{money(g.max)}</td>
-                </tr>
-              );
-            });
-          })}
-        </tbody>
-      </table>
+    <div className="relative h-[14px] flex-1" style={{ minWidth: 80 }}>
+      <div className="absolute rounded-full" style={{ left: 0, right: 0, top: 6, height: 2, background: C.paperDark }} />
+      <div className="absolute rounded-full" style={{ left: left + "%", width: Math.max(1.5, right - left) + "%", top: 5, height: 4, background: color, opacity: 0.35 }} />
+      <div className="absolute rounded-full" style={{ left: "calc(" + clamp(g.avg) + "% - 3px)", top: 3, width: 8, height: 8, background: color }} />
+      {over && <span className="absolute text-[9px]" style={{ right: -2, top: -1, color }}>▸</span>}
     </div>
   );
 }
+
+function ArtworkCard({ cat, data }) {
+  const a = data.categories[cat].artwork;
+  const rows = ARTWORK_ROWS.filter((r) => a[r.key].n > 0);
+  const avgs = rows.map((r) => a[r.key].avg).filter((v) => typeof v === "number" && v > 0);
+  const hi = avgs.length ? Math.max(...avgs) * 2.2 : 1;
+
+  // 아트웍과 무지가 양쪽 다 충분히 잡힌 품목만 "얼마나 비싼가"를 말할 수 있다.
+  const comparable = a.art.n >= GAP_MIN_SAMPLE && a.plain.n >= GAP_MIN_SAMPLE && a.art.avg && a.plain.avg;
+  const gap = comparable ? Math.round(((a.art.avg - a.plain.avg) / a.plain.avg) * 100) : null;
+  // 양쪽에 값은 있는데 표본이 얇은 경우. 조용히 숨기면 "비교해봤더니 차이 없음"으로 읽힌다.
+  const thin = !comparable && a.art.n > 0 && a.plain.n > 0;
+
+  return (
+    <div className="rounded-2xl p-4" style={{ background: C.white, border: `1px solid ${C.line}` }}>
+      <div className="flex items-baseline justify-between gap-2 mb-3">
+        <span className="text-[14px] font-extrabold truncate" style={{ color: C.ink }} title={cat}>{cat}</span>
+        <span className="text-[11px] shrink-0 tabular-nums" style={{ color: C.mute }}>{data.categories[cat].items}개</span>
+      </div>
+
+      {rows.map((r) => {
+        const g = a[r.key];
+        return (
+          <div key={r.key} className="flex items-center gap-2 py-[3px]">
+            <span className="text-[11px] font-bold shrink-0" style={{ color: r.color, width: 42 }}>{r.label}</span>
+            <span className="text-[10px] tabular-nums shrink-0 text-right" style={{ color: C.mute, width: 32 }}>{g.n}</span>
+            <PriceRangeBar g={g} hi={hi} color={r.color} />
+            <span className="text-[12px] font-extrabold tabular-nums shrink-0 text-right" style={{ color: C.ink, width: 48 }}>{manwon(g.avg)}</span>
+            <span className="text-[10px] tabular-nums shrink-0 text-right" style={{ color: C.mute, width: 76 }}>{manwon(g.min)}~{manwon(g.max)}</span>
+          </div>
+        );
+      })}
+
+      {gap !== null && (
+        <p className="text-[11px] mt-2 pt-2" style={{ color: C.mute, borderTop: `1px solid ${C.line}` }}>
+          아트웍이 무지보다 <b style={{ color: gap > 0 ? C.signal : "#2563EB" }}>{Math.abs(gap)}% {gap > 0 ? "비쌉니다" : "쌉니다"}</b>
+          <span> (평균 {manwon(a.art.avg)} vs {manwon(a.plain.avg)})</span>
+        </p>
+      )}
+      {thin && (
+        <p className="text-[11px] mt-2 pt-2" style={{ color: C.mute, borderTop: `1px solid ${C.line}` }}>
+          표본이 얇아 비교는 보류합니다 (아트웍 {a.art.n}개 · 무지 {a.plain.n}개, 양쪽 {GAP_MIN_SAMPLE}개 이상일 때 비교).
+        </p>
+      )}
+    </div>
+  );
+}
+
+const GAP_MIN_SAMPLE = 5;
+
+const ARTWORK_SORTS = [
+  { key: "items", label: "상품 많은 순" },
+  { key: "price", label: "평균가 높은 순" },
+  { key: "gap", label: "아트웍 가격차 큰 순" },
+];
 
 function ArtworkPanel() {
   const [index, setIndex] = useState(undefined);
@@ -3970,6 +4006,8 @@ function ArtworkPanel() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [cat1, setCat1] = useState("");
+  const [sort, setSort] = useState("items");
+  const [more, setMore] = useState(false);
 
   useEffect(() => {
     fetch(`data/category/index.json?t=${Date.now()}`)
@@ -3991,7 +4029,7 @@ function ArtworkPanel() {
     setLoading(true);
     fetch(`data/category/${kind === "month" ? "monthly" : "weekly"}/${period}.json?t=${Date.now()}`)
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => { setData(d); setLoading(false); })
+      .then((d) => { setData(d); setLoading(false); setMore(false); })
       .catch(() => { setData(null); setLoading(false); });
   }, [period, kind]);
 
@@ -4013,9 +4051,9 @@ function ArtworkPanel() {
   });
   const meta = list.find((p) => p.period === period);
 
-  // 전체 합계 - 아트웍 분류가 얼마나 채워졌는지 한눈에 보이게
   let tot = { art: 0, plain: 0, unknown: 0 };
   const groups = [];
+  let cats = [];
   if (data) {
     for (const c of data.order) {
       const a = data.categories[c].artwork;
@@ -4023,9 +4061,22 @@ function ArtworkPanel() {
       const g = (data.cat1 && data.cat1[c]) || "기타";
       if (!groups.includes(g)) groups.push(g);
     }
+    cats = data.order.filter((c) => !cat1 || (data.cat1 && data.cat1[c]) === cat1);
+    const score = (c) => {
+      const d = data.categories[c], a = d.artwork;
+      if (sort === "price") return a.unknown.avg || a.art.avg || 0;
+      if (sort === "gap") {
+        // 비교를 못 하는 품목은 뒤로 민다 - 정렬 기준이 없는데 위에 올 이유가 없다.
+        if (a.art.n < GAP_MIN_SAMPLE || a.plain.n < GAP_MIN_SAMPLE || !a.art.avg || !a.plain.avg) return -1;
+        return Math.abs((a.art.avg - a.plain.avg) / a.plain.avg);
+      }
+      return d.items;
+    };
+    cats = [...cats].sort((x, y) => score(y) - score(x));
   }
   const totAll = tot.art + tot.plain + tot.unknown;
   const known = totAll ? Math.round(((tot.art + tot.plain) / totAll) * 100) : 0;
+  const shown = more ? cats : cats.slice(0, 12);
 
   return (
     <div className="flex flex-col gap-5">
@@ -4036,8 +4087,8 @@ function ArtworkPanel() {
           {meta && <span className="text-[11px]" style={{ color: C.mute }}>{meta.year}년 {meta.text}</span>}
         </div>
         <p className="text-[13px] leading-relaxed" style={{ color: C.ink }}>
-          랭킹에 오른 상품을 품목으로 나누고, 품목마다 <b>아트웍이 들어간 것과 아닌 것</b>으로 또 나눠 가격대를 봅니다.
-          가격은 그 기간에 랭킹에서 본 값(쿠폰 적용가)이에요.
+          품목마다 <b>아트웍이 들어간 것과 아닌 것</b>의 가격대를 같은 축에 겹쳐 놓았습니다.
+          점이 평균, 옅은 막대가 최저~최고예요. 가격은 그 기간에 랭킹에서 본 값(쿠폰 적용가)입니다.
         </p>
       </div>
 
@@ -4067,23 +4118,40 @@ function ArtworkPanel() {
         </div>
       ) : (
         <>
-          <div className="rounded-2xl p-4 flex flex-wrap items-center gap-2" style={card}>
-            <span className="text-xs font-bold mr-1" style={{ color: C.mute }}>대분류</span>
-            {[["", "전체"], ...groups.map((g) => [g, g])].map(([k, t]) => (
-              <button key={k} onClick={() => setCat1(k)} className="px-3 py-1.5 rounded-full text-xs font-semibold transition" style={pill(cat1 === k)}>{t}</button>
-            ))}
-            <span className="text-[11px] ml-auto" style={{ color: C.mute }}>
-              아트웍 {tot.art.toLocaleString()} · 무지 {tot.plain.toLocaleString()} · 미분류 {tot.unknown.toLocaleString()}
-            </span>
+          <div className="rounded-2xl p-4 flex flex-col gap-3" style={card}>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-bold mr-1" style={{ color: C.mute }}>대분류</span>
+              {[["", "전체"], ...groups.map((g) => [g, g])].map(([k, t]) => (
+                <button key={k} onClick={() => { setCat1(k); setMore(false); }} className="px-3 py-1.5 rounded-full text-xs font-semibold transition" style={pill(cat1 === k)}>{t}</button>
+              ))}
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-bold mr-1" style={{ color: C.mute }}>정렬</span>
+              {ARTWORK_SORTS.map((o) => (
+                <button key={o.key} onClick={() => setSort(o.key)} className="px-3 py-1.5 rounded-full text-xs font-semibold transition" style={pill(sort === o.key)}>{o.label}</button>
+              ))}
+              <span className="text-[11px] ml-auto" style={{ color: C.mute }}>
+                아트웍 {tot.art.toLocaleString()} · 무지 {tot.plain.toLocaleString()} · 미분류 {tot.unknown.toLocaleString()}
+              </span>
+            </div>
           </div>
 
-          <div className="rounded-2xl p-5" style={card}>
-            <ArtworkTable data={data} cat1={cat1} />
-            <p className="text-[11px] mt-3" style={{ color: C.mute }}>
-              품목은 그 기간에 랭킹에 오른 서로 다른 상품 수 기준으로 많은 순입니다.
-              같은 상품을 여러 번 세지 않고, 가격은 그 기간에 마지막으로 본 값이에요.
-            </p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+            {shown.map((c) => <ArtworkCard key={c} cat={c} data={data} />)}
           </div>
+
+          {cats.length > shown.length && (
+            <button onClick={() => setMore(true)} className="rounded-2xl py-3 text-[13px] font-bold transition"
+              style={{ background: C.white, border: `1px solid ${C.line}`, color: C.ink }}>
+              나머지 {cats.length - shown.length}개 품목 더 보기
+            </button>
+          )}
+
+          <p className="text-[11px]" style={{ color: C.mute }}>
+            개수는 그 기간에 랭킹에 오른 서로 다른 상품 수입니다(같은 상품을 여러 번 세지 않음).
+            막대 끝의 ▸는 최고가가 축을 넘어갔다는 뜻이에요 — 가방 한 점이 365만원이면 축을 거기 맞출 때
+            나머지가 전부 왼쪽 끝에 붙어 못 읽게 되므로, 축은 평균의 2.2배까지만 그립니다.
+          </p>
         </>
       )}
     </div>
