@@ -123,7 +123,8 @@ function priceGroup(list) {
     min: Math.min(...ps),
     avg: Math.round(ps.reduce((a, b) => a + b, 0) / ps.length),
     max: Math.max(...ps),
-    top: { price: best.price, rank: best.bestRank, brand: best.brand, name: best.name, url: best.url },
+    // 썸네일까지 넣는다 - 숫자만으로는 "그래서 그게 어떤 옷인데"에 답이 안 된다.
+    top: { price: best.price, rank: best.bestRank, brand: best.brand, name: best.name, url: best.url, image: best.image },
   };
 }
 

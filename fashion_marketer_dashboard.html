@@ -3929,20 +3929,28 @@ function manwon(v) {
  * 기획에서 값을 매길 때 필요한 건 네 숫자다 - 제일 잘 팔리는 게 얼마고(최상위),
  * 바닥과 천장이 어디고(최저·최고), 가운데가 어딘지(평균).
  *
- * 최상위는 그 기간에 랭킹이 가장 높았던 상품의 판매가다. 평균은 비싼 몇 개에
- * 끌려가지만 최상위는 실제로 팔리는 지점을 가리키므로 둘을 같이 본다.
+ * 최상위는 그 기간에 랭킹이 가장 높았던 상품의 판매가다. 그 숫자를 누르면 해당
+ * 상품 페이지로 간다 - 숫자만으로는 "그래서 그게 어떤 옷인데"에 답이 안 된다.
  */
 function ArtworkRow({ label, color, g }) {
   const cell = (v, strong) => (
-    <span className={"text-right tabular-nums " + (strong ? "text-[13px] font-extrabold" : "text-[12px]")}
-      style={{ color: strong ? C.ink : C.mute, width: 54 }}>{manwon(v)}</span>
+    <span className={"text-right tabular-nums whitespace-nowrap " + (strong ? "text-[13px] font-extrabold" : "text-[11px]")}
+      style={{ color: strong ? C.ink : C.mute, width: 48 }}>{manwon(v)}</span>
   );
+  const topPrice = g.top && g.top.price;
   return (
     <div className="flex items-center gap-1 py-[5px]" style={{ borderTop: `1px solid ${C.line}` }}>
-      <span className="text-[11px] font-bold shrink-0" style={{ color, width: 44 }}>{label}</span>
-      <span className="text-[10px] tabular-nums shrink-0 text-right" style={{ color: C.mute, width: 34 }}>{g.n}개</span>
+      <span className="text-[11px] font-bold shrink-0" style={{ color, width: 38 }}>{label}</span>
+      <span className="text-[10px] tabular-nums shrink-0 text-right" style={{ color: C.mute, width: 26 }}>{g.n}</span>
       <span className="flex-1" />
-      {cell(g.top && g.top.price, true)}
+      {g.top && g.top.url ? (
+        <a href={g.top.url} target="_blank" rel="noreferrer" className="text-right hover:opacity-60 transition"
+          style={{ width: 48 }} title={`${g.top.rank}위 · ${g.top.brand} ${g.top.name}`}>
+          <span className="text-[13px] font-extrabold tabular-nums whitespace-nowrap" style={{ color: C.indigo, textDecoration: "underline", textUnderlineOffset: 2 }}>
+            {manwon(topPrice)}
+          </span>
+        </a>
+      ) : cell(topPrice, true)}
       {cell(g.min)}
       {cell(g.avg, true)}
       {cell(g.max)}
@@ -3950,27 +3958,51 @@ function ArtworkRow({ label, color, g }) {
   );
 }
 
+/* 그 품목에서 랭킹이 가장 높았던 상품. 썸네일과 이름을 같이 보여주고 누르면 상품 페이지로 간다. */
+function TopItemStrip({ top }) {
+  if (!top || !top.url) return null;
+  return (
+    <a href={top.url} target="_blank" rel="noreferrer"
+      className="flex items-center gap-2 mt-2 pt-2 hover:opacity-70 transition"
+      style={{ borderTop: `1px solid ${C.line}` }}>
+      {top.image && (
+        <img src={top.image} alt="" loading="lazy"
+          style={{ width: 36, height: 46, objectFit: "cover", borderRadius: 6, background: C.paperDark, flexShrink: 0 }} />
+      )}
+      <span className="min-w-0 flex-1">
+        <span className="text-[10px] font-bold block" style={{ color: C.indigo }}>최상위 {top.rank}위 · {top.brand}</span>
+        <span className="text-[11px] block truncate" style={{ color: C.ink }} title={top.name}>{top.name}</span>
+      </span>
+      <span className="text-[12px] font-extrabold tabular-nums shrink-0" style={{ color: C.ink }}>{manwon(top.price)}</span>
+    </a>
+  );
+}
+
 function ArtworkCard({ cat, data }) {
   const a = data.categories[cat].artwork;
   const rows = ARTWORK_ROWS.filter((r) => a[r.key].n > 0);
+
+  // 세 갈래 중 랭킹이 가장 높았던 상품 하나를 카드 아래에 세운다.
+  const best = rows.map((r) => a[r.key].top).filter(Boolean)
+    .sort((x, y) => x.rank - y.rank)[0];
 
   // 아트웍과 무지가 양쪽 다 충분히 잡힌 품목만 "얼마나 비싼가"를 말할 수 있다.
   const comparable = a.art.n >= GAP_MIN_SAMPLE && a.plain.n >= GAP_MIN_SAMPLE && a.art.avg && a.plain.avg;
   const gap = comparable ? Math.round(((a.art.avg - a.plain.avg) / a.plain.avg) * 100) : null;
   // 양쪽에 값은 있는데 표본이 얇은 경우. 조용히 숨기면 "비교해봤더니 차이 없음"으로 읽힌다.
   const thin = !comparable && a.art.n > 0 && a.plain.n > 0;
-  const head = { color: C.mute, fontSize: 10, fontWeight: 600, width: 54, textAlign: "right" };
+  const head = { color: C.mute, fontSize: 10, fontWeight: 600, width: 48, textAlign: "right" };
 
   return (
     <div className="rounded-2xl p-4" style={{ background: C.white, border: `1px solid ${C.line}` }}>
       <div className="flex items-baseline justify-between gap-2 mb-2">
-        <span className="text-[14px] font-extrabold truncate" style={{ color: C.ink }} title={cat}>{cat}</span>
+        <span className="text-[13px] font-extrabold truncate" style={{ color: C.ink }} title={cat}>{cat}</span>
         <span className="text-[11px] shrink-0 tabular-nums" style={{ color: C.mute }}>{data.categories[cat].items}개</span>
       </div>
 
       <div className="flex items-center gap-1">
-        <span style={{ width: 44 }} />
-        <span style={{ width: 34 }} />
+        <span style={{ width: 38 }} />
+        <span style={{ width: 26 }} />
         <span className="flex-1" />
         <span style={head}>최상위</span>
         <span style={head}>최저</span>
@@ -3983,21 +4015,23 @@ function ArtworkCard({ cat, data }) {
       {gap !== null && (
         <p className="text-[11px] mt-2 pt-2" style={{ color: C.mute, borderTop: `1px solid ${C.line}` }}>
           아트웍이 무지보다 <b style={{ color: gap > 0 ? C.signal : "#2563EB" }}>{Math.abs(gap)}% {gap > 0 ? "비쌉니다" : "쌉니다"}</b>
-          <span> (평균 {manwon(a.art.avg)} vs {manwon(a.plain.avg)})</span>
         </p>
       )}
       {thin && (
         <p className="text-[11px] mt-2 pt-2" style={{ color: C.mute, borderTop: `1px solid ${C.line}` }}>
-          표본이 얇아 비교는 보류합니다 (아트웍 {a.art.n}개 · 무지 {a.plain.n}개, 양쪽 {GAP_MIN_SAMPLE}개 이상일 때 비교).
+          표본이 얇아 비교는 보류합니다 (아트웍 {a.art.n}개 · 무지 {a.plain.n}개).
         </p>
       )}
+
+      <TopItemStrip top={best} />
     </div>
   );
 }
 
 const GAP_MIN_SAMPLE = 5;
 
-const CAT1_ORDER = ["아우터", "상의", "바지", "신발", "모자", "가방"];
+// 무신사의 대분류 이름에 "하의"는 없고 "바지"다. 쓰는 사람이 말하는 순서대로 세운다.
+const CAT1_ORDER = ["아우터", "상의", "바지", "모자", "가방"];
 const orderCat1 = (groups) => {
   const known = CAT1_ORDER.filter((g) => groups.includes(g));
   const rest = groups.filter((g) => !CAT1_ORDER.includes(g));
@@ -4087,7 +4121,7 @@ function ArtworkPanel() {
   }
   const totAll = tot.art + tot.plain + tot.unknown;
   const known = totAll ? Math.round(((tot.art + tot.plain) / totAll) * 100) : 0;
-  const shown = more ? cats : cats.slice(0, 12);
+  const shown = more ? cats : cats.slice(0, 15);
 
   return (
     <div className="flex flex-col gap-5">
@@ -4149,10 +4183,10 @@ function ArtworkPanel() {
           </div>
 
           {/* 카드마다 줄 수가 달라 격자로 놓으면 짧은 카드 아래가 비어 보인다.
-              단 흐름으로 쌓아 빈 자리를 없앤다. */}
-          <div style={{ columnCount: 1, columnGap: 16 }} className="lg:[column-count:2]">
+              단 흐름으로 쌓아 빈 자리를 없앤다. 넓은 화면에서는 3단. */}
+          <div style={{ columnGap: 14 }} className="[column-count:1] md:[column-count:2] xl:[column-count:3]">
             {shown.map((c) => (
-              <div key={c} style={{ breakInside: "avoid", marginBottom: 16 }}>
+              <div key={c} style={{ breakInside: "avoid", marginBottom: 14 }}>
                 <ArtworkCard cat={c} data={data} />
               </div>
             ))}
