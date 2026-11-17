@@ -76,13 +76,54 @@ const dist = (map, base, limit) => ({
 });
 const bump = (m, k) => { if (k) m.set(k, (m.get(k) || 0) + 1); };
 
+const BOARD_SIZE = 150;
+
+/*
+ * 판마다 "그 기간의 순위"를 매긴다 - 데이터조회 월/주 평균과 같은 방식이다.
+ * 상품별로 그 기간의 모든 스냅샷 순위를 평균 내고, 평균이 좋은 순으로 1위부터 붙인다.
+ * 150위까지만 매긴다(랭킹 판이 150칸이라 그 밖은 "판 밖"이다).
+ */
+function rankBoards(samples) {
+  const out = {};
+  for (const [board, byId] of Object.entries(samples)) {
+    const rows = [...byId.entries()]
+      .map(([id, v]) => ({ id, avg: v.sum / v.n, days: v.days.size }))
+      .sort((a, b) => a.avg - b.avg)
+      .slice(0, BOARD_SIZE);
+    const pos = new Map();
+    rows.forEach((r, i) => pos.set(r.id, { pos: i + 1, avg: Math.round(r.avg * 10) / 10, days: r.days }));
+    out[board] = pos;
+  }
+  return out;
+}
+
 /* 기간에 속한 날들의 스냅샷에서 상품을 모은다. 같은 상품이 여러 날 걸리면
-   그 기간 안에서 가장 나중에 본 값을 쓴다(가격이 바뀌므로). */
+   그 기간 안에서 가장 나중에 본 값을 쓴다(가격이 바뀌므로).
+   순위는 하루 한 장이 아니라 그날의 스냅샷 전부를 센다 - 데이터조회와 같게 하려면
+   같은 표본을 써야 한다. */
 function collectPeriod(days, index) {
   const byId = new Map();
+  const samples = {};
   for (const d of days) {
     const times = index[d] || [];
     if (!times.length) continue;
+    // 순위 표본: 그날의 모든 시각
+    for (const t of times) {
+      const f = path.join(DATA_DIR, `musinsa_${d}_${t}.json`);
+      if (!fs.existsSync(f)) continue;
+      const sn = JSON.parse(fs.readFileSync(f, "utf8"));
+      for (const board of Object.keys(sn)) {
+        if (board === "keywords") continue;
+        const bag = (samples[board] = samples[board] || new Map());
+        for (const it of (sn[board] && sn[board].all) || []) {
+          const id = idOf(it.url);
+          if (!id || !(it.rank > 0)) continue;
+          const v = bag.get(id) || { sum: 0, n: 0, days: new Set() };
+          v.sum += it.rank; v.n += 1; v.days.add(d);
+          bag.set(id, v);
+        }
+      }
+    }
     const file = path.join(DATA_DIR, `musinsa_${d}_${times[times.length - 1]}.json`);
     if (!fs.existsSync(file)) continue;
     const snap = JSON.parse(fs.readFileSync(file, "utf8"));
@@ -117,24 +158,28 @@ function collectPeriod(days, index) {
       }
     }
   }
+  const boards = rankBoards(samples);
+  const allBoard = boards["전체"] || new Map();
   const mean = (a) => (a.length ? Math.round((a.reduce((x, y) => x + y, 0) / a.length) * 10) / 10 : null);
-  const BOARD_SIZE = 150;
   return [...byId.values()].map((it) => {
-    // 같은 날 여러 판에 걸쳐 있으면 그날 가장 좋았던 순위 하나만 쓴다.
-    const byDay = new Map();
-    for (const [rank, day] of it.rankDays) {
-      const cur = byDay.get(day);
-      if (cur === undefined || rank < cur) byDay.set(day, rank);
+    // 품목 판은 그 상품이 가장 좋은 자리를 받은 판을 쓴다(여러 판에 걸칠 수 있다).
+    let catBoard = null, catEntry = null;
+    for (const [board, pos] of Object.entries(boards)) {
+      if (board === "전체") continue;
+      const e = pos.get(it.id);
+      if (e && (!catEntry || e.pos < catEntry.pos)) { catEntry = e; catBoard = board; }
     }
-    let score = 0;
-    for (const r of byDay.values()) score += Math.max(0, BOARD_SIZE + 1 - r);
+    const allEntry = allBoard.get(it.id) || null;
     return {
       ...it,
-      // 그 기간 동안의 평균 순위. 전체 판과 품목 판을 따로 낸다.
-      avgAll: mean(it.allRanks), avgCat: mean(it.catRanks),
-      // 관측 일수를 같이 남긴다 - 평균만 보면 하루짜리와 열흘짜리가 같아 보인다.
-      dAll: it.allRanks.length, dCat: it.catRanks.length,
-      score,
+      // 데이터조회와 같은 방식의 그 기간 순위(평균으로 다시 줄 세운 자리)
+      posAll: allEntry ? allEntry.pos : null,
+      avgAll: allEntry ? allEntry.avg : null,
+      dAll: allEntry ? allEntry.days : 0,
+      posCat: catEntry ? catEntry.pos : null,
+      avgCat: catEntry ? catEntry.avg : null,
+      dCat: catEntry ? catEntry.days : 0,
+      catBoard,
     };
   });
 }
@@ -149,8 +194,8 @@ function collectPeriod(days, index) {
  */
 /* 그 기간 가장 높이 올라간 순위. 전체 판이든 품목 판이든 더 좋은 쪽을 쓴다. */
 const topKey = (it) => Math.min(
-  it.bestAll !== undefined ? it.bestAll : 9999,
-  it.bestCat !== undefined ? it.bestCat : 9999
+  it.posAll !== null && it.posAll !== undefined ? it.posAll : 9999,
+  it.posCat !== null && it.posCat !== undefined ? it.posCat : 9999
 );
 
 function priceGroup(list) {
@@ -166,11 +211,8 @@ function priceGroup(list) {
     return (b.dAll + b.dCat) > (a.dAll + a.dCat) ? b : a;
   });
   const rankLabel = (it) => ({
-    all: it.bestAll < 9999 ? it.bestAll : null,
-    cat: it.bestCat < 9999 ? it.bestCat : null,
-    catBoard: it.bestCatBoard,
-    dAll: it.dAll, dCat: it.dCat,
-    avgAll: it.avgAll, avgCat: it.avgCat,
+    all: it.posAll, cat: it.posCat, catBoard: it.catBoard,
+    dAll: it.dAll, dCat: it.dCat, avgAll: it.avgAll, avgCat: it.avgCat,
   });
   return {
     n: list.length,
@@ -415,9 +457,8 @@ function itemRows(items, artwork) {
     return {
       i: it.id, n: it.name, b: it.brand, p: it.price, g: packThumb(it.image),
       a: a ? (a.art ? 1 : 0) : null,
-      // ra/rc = 최고 순위, aa/ac = 평균 순위, da/dc = 머문 날수
-      ra: it.bestAll < 9999 ? it.bestAll : null,
-      rc: it.bestCat < 9999 ? it.bestCat : null,
+      // ra/rc = 그 기간 순위(데이터조회와 같은 방식), aa/ac = 평균 등수, da/dc = 머문 날수
+      ra: it.posAll, rc: it.posCat, cb: it.catBoard,
       aa: it.avgAll, ac: it.avgCat, da: it.dAll, dc: it.dCat,
       s: topKey(it),
     };
