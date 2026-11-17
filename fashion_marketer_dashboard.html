@@ -3993,6 +3993,13 @@ function ArtworkCard({ cat, data }) {
 
 const GAP_MIN_SAMPLE = 5;
 
+const CAT1_ORDER = ["아우터", "상의", "바지", "신발", "모자", "가방"];
+const orderCat1 = (groups) => {
+  const known = CAT1_ORDER.filter((g) => groups.includes(g));
+  const rest = groups.filter((g) => !CAT1_ORDER.includes(g));
+  return [...known, ...rest];
+};
+
 const ARTWORK_SORTS = [
   { key: "items", label: "상품 많은 순" },
   { key: "price", label: "평균가 높은 순" },
@@ -4121,7 +4128,7 @@ function ArtworkPanel() {
           <div className="rounded-2xl p-4 flex flex-col gap-3" style={card}>
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-bold mr-1" style={{ color: C.mute }}>대분류</span>
-              {[["", "전체"], ...groups.map((g) => [g, g])].map(([k, t]) => (
+              {[["", "전체"], ...orderCat1(groups).map((g) => [g, g])].map(([k, t]) => (
                 <button key={k} onClick={() => { setCat1(k); setMore(false); }} className="px-3 py-1.5 rounded-full text-xs font-semibold transition" style={pill(cat1 === k)}>{t}</button>
               ))}
             </div>
@@ -4266,7 +4273,7 @@ function CategoryDetailPanel() {
             <select value={cat || ""} onChange={(e) => setCat(e.target.value)}
               className="text-[13px] font-semibold rounded-lg px-3 py-2 outline-none"
               style={{ background: C.paper, border: `1px solid ${C.line}`, color: C.ink, minWidth: 260 }}>
-              {Object.keys(groups).map((g) => (
+              {orderCat1(Object.keys(groups)).map((g) => (
                 <optgroup key={g} label={g || "기타"}>
                   {groups[g].map((c) => <option key={c} value={c}>{c} ({data.categories[c].items}개)</option>)}
                 </optgroup>
