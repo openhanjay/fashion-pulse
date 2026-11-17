@@ -20,10 +20,13 @@ const sharp = require("sharp");
 const DATA_DIR = path.join(__dirname, "data");
 const OUT_DIR = path.join(DATA_DIR, "sheets");
 
-const TILE = 240;   // 칸 한 변. 그래픽/무지를 가리기엔 충분하고, 판이 너무 커지지도 않는다.
-const COLS = 5;
+/* 한 판에 더 많이 담을수록 읽는 횟수가 줄어든다. 8x8=64장이 한계선이다 -
+   더 줄이면 가슴 레터링이 뭉개져 아트웍인지 아닌지 가릴 수 없게 된다.
+   타일이 작아 안 보이는 로고는 어차피 "작은 브랜드 라벨"이라 무지로 세는 게 맞다. */
+const TILE = Number(process.env.TILE || 164);
+const COLS = Number(process.env.COLS || 8);
 const PAD = 4;
-const LABEL_H = 22;
+const LABEL_H = Number(process.env.LABEL_H || 16);
 
 const idOf = (u) => (String(u || "").match(/products\/(\d+)/) || [])[1];
 
@@ -53,6 +56,17 @@ async function build(items, name) {
   const W = COLS * (TILE + PAD) + PAD;
   const H = rows * (cellH + PAD) + PAD;
 
+  /* 썸네일을 하나씩 받으면 64장짜리 판 하나에 20초가 걸린다. 동시에 받는다. */
+  const tiles = new Array(items.length);
+  let cursor = 0;
+  await Promise.all(Array.from({ length: 8 }, async () => {
+    while (true) {
+      const i = cursor++;
+      if (i >= items.length) return;
+      try { tiles[i] = await tileOf(items[i].thumb); } catch { tiles[i] = null; }
+    }
+  }));
+
   const layers = [];
   const map = [];
   let ok = 0;
@@ -60,15 +74,15 @@ async function build(items, name) {
     const col = i % COLS, row = Math.floor(i / COLS);
     const x = PAD + col * (TILE + PAD);
     const y = PAD + row * (cellH + PAD);
-    try {
-      layers.push({ input: await tileOf(items[i].thumb), left: x, top: y });
-      layers.push({ input: labelSvg(String(i + 1), TILE, LABEL_H), left: x, top: y + TILE });
-      map.push({ no: i + 1, id: items[i].id, name: items[i].name, cat2: items[i].cat2 });
-      ok += 1;
-    } catch (e) {
-      // 썸네일이 사라진 상품은 칸을 비우지 않고 건너뛴다 - 번호가 밀리면 답을 꽂을 수 없다.
+    if (!tiles[i]) {
+      // 썸네일이 사라진 상품은 칸을 비우되 번호는 밀지 않는다 - 밀리면 답을 꽂을 수 없다.
       map.push({ no: i + 1, id: items[i].id, failed: true });
+      continue;
     }
+    layers.push({ input: tiles[i], left: x, top: y });
+    layers.push({ input: labelSvg(String(i + 1), TILE, LABEL_H), left: x, top: y + TILE });
+    map.push({ no: i + 1, id: items[i].id, name: items[i].name, cat2: items[i].cat2 });
+    ok += 1;
   }
 
   const file = path.join(OUT_DIR, name + ".png");
