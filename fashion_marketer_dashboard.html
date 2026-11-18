@@ -4469,14 +4469,13 @@ function ArtworkPanel() {
             </div>
           </div>
 
-          {/* 카드마다 줄 수가 달라 격자로 놓으면 짧은 카드 아래가 비어 보인다.
-              단 흐름으로 쌓아 빈 자리를 없앤다. 넓은 화면에서는 3단. */}
-          <div style={{ columnGap: 14 }} className="[column-count:1] md:[column-count:2] xl:[column-count:3]">
+          {/* 고른 순서대로 왼쪽에서 오른쪽으로 읽히게 격자로 놓는다.
+              단(column)으로 쌓으면 1·2·3이 세로로 내려가서 "많은 순"이 눈에 안 들어온다.
+              카드 높이를 다 맞춰놔서 격자로 놔도 빈 자리가 생기지 않는다. 넓은 화면에서는 3칸. */}
+          <div style={{ gap: 14 }} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
             {shown.map((c) => (
-              <div key={c} style={{ breakInside: "avoid", marginBottom: 14 }}>
-                <ArtworkCard cat={c} data={data}
-                  onAvg={(cat, key, label) => setModal({ cat, key, label })} />
-              </div>
+              <ArtworkCard key={c} cat={c} data={data}
+                onAvg={(cat, key, label) => setModal({ cat, key, label })} />
             ))}
           </div>
 
