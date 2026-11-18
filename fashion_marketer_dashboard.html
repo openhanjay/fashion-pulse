@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<script>/* 오랩 이사(대표 11/8): 새 주소로 넘김 — ?oh_old=1 로 열면 2주 동안 옛 화면 그대로 */(function(){try{var k='oh_old',q=/[?&]oh_old=1/.test(location.search);if(q)localStorage.setItem(k,'1');if(!q&&!localStorage.getItem(k))location.replace("https://fashion-pulse.apps.ohlab.ai/");}catch(e){}})();</script>
+<script>/* 오랩 이사(대표 11/8): 새 주소로 넘김 — ?oh_old=1 로 열면 2주 동안 옛 화면 그대로 */(function(){try{var k='oh_old',q=/[?&]oh_old=1/.test(location.search);if(q)localStorage.setItem(k,'1');if(!q&&!localStorage.getItem(k))location.replace("https://fashion-pulse.apps.ohlab.ai/"+location.hash);}catch(e){}})();</script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="robots" content="noindex, nofollow" />
@@ -23,7 +23,7 @@
 <div id="root"></div>
 
 <script type="text/babel">
-const { useState, useMemo, useEffect } = React;
+const { useState, useMemo, useEffect, useRef } = React;
 
 /* =========================================================================
    COLOR / TYPE TOKENS
@@ -132,6 +132,123 @@ function loadPersistedList(key) {
 }
 function savePersistedList(key, list) {
   try { localStorage.setItem(key, JSON.stringify(list)); } catch {}
+}
+
+/* =========================================================================
+   주소(해시) 라우팅
+
+   보고 있는 화면이 주소에 적혀야 한다. 그래야 "디자인 트렌드 모자 카드 좀 봐"를
+   링크 하나로 던지고, 새로고침해도 그 자리에 있고, 뒤로가기가 되고,
+   메뉴를 새 탭으로 열 수 있다.
+
+   깃허브 페이지스에는 서버 라우팅이 없어서 /design/artwork 같은 경로는 404가 난다.
+   그래서 해시에 적는다:  #/design/artwork/outer?p=2026-11&sort=avg
+     - 칸(/)은 "메뉴 > 탭 > 카테고리"처럼 하나가 다음을 품는 선택
+     - ?키=값은 정렬·기간처럼 나란히 있는 곁가지 선택
+   칸을 바꾸면 방문 기록을 남기고(뒤로가기로 돌아올 자리), 곁가지는 안 남긴다 -
+   정렬 칩 몇 번 눌렀다고 뒤로가기를 열 번 눌러야 하면 그게 더 불편하다.
+   ========================================================================= */
+
+/* 한글 카테고리를 주소에 그대로 넣으면 %EC%95%84%EC%9A%B0%ED%84%B0가 된다.
+   자주 쓰는 것만 짧은 영문 쪽지로 바꿔 적는다. 없는 건 그냥 인코딩한다. */
+const ROUTE_SLUG = {
+  "전체": "all", "상의": "top", "아우터": "outer", "바지": "pants",
+  "원피스": "dress", "가방": "bag", "모자": "cap", "신발": "shoes",
+  "여성의류": "women", "남성의류": "men",
+};
+const ROUTE_UNSLUG = Object.fromEntries(Object.entries(ROUTE_SLUG).map(([k, v]) => [v, k]));
+const toSlug = (v) => (v === null || v === undefined ? "" : (ROUTE_SLUG[v] || String(v)));
+const fromSlug = (v) => (v === undefined ? undefined : (ROUTE_UNSLUG[v] || v));
+
+const decodeSeg = (x) => { try { return decodeURIComponent(x); } catch { return x; } };
+
+function readRoute() {
+  const raw = String(location.hash || "").replace(/^#\/?/, "");
+  const cut = raw.indexOf("?");
+  const pathPart = cut === -1 ? raw : raw.slice(0, cut);
+  const queryPart = cut === -1 ? "" : raw.slice(cut + 1);
+  return {
+    segs: pathPart ? pathPart.split("/").filter(Boolean).map(decodeSeg) : [],
+    query: new URLSearchParams(queryPart),
+  };
+}
+
+function routeToHash(segs, query) {
+  const path = segs
+    .filter((x) => x !== null && x !== undefined && x !== "")
+    .map((x) => encodeURIComponent(x))
+    .join("/");
+  const q = query ? query.toString() : "";
+  return "#/" + path + (q ? "?" + q : "");
+}
+
+function writeRoute(segs, query, replace) {
+  const next = routeToHash(segs, query);
+  if (next === location.hash) return;
+  try {
+    if (replace) history.replaceState(null, "", next);
+    else history.pushState(null, "", next);
+    window.dispatchEvent(new Event("fp:route"));
+  } catch {
+    location.hash = next; // history API가 막힌 환경(file:// 등)에서는 해시만 바꾼다
+  }
+}
+
+/* 주소가 바뀔 때마다 다시 그린다. hashchange는 직접 location.hash를 건드릴 때,
+   popstate는 뒤로/앞으로, fp:route는 우리가 pushState로 바꿀 때 온다. */
+function useRoute() {
+  const [route, setRoute] = useState(readRoute);
+  useEffect(() => {
+    const on = () => setRoute(readRoute());
+    ["hashchange", "popstate", "fp:route"].forEach((e) => window.addEventListener(e, on));
+    return () => ["hashchange", "popstate", "fp:route"].forEach((e) => window.removeEventListener(e, on));
+  }, []);
+  return route;
+}
+
+/*
+ * 해시의 depth번째 칸을 useState처럼 쓴다.
+ * allowed를 주면 그 밖의 값은 무시하고 fallback으로 떨어진다 - 주소를 손으로
+ * 고쳐 넣거나 옛 링크를 열어도 빈 화면이 뜨면 안 된다.
+ * 칸을 바꾸면 그보다 깊은 칸은 지운다. 탭을 옮겼는데 옛 탭의 카테고리가
+ * 주소에 남아 있으면 그게 더 헷갈린다.
+ */
+function useRouteSeg(depth, fallback, allowed) {
+  const { segs } = useRoute();
+  const raw = fromSlug(segs[depth]);
+  const value = raw !== undefined && (!allowed || allowed.includes(raw)) ? raw : fallback;
+  const set = (v) => {
+    const cur = readRoute();
+    const next = cur.segs.slice(0, depth);
+    while (next.length < depth) next.push(toSlug(fallback));
+    next[depth] = toSlug(v);
+    // 메뉴를 옮기면 곁가지도 버린다(저쪽 화면의 기간·정렬이 따라올 이유가 없다)
+    writeRoute(next, depth === 0 ? new URLSearchParams() : cur.query, false);
+  };
+  return [value, set];
+}
+
+/* 그 칸을 v로 바꾼 주소. <a href>에 걸어두면 새 탭으로 열기·링크 복사가 된다. */
+function routeHrefSeg(depth, v, fallback) {
+  const cur = readRoute();
+  const next = cur.segs.slice(0, depth);
+  while (next.length < depth) next.push(toSlug(fallback));
+  next[depth] = toSlug(v);
+  return routeToHash(next, depth === 0 ? null : cur.query);
+}
+
+/* 정렬·기간처럼 나란히 있는 선택. 기본값이면 주소에서 아예 뺀다(주소가 짧아야 읽힌다). */
+function useRouteQuery(key, fallback, allowed) {
+  const { query } = useRoute();
+  const raw = query.get(key);
+  const value = raw !== null && (!allowed || allowed.includes(raw)) ? raw : fallback;
+  const set = (v) => {
+    const cur = readRoute();
+    if (v === null || v === undefined || v === "" || v === fallback) cur.query.delete(key);
+    else cur.query.set(key, String(v));
+    writeRoute(cur.segs, cur.query, true); // 곁가지는 뒤로가기 기록을 남기지 않는다
+  };
+  return [value, set];
 }
 
 // 무신사/29CM 관심 브랜드·검색어 목록을 localStorage가 아니라 저장소 파일(Worker의
@@ -2364,8 +2481,9 @@ function MoverInsightBox({ lines }) {
 }
 
 function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availableTimes, selectedTime, onSelectTime, onActiveListChange }) {
-  const [cat, setCat] = useState(CATEGORIES[0]);
-  const [filter, setFilter] = useState("all");
+  // #/musinsa/outer?f=rising
+  const [cat, setCat] = useRouteSeg(1, CATEGORIES[0], CATEGORIES);
+  const [filter, setFilter] = useRouteQuery("f", "all", RANK_FILTERS.map((x) => x.key));
   const [visibleCount, setVisibleCount] = useState(100);
   const [brandInput, setBrandInput] = useState("");
   // 관심 브랜드/검색어 목록은 이제 저장소 파일이 원본이라(다른 기기에서도 보이게), localStorage는
@@ -2519,11 +2637,18 @@ function RankingPanel({ rankings, title, dataSource, selectedDateLabel, availabl
 
 const CM29_LARGE_CATEGORIES = ["여성의류", "남성의류"];
 const CM29_PERIOD_FILTERS = [{ key: "실시간", label: "실시간" }, { key: "일간", label: "일간" }, { key: "주간", label: "주간" }, { key: "월간", label: "월간" }];
+const CM29_PERIOD_SLUG = { "실시간": "live", "일간": "day", "주간": "week", "월간": "month" };
+const CM29_PERIOD_UNSLUG = Object.fromEntries(Object.entries(CM29_PERIOD_SLUG).map(([k, v]) => [v, k]));
 
 function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, availableTimes, selectedTime, onSelectTime, onActiveListChange }) {
-  const [largeCat, setLargeCat] = useState(CM29_LARGE_CATEGORIES[0]);
-  const [subCat, setSubCat] = useState("전체");
-  const [period, setPeriod] = useState("실시간");
+  // #/cm29/여성의류?sub=아우터&p=주간
+  // 서브카테고리는 그날 받아온 파일에 따라 목록이 달라져서 미리 검사할 수 없다.
+  // 그래서 주소값은 "원하는 값"으로 받아두고, 실제 목록에 없으면 첫 칸으로 떨어뜨린다.
+  const [largeCat, setLargeCat] = useRouteSeg(1, CM29_LARGE_CATEGORIES[0], CM29_LARGE_CATEGORIES);
+  const [subCatWanted, setSubCat] = useRouteQuery("sub", "");
+  const [periodSlug, setPeriodSlug] = useRouteQuery("p", "live", Object.values(CM29_PERIOD_SLUG));
+  const period = CM29_PERIOD_UNSLUG[periodSlug] || "실시간";
+  const setPeriod = (v) => setPeriodSlug(CM29_PERIOD_SLUG[v] || "live");
   const [visibleCount, setVisibleCount] = useState(100);
   const [brandInput, setBrandInput] = useState("");
   const [brandWatchList, setBrandWatchList] = useState(() => loadPersistedList("fp_cm29_brand_watch"));
@@ -2544,10 +2669,7 @@ function Cm29RankingPanel({ rankings, title, dataSource, selectedDateLabel, avai
   }, []);
 
   const subCats = useMemo(() => Object.keys(rankings?.[largeCat] || {}), [rankings, largeCat]);
-
-  useEffect(() => {
-    if (subCats.length && !subCats.includes(subCat)) setSubCat(subCats[0]);
-  }, [largeCat, subCats]);
+  const subCat = subCats.includes(subCatWanted) ? subCatWanted : (subCats[0] || "전체");
 
   const filteredList = useMemo(() => rankings?.[largeCat]?.[subCat]?.[period] || [], [rankings, largeCat, subCat, period]);
 
@@ -4200,12 +4322,14 @@ const ARTWORK_SORTS = [
 
 function ArtworkPanel() {
   const [index, setIndex] = useState(undefined);
-  const [kind, setKind] = useState("month");
-  const [period, setPeriod] = useState(null);
+  // 보고 있는 자리를 전부 주소에 적는다: #/design/artwork/outer?k=week&p=2026-W46&sort=gap
+  // 대분류는 칸(한 단계 아래 선택), 기간·정렬은 곁가지로 둔다.
+  const [kind, setKind] = useRouteQuery("k", "month", ["month", "week"]);
+  const [periodWanted, setPeriod] = useRouteQuery("p", "");
+  const [cat1, setCat1] = useRouteSeg(2, "");
+  const [sort, setSort] = useRouteQuery("sort", "items", ARTWORK_SORTS.map((x) => x.key));
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [cat1, setCat1] = useState("");
-  const [sort, setSort] = useState("items");
   const [more, setMore] = useState(false);
   // 평균 숫자를 눌렀을 때 뜨는 상품 목록
   const [modal, setModal] = useState(null);
@@ -4219,14 +4343,13 @@ function ArtworkPanel() {
 
   const list = index ? (kind === "month" ? index.months : index.weeks) : [];
 
-  useEffect(() => {
-    if (list.length) setPeriod(list[list.length - 1].period);
-  }, [kind, index]);
+  // 주소에 적힌 기간이 이 목록에 있으면 그걸, 없으면(처음 열었거나 월↔주를 바꿨거나
+  // 주소를 잘못 받았거나) 가장 최근 기간을 본다. 이펙트로 되돌리지 않는 게 중요하다 -
+  // 되돌리면 링크로 받은 기간이 한 번 보였다가 최신으로 튕긴다.
+  const period = list.some((x) => x.period === periodWanted) ? periodWanted : (list.length ? list[list.length - 1].period : null);
 
   useEffect(() => {
-    const at = list.findIndex((p) => p.period === period);
-    // 종류를 바꾼 직후에는 기간이 아직 이전 종류의 것이다. 목록에 없으면 다음 렌더를 기다린다.
-    if (!period || at < 0) return;
+    if (!period) return;
     setLoading(true);
     fetch(`data/category/${kind === "month" ? "monthly" : "weekly"}/${period}.json?t=${Date.now()}`)
       .then((r) => (r.ok ? r.json() : null))
@@ -4382,11 +4505,12 @@ function ArtworkPanel() {
 
 function CategoryDetailPanel() {
   const [index, setIndex] = useState(undefined);
-  const [kind, setKind] = useState("month");
-  const [period, setPeriod] = useState(null);
+  // #/design/detail/<품목>?k=week&p=2026-W46
+  const [kind, setKind] = useRouteQuery("k", "month", ["month", "week"]);
+  const [periodWanted, setPeriod] = useRouteQuery("p", "");
+  const [catWanted, setCat] = useRouteSeg(2, "");
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [cat, setCat] = useState(null);
   const [steady, setSteady] = useState(null);
 
   useEffect(() => {
@@ -4402,24 +4526,16 @@ function CategoryDetailPanel() {
   }, []);
 
   const list = index ? (kind === "month" ? index.months : index.weeks) : [];
+  const period = list.some((x) => x.period === periodWanted) ? periodWanted : (list.length ? list[list.length - 1].period : null);
+  // 주소의 품목이 이 기간에 없으면(기간을 바꿨거나 옛 링크면) 가장 큰 품목으로 떨어진다.
+  const cat = data && data.categories[catWanted] ? catWanted : (data ? data.order[0] : null);
 
   useEffect(() => {
-    if (list.length) setPeriod(list[list.length - 1].period);
-  }, [kind, index]);
-
-  useEffect(() => {
-    const at = list.findIndex((p) => p.period === period);
-    // 종류를 바꾼 직후에는 기간이 아직 이전 종류의 것이다. 목록에 없으면 다음 렌더를 기다린다.
-    if (!period || at < 0) return;
+    if (!period) return;
     setLoading(true);
     fetch(`data/category/${kind === "month" ? "monthly" : "weekly"}/${period}.json?t=${Date.now()}`)
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        setData(d);
-        setLoading(false);
-        // 기간을 바꿔도 보던 품목을 그대로 보여준다. 그 기간에 없는 품목이면 가장 큰 것으로.
-        if (d) setCat((prev) => (prev && d.categories[prev] ? prev : d.order[0]));
-      })
+      .then((d) => { setData(d); setLoading(false); })
       .catch(() => { setData(null); setLoading(false); });
   }, [period, kind]);
 
@@ -4657,12 +4773,13 @@ function TurnRow({ cat, info, weeks, onPick, active }) {
 
 function CategoryTimelinePanel() {
   const [data, setData] = useState(undefined);
-  const [pick, setPick] = useState(null);
+  // #/design/timeline/<품목>
+  const [pickWanted, setPick] = useRouteSeg(2, "");
 
   useEffect(() => {
     fetch(`data/category_timeline.json?t=${Date.now()}`)
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => { setData(d); if (d && d.order.length) setPick(d.order[0]); })
+      .then(setData)
       .catch(() => setData(null));
   }, []);
 
@@ -4680,6 +4797,8 @@ function CategoryTimelinePanel() {
   const card = { background: C.white, border: `1px solid ${C.line}` };
   const down = data.order.filter((c) => data.categories[c].turn.dir === "down").slice(0, 10);
   const up = data.order.filter((c) => data.categories[c].turn.dir === "up").slice(0, 10);
+  // 주소에 없는 품목이면 가장 위에 있는 것으로 떨어진다
+  const pick = data.categories[pickWanted] ? pickWanted : data.order[0];
   const cur = pick && data.categories[pick];
   const first = data.weeks[0], last = data.weeks[data.weeks.length - 1];
 
@@ -4778,7 +4897,8 @@ function SteadyRow({ r, topN }) {
 
 function SteadyPanel() {
   const [data, setData] = useState(undefined);
-  const [cat, setCat] = useState("");
+  // #/design/steady/<품목>
+  const [catWanted, setCat] = useRouteSeg(2, "");
 
   useEffect(() => {
     fetch(`data/steady_items.json?t=${Date.now()}`)
@@ -4800,6 +4920,8 @@ function SteadyPanel() {
 
   const card = { background: C.white, border: `1px solid ${C.line}` };
   const cats = Object.keys(data.byCat2).sort((a, b) => data.byCat2[b].length - data.byCat2[a].length);
+  // 주소에 없는 품목이면 전체로 떨어진다
+  const cat = data.byCat2[catWanted] ? catWanted : "";
   const rows = cat ? data.byCat2[cat] : data.overall;
 
   return (
@@ -4844,9 +4966,12 @@ function SteadyPanel() {
    - 오래 버티는 상품: 상위권에 계속 박혀 있는 상품.
    기간별 구성(색상·키워드·비침·신축성 분포)과 변화 신호는 들어냈다 - 훑는 데 품이 들고
    정작 기획에 쓸 숫자가 그 사이에 묻혔다. */
+const DESIGN_TABS = [["artwork", "품목 × 아트웍"], ["timeline", "품목 등락"], ["detail", "품목 상세"], ["steady", "오래 버티는 상품"]];
+
 function DesignTrendPanel() {
-  const [tab, setTab] = useState("artwork");
-  const tabs = [["artwork", "품목 × 아트웍"], ["timeline", "품목 등락"], ["detail", "품목 상세"], ["steady", "오래 버티는 상품"]];
+  // 탭은 주소에 적는다: #/design/detail
+  const [tab, setTab] = useRouteSeg(1, "artwork", DESIGN_TABS.map(([k]) => k));
+  const tabs = DESIGN_TABS;
   return (
     <div className="flex flex-col gap-5">
       <div className="flex gap-1">
@@ -4895,10 +5020,12 @@ function Sidebar({ active, onChange, activeCategoryInsight }) {
             const isActive = item.key === active;
             const Icon = item.icon;
             return (
-              <button key={item.key} onClick={() => onChange(item.key)} className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left transition-colors" style={{ background: isActive ? C.indigoSoft : "transparent" }}>
+              <a key={item.key} href={"#/" + item.key}
+                onClick={(e) => { if (e.metaKey || e.ctrlKey || e.shiftKey) return; e.preventDefault(); onChange(item.key); }}
+                className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left transition-colors" style={{ background: isActive ? C.indigoSoft : "transparent" }}>
                 <Icon size={16} color={isActive ? C.indigo : C.mute} />
                 <span className="text-sm font-semibold" style={{ color: isActive ? C.indigo : C.ink }}>{item.label}</span>
-              </button>
+              </a>
             );
           })}
         </div>
@@ -4927,10 +5054,12 @@ function Sidebar({ active, onChange, activeCategoryInsight }) {
           const isActive = item.key === active;
           const Icon = item.icon;
           return (
-            <button key={item.key} onClick={() => onChange(item.key)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full whitespace-nowrap shrink-0" style={{ background: isActive ? C.ink : C.paper }}>
+            <a key={item.key} href={"#/" + item.key}
+              onClick={(e) => { if (e.metaKey || e.ctrlKey || e.shiftKey) return; e.preventDefault(); onChange(item.key); }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full whitespace-nowrap shrink-0" style={{ background: isActive ? C.ink : C.paper }}>
               <Icon size={14} color={isActive ? C.white : C.mute} />
               <span className="text-xs font-bold" style={{ color: isActive ? C.white : C.mute }}>{item.label}</span>
-            </button>
+            </a>
           );
         })}
       </nav>
@@ -4949,15 +5078,24 @@ const VIEW_KEYS = ["musinsa", "cm29", "instagram", "brand", "design"];
 
 function FashionMarketerDashboard() {
   const [selectedDate, setSelectedDate] = useState(new Date(2026, 6, 20));
-  // 새로고침해도 무신사로 안 돌아가고 보고 있던 탭 그대로 유지되도록 localStorage에서 복원.
-  const [view, setView] = useState(() => {
+  // 메뉴는 주소가 먼저다(#/design). 주소에 없으면 지난번에 보던 메뉴를 쓴다 -
+  // 그냥 북마크로 들어온 사람은 보던 자리에, 링크를 받은 사람은 링크의 자리에.
+  const lastSeen = useRef(null);
+  if (lastSeen.current === null) {
     try {
       const saved = localStorage.getItem("fp_view");
-      return VIEW_KEYS.includes(saved) ? saved : "musinsa";
-    } catch {
-      return "musinsa";
-    }
-  });
+      lastSeen.current = VIEW_KEYS.includes(saved) ? saved : "musinsa";
+    } catch { lastSeen.current = "musinsa"; }
+  }
+  const [view, setView] = useRouteSeg(0, lastSeen.current, VIEW_KEYS);
+
+  // 주소가 비어 있으면(그냥 주소창에 도메인만 치고 들어온 경우) 지금 보는 메뉴를 적어준다.
+  // 방문 기록은 남기지 않는다 - 뒤로가기를 눌렀을 때 빈 주소로 돌아갈 이유가 없다.
+  useEffect(() => {
+    if (!readRoute().segs.length) writeRoute([view], null, true);
+  }, [view]);
+
+  useEffect(() => { try { localStorage.setItem("fp_view", view); } catch {} }, [view]);
   const [musinsaRankings, setMusinsaRankings] = useState(MUSINSA_MOCK_RANKINGS);
   const [musinsaDataSource, setMusinsaDataSource] = useState("mock");
   const [musinsaIndex, setMusinsaIndex] = useState(null); // { "YYYY-MM-DD": ["08-00", "17-00"] } | null(로딩 전)
@@ -4970,12 +5108,17 @@ function FashionMarketerDashboard() {
   // 실행되면 자식이 막 채워넣은 값을 덮어써버려서 AI 분석이 계속 안 보이는 버그가 생김). 그래서 view를
   // 바꾸는 이 클릭 핸들러 안에서 동기적으로 같이 비워준다 - 그러면 그 이후로는 새로 마운트된 패널의
   // 이펙트만 이 값을 건드리게 되어 경쟁이 없다.
+  // 뒤로가기나 링크로 메뉴가 바뀐 경우에도 비워야 한다. 이펙트로 비우면 위 주석대로
+  // 자식이 막 채운 값을 덮어쓴다. 렌더 중에 비우면 자식이 그려지기 전이라 경쟁이 없다.
+  const shownView = useRef(view);
+  if (shownView.current !== view) {
+    shownView.current = view;
+    if (activeCategoryInsight !== null) setActiveCategoryInsight(null);
+  }
+
   const handleChangeView = (key) => {
     setView(key);
     setActiveCategoryInsight(null);
-    try {
-      localStorage.setItem("fp_view", key);
-    } catch {}
   };
 
   const musinsaDates = useMemo(() => (musinsaIndex ? Object.keys(musinsaIndex).sort() : []), [musinsaIndex]);
@@ -5118,6 +5261,7 @@ function FashionMarketerDashboard() {
   const [cm29AvgRange, setCm29AvgRange] = useState(null); // 위와 동일 | null(닫힘)
 
   const meta = PAGE_META[view];
+  useEffect(() => { document.title = `${meta.title} · FASHION PULSE`; }, [view]);
 
   return (
     <div className="min-h-screen w-full flex" style={{ background: C.paper }}>
