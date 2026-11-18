@@ -41,8 +41,18 @@ function labelSvg(text, w, h) {
   );
 }
 
+const IMG_HEADERS = {
+  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36",
+  "Referer": "https://www.musinsa.com/",
+  "Accept": "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+};
+
 async function tileOf(url) {
-  const res = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0" } });
+  let res = await fetch(url, { headers: IMG_HEADERS });
+  if (!res.ok) {
+    await new Promise((r) => setTimeout(r, 400));
+    res = await fetch(url, { headers: IMG_HEADERS });
+  }
   if (!res.ok) throw new Error("HTTP " + res.status);
   const buf = Buffer.from(await res.arrayBuffer());
   // 윈도우에서 파일 경로를 넘기면 잠김이 생긴다. 버퍼로 넘긴다.
@@ -112,8 +122,10 @@ function pool() {
       for (const it of (snap[cat] && snap[cat].all) || []) {
         const id = idOf(it.url);
         const m = meta[id];
-        if (!id || seen.has(id) || !m || !m.thumb) continue;
-        seen.set(id, { id, name: it.name, thumb: m.thumb, cat2: m.cat2 });
+        if (!id || seen.has(id) || !m) continue;
+        const thumb = it.image || m.thumb;
+        if (!thumb) continue;
+        seen.set(id, { id, name: it.name, thumb, cat2: m.cat2 });
       }
     }
   }
