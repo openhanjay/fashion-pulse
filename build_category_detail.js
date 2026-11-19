@@ -499,6 +499,7 @@ function itemRows(items, artwork) {
     const a = artwork[it.id];
     return {
       i: it.id, n: it.name, b: it.brand, p: it.price, g: packThumb(it.image),
+      d: typeof it.discountRatio === "number" && it.discountRatio > 0 ? it.discountRatio : undefined,
       a: a ? (a.art ? 1 : 0) : null,
       // aa/ac = 월/주 평균 등수(화면에 적는 값), ra/rc = 그 평균으로 다시 매긴 자리, da/dc = 머문 날수
       ra: it.posAll, rc: it.posCat, cb: it.catBoard,

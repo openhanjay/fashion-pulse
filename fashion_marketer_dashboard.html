@@ -2168,6 +2168,9 @@ function ProductCard({ item, iconSeed }) {
         <span className="flex items-center justify-center rounded-lg text-xs font-black tabular-nums" style={{ width: 26, height: 26, background: item.rank <= 3 ? C.ink : C.paper, color: item.rank <= 3 ? C.white : C.ink }}>{item.rank}</span>
         {item.delta !== undefined ? (
           <DeltaBadge delta={item.delta} />
+        ) : item.chip ? (
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded truncate max-w-[90px]"
+            style={{ background: item.chip.bg, color: item.chip.fg }}>{item.chip.text}</span>
         ) : item.badge ? (
           <span className="text-[10px] font-bold px-1.5 py-0.5 rounded truncate max-w-[90px]" style={{ background: C.signal, color: C.white }}>{item.badge}</span>
         ) : null}
@@ -2184,8 +2187,14 @@ function ProductCard({ item, iconSeed }) {
         <p className="text-[12.5px] font-semibold leading-snug truncate" style={{ color: C.ink }}>{item.name}</p>
         <div className="flex items-center gap-1 mt-0.5">
           {!!item.discountRatio && (<span className="text-[12px] font-bold tabular-nums" style={{ color: C.signal }}>{item.discountRatio}%</span>)}
-          <p className="text-[12px] font-bold tabular-nums" style={{ color: C.ink }}>{item.price.toLocaleString()}원</p>
+          <p className="text-[12px] font-bold tabular-nums" style={{ color: C.ink }}>
+            {typeof item.price === "number" ? item.price.toLocaleString() + "원" : "가격 없음"}
+          </p>
         </div>
+        {item.sub && (
+          <p className="text-[10px] tabular-nums leading-snug mt-1 pt-1 truncate" title={item.subFull || item.sub}
+            style={{ color: C.mute, borderTop: `1px solid ${C.line}` }}>{item.sub}</p>
+        )}
       </div>
     </>
   );
@@ -4225,6 +4234,24 @@ function ArtworkCard({ cat, data, onAvg }) {
  * 목록은 따로 떨궈둔 파일에서 누를 때만 받아온다(품목 요약에 같이 넣으면 화면을
  * 열 때마다 1.5MB를 받게 된다).
  */
+/* 카드 오른쪽 위에 붙는 아트웍/무지 표시. 무지를 빨간 칩으로 두면 "경고"처럼 읽혀서
+   갈래마다 색을 따로 준다(아트웍=보라, 무지=파랑, 미분류=회색). */
+const ART_CHIP = {
+  art: { text: "아트웍", bg: C.indigoSoft, fg: C.indigo },
+  plain: { text: "무지", bg: "#DBEAFE", fg: "#2563EB" },
+  unknown: { text: "미분류", bg: C.paper, fg: C.mute },
+};
+
+/* 카드 맨 아래 한 줄: 이 상품이 그 기간 평균 몇 등이었는지. 카드가 좁아서
+   전체 판만 적고, 품목 판은 마우스를 올렸을 때 같이 보여준다. */
+function itemRankLine(r, full) {
+  const has = (v) => v !== null && v !== undefined;
+  const all = has(r.aa) ? `전체 평균 ${avgEtc(r.aa)}등·${r.da}일` : "전체 150위 밖";
+  const cat = has(r.ac) ? `${r.cb || "품목"} 평균 ${avgEtc(r.ac)}등·${r.dc}일` : null;
+  if (full) return [all, cat].filter(Boolean).join(" / ");
+  return all;
+}
+
 function ItemListModal({ open, onClose, cat, groupKey, groupLabel, kind, period, periodText }) {
   const [rows, setRows] = useState(undefined);
 
@@ -4244,60 +4271,50 @@ function ItemListModal({ open, onClose, cat, groupKey, groupLabel, kind, period,
   const avg = prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "#00000055" }} onClick={onClose}>
-      <div className="rounded-2xl w-full flex flex-col" style={{ background: C.white, maxWidth: 760, maxHeight: "86vh" }}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6" style={{ background: "#00000066" }} onClick={onClose}>
+      {/* 상품이 수백 개다. 좁은 창에 한 줄씩 쌓으면 스크롤만 하게 된다.
+          랭킹 화면과 같은 카드 격자로 화면을 꽉 채워 한눈에 훑게 한다. */}
+      <div className="rounded-2xl w-full flex flex-col overflow-hidden"
+        style={{ background: C.paper, maxWidth: 1680, height: "94vh" }}
         onClick={(e) => e.stopPropagation()}>
-        <div className="p-5 pb-3 flex items-start justify-between gap-3" style={{ borderBottom: `1px solid ${C.line}` }}>
+        <div className="px-5 py-4 flex items-start justify-between gap-3 shrink-0"
+          style={{ background: C.white, borderBottom: `1px solid ${C.line}` }}>
           <div className="min-w-0">
-            <h3 className="text-base font-extrabold" style={{ color: C.ink }}>{cat} · {groupLabel}</h3>
-            <p className="text-[11px] mt-1" style={{ color: C.mute }}>
+            <h3 className="text-lg font-extrabold" style={{ color: C.ink }}>{cat} · {groupLabel}</h3>
+            <p className="text-[12px] mt-1" style={{ color: C.mute }}>
               {periodText} · {picked.length.toLocaleString()}개{avg ? ` · 평균 ${manwon(avg)}` : ""} · 평균 등수 순
             </p>
           </div>
-          <button onClick={onClose} className="text-[13px] font-bold px-3 py-1.5 rounded-lg shrink-0"
-            style={{ background: C.paper, color: C.ink }}>닫기</button>
+          <button onClick={onClose} className="text-[13px] font-bold px-3.5 py-2 rounded-lg shrink-0"
+            style={{ background: C.paper, color: C.ink, border: `1px solid ${C.line}` }}>닫기</button>
         </div>
 
-        <div className="overflow-y-auto p-5 pt-3">
+        <div className="overflow-y-auto px-5 py-4 flex-1">
           {rows === undefined && <p className="text-sm text-center py-8" style={{ color: C.mute }}>불러오는 중...</p>}
           {rows === null && <p className="text-sm text-center py-8" style={{ color: C.mute }}>이 기간의 상품 목록을 읽지 못했어요.</p>}
           {rows && picked.length === 0 && <p className="text-sm text-center py-8" style={{ color: C.mute }}>해당하는 상품이 없어요.</p>}
-          {picked.map((r) => {
-            const img = thumbUrl(r.i, r.g);
-            return (
-              <a key={r.i} href={`https://www.musinsa.com/products/${r.i}`} target="_blank" rel="noreferrer"
-                className="flex items-center gap-3 py-2 hover:opacity-70 transition" style={{ borderBottom: `1px solid ${C.line}` }}>
-                {img && <img src={img} alt="" loading="lazy" style={{ width: 38, height: 48, objectFit: "cover", borderRadius: 6, background: C.paperDark, flexShrink: 0 }} />}
-                <span className="min-w-0 flex-1">
-                  <span className="text-[11px] font-bold block" style={{ color: C.ink }}>
-                    {r.b}
-                    {r.a === 1 && <span className="ml-1 text-[10px]" style={{ color: C.indigo }}>아트웍</span>}
-                    {r.a === 0 && <span className="ml-1 text-[10px]" style={{ color: "#2563EB" }}>무지</span>}
-                    {r.a === null && <span className="ml-1 text-[10px]" style={{ color: C.mute }}>미분류</span>}
-                  </span>
-                  <span className="text-[11px] block truncate" style={{ color: C.mute }}>{r.n}</span>
-                </span>
-                <span className="text-[10px] tabular-nums shrink-0 text-right" style={{ color: C.mute, width: 128 }}>
-                  <span className="block">
-                    {r.aa !== null && r.aa !== undefined ? `전체 평균 ${avgEtc(r.aa)}등 · ${r.da}일` : "전체 150위 밖"}
-                  </span>
-                  {r.ac !== null && r.ac !== undefined &&
-                    <span className="block">{r.cb || "품목"} 평균 {avgEtc(r.ac)}등 · {r.dc}일</span>}
-                </span>
-                <span className="text-[12px] font-extrabold tabular-nums shrink-0 text-right" style={{ color: C.ink, width: 56 }}>{manwon(r.p)}</span>
-              </a>
-            );
-          })}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+            {picked.map((r, i) => (
+              <ProductCard key={r.i} iconSeed={Number(r.i) || i}
+                item={{
+                  rank: i + 1,
+                  url: `https://www.musinsa.com/products/${r.i}`,
+                  image: thumbUrl(r.i, r.g),
+                  brand: r.b, name: r.n, price: r.p, discountRatio: r.d,
+                  chip: ART_CHIP[r.a === 1 ? "art" : r.a === 0 ? "plain" : "unknown"],
+                  sub: itemRankLine(r),
+                  subFull: itemRankLine(r, true),
+                }} />
+            ))}
+          </div>
         </div>
 
-        <p className="text-[11px] px-5 py-3" style={{ color: C.mute, borderTop: `1px solid ${C.line}` }}>
-          <b>전체 평균 등수가 좋은 순</b>입니다. 등수는 <b>데이터조회의 월/주 평균 등수와 같은 값</b>이에요 —
-          그 기간의 모든 스냅샷에서 그 상품의 순위를 평균 낸 값입니다(예: 전체 평균 5.8등).
-          전체 판에 한 번도 못 든 상품은 품목 판 평균만 있고, 전체 판에 든 상품 뒤로 갑니다.
-          랭킹에 <b>안 보인 날은 151등으로 쳐서</b> 평균에 넣습니다 — 그래야 하루 반짝 2등이
-          보름 내내 7등을 이기지 않아요. 옆의 날수는 그 기간에 랭킹에서 보인 날수입니다.
-          랭킹은 판마다 150위까지만 긁어오므로 그 밖은 "150위 밖"입니다.
-          카드의 <b>최상위</b>는 이 목록의 첫 줄과 같은 상품입니다.
+        <p className="text-[11px] px-5 py-3 shrink-0"
+          style={{ background: C.white, color: C.mute, borderTop: `1px solid ${C.line}` }}>
+          카드 왼쪽 위 숫자는 <b>이 목록 안의 순서</b>, 카드 아래가 <b>그 기간 랭킹 평균 등수</b>(데이터조회 월/주 평균과 같은 값)입니다.
+          <b>전체 평균 등수가 좋은 순</b>으로 놓았고, 옆의 날수는 랭킹에서 보인 날수예요.
+          <span title="그 기간의 모든 스냅샷에서 상품별 순위를 평균 냅니다. 랭킹에 안 보인 날은 151등으로 쳐서 넣습니다 — 그래야 하루 반짝 2등이 보름 내내 7등을 이기지 않습니다. 판마다 150위까지만 긁어오므로 그 밖은 '150위 밖'입니다. 전체 판에 한 번도 못 든 상품은 품목 판 평균만 있고 전체 판에 든 상품 뒤로 갑니다."
+            style={{ textDecoration: "underline dotted", cursor: "help" }}>등수 계산 방법</span>
         </p>
       </div>
     </div>
