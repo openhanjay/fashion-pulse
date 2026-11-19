@@ -4742,32 +4742,44 @@ function CategoryDetailPanel() {
    - 이건 판매량이 아니다. 랭킹 150칸을 그 품목이 몇 칸 차지했는지다.
    - 한 시즌치뿐이라 계절과 유행이 안 갈린다. 반팔이 8월부터 빠지는 건 유행이 아니다.
    ───────────────────────────────────────────────────────────────────────── */
-function Spark({ series, weeks, dir }) {
+function Spark({ series, buckets, dir }) {
   const max = Math.max(...series.map((s) => s.pct), 0.1);
   const color = dir === "down" ? C.signal : dir === "up" ? "#2563EB" : C.mute;
   return (
     <div>
       <div className="flex items-end gap-[2px]" style={{ height: 56 }}>
-        {series.map((s, i) => (
-          <div key={s.w} className="flex-1 rounded-t" title={`${(weeks[i] || {}).text || s.w} · ${s.pct}% (${s.n}개)`}
-            style={{ height: Math.max(2, (s.pct / max) * 100) + "%", background: color, opacity: 0.35 + (i / series.length) * 0.65 }} />
-        ))}
+        {series.map((s, i) => {
+          const b = buckets[i] || {};
+          // 수집이 덜 된 칸(7월 4일치 같은)은 옅게 그린다. 같은 높이로 그려두면
+          // 보는 사람이 "그 달엔 원래 적었다"로 읽는다.
+          const partial = b.days !== undefined && b.days < 20;
+          return (
+            <div key={s.w} className="flex-1 rounded-t"
+              title={`${b.text || s.w}${b.range ? " (" + b.range + ")" : ""} · ${s.pct}% (${s.n}종)${partial ? " · " + b.days + "일치만 수집" : ""}`}
+              style={{
+                height: Math.max(2, (s.pct / max) * 100) + "%", background: color,
+                opacity: (partial ? 0.25 : 0.35) + (i / series.length) * 0.65,
+                border: partial ? `1px dashed ${color}` : "none",
+              }} />
+          );
+        })}
       </div>
       <div className="flex mt-1">
         {series.map((s, i) => {
-          const w = weeks[i] || {};
-          // 달이 바뀌는 칸에만 달 이름을 적는다. 16칸에 전부 적으면 읽히지 않는다.
-          const first = i === 0 || (weeks[i - 1] || {}).month !== w.month;
-          return <span key={s.w} className="flex-1 text-[9px] text-center" style={{ color: C.mute }}>{first ? w.month + "월" : ""}</span>;
+          const b = buckets[i] || {};
+          // 달이 바뀌는 칸에만 달 이름을 적는다. 17칸에 전부 적으면 읽히지 않는다.
+          // 달 단위로 보면 칸마다 달이 바뀌니 자연히 전부 적힌다.
+          const first = i === 0 || (buckets[i - 1] || {}).month !== b.month;
+          return <span key={s.w} className="flex-1 text-[9px] text-center" style={{ color: C.mute }}>{first ? b.month + "월" : ""}</span>;
         })}
       </div>
     </div>
   );
 }
 
-function TurnRow({ cat, info, weeks, onPick, active }) {
+function TurnRow({ cat, info, buckets, onPick, active }) {
   const t = info.turn;
-  const when = t.at ? (weeks.find((w) => w.w === t.at) || {}).text : null;
+  const when = t.at ? (buckets.find((b) => b.w === t.at) || {}).text : null;
   const tone = t.dir === "down" ? C.signal : t.dir === "up" ? "#2563EB" : C.mute;
   return (
     <button onClick={() => onPick(cat)} className="w-full text-left py-2 px-2 rounded-lg transition"
@@ -4787,10 +4799,15 @@ function TurnRow({ cat, info, weeks, onPick, active }) {
   );
 }
 
+const TIMELINE_KINDS = [["week", "주간"], ["month", "월간"]];
+
 function CategoryTimelinePanel() {
   const [data, setData] = useState(undefined);
-  // #/design/timeline/<품목>
+  // #/design/timeline/<품목>?k=month
   const [pickWanted, setPick] = useRouteSeg(2, "");
+  // 주가 기본이다. 꺾인 때를 "11월 1째주"까지 집어내는 게 이 화면의 쓸모인데,
+  // 달로 보면 "11월부터"까지만 말할 수 있다. 달은 잔떨림을 걷어낼 때 쓴다.
+  const [kind, setKind] = useRouteQuery("k", "week", ["week", "month"]);
 
   useEffect(() => {
     fetch(`data/category_timeline.json?t=${Date.now()}`)
@@ -4811,12 +4828,25 @@ function CategoryTimelinePanel() {
   }
 
   const card = { background: C.white, border: `1px solid ${C.line}` };
-  const down = data.order.filter((c) => data.categories[c].turn.dir === "down").slice(0, 10);
-  const up = data.order.filter((c) => data.categories[c].turn.dir === "up").slice(0, 10);
-  // 주소에 없는 품목이면 가장 위에 있는 것으로 떨어진다
-  const pick = data.categories[pickWanted] ? pickWanted : data.order[0];
-  const cur = pick && data.categories[pick];
-  const first = data.weeks[0], last = data.weeks[data.weeks.length - 1];
+  const pill = (on) => ({
+    background: on ? C.ink : C.white, color: on ? C.white : C.mute,
+    border: `1px solid ${on ? C.ink : C.line}`,
+  });
+
+  // 주/달 두 벌이 한 파일에 들어 있다. 고른 쪽만 꺼내 쓴다.
+  const d = data[kind] || data.week;
+  const buckets = d.buckets;
+  const unit = kind === "month" ? "달" : "주";
+  const down = d.order.filter((c) => d.categories[c].turn.dir === "down").slice(0, 10);
+  const up = d.order.filter((c) => d.categories[c].turn.dir === "up").slice(0, 10);
+  // 주소에 없는 품목이면 가장 위에 있는 것으로 떨어진다. 주/달에서 잡히는 품목이
+  // 조금 달라서, 한쪽에만 있는 품목을 보다가 바꿔도 빈 화면이 되지 않게 한다.
+  const pick = d.categories[pickWanted] ? pickWanted : d.order[0];
+  const cur = pick && d.categories[pick];
+  const first = buckets[0], last = buckets[buckets.length - 1];
+  // 수집이 덜 된 칸(7월 4일치 같은). 비중은 그 기간 안에서 센 값이라 비교는 되지만,
+  // 아무 말 없이 두면 "그 달엔 원래 적었다"로 읽힌다.
+  const partials = buckets.filter((b) => b.days !== undefined && b.days < 20);
 
   return (
     <div className="flex flex-col gap-5">
@@ -4824,10 +4854,10 @@ function CategoryTimelinePanel() {
         <div className="flex items-center gap-2 mb-1">
           <TrendingUp size={16} color={C.indigo} />
           <h2 className="text-base font-bold" style={{ color: C.ink }}>품목 등락</h2>
-          <span className="text-[11px]" style={{ color: C.mute }}>{first.text} ~ {last.text} ({data.weeks.length}주)</span>
+          <span className="text-[11px]" style={{ color: C.mute }}>{first.text} ~ {last.text} ({buckets.length}{unit})</span>
         </div>
         <p className="text-[13px] leading-relaxed" style={{ color: C.ink }}>
-          품목이 <b>언제부터</b> 랭킹에서 빠지기 시작했는지, 어떤 게 올라왔는지를 주 단위로 봅니다.
+          품목이 <b>언제부터</b> 랭킹에서 빠지기 시작했는지, 어떤 게 올라왔는지를 {unit} 단위로 봅니다.
           <br />
           숫자는 <b>판매량이 아니라</b> 랭킹 150칸 중 그 품목이 차지한 비중이에요.
           그리고 아직 한 시즌치뿐이라 <b>계절과 유행이 갈리지 않습니다</b> —
@@ -4836,16 +4866,32 @@ function CategoryTimelinePanel() {
         </p>
       </div>
 
+      <div className="rounded-2xl p-4 flex flex-wrap items-center gap-3" style={card}>
+        <div className="flex gap-1">
+          {TIMELINE_KINDS.map(([k, t]) => (
+            <button key={k} onClick={() => setKind(k)} className="px-3 py-1.5 rounded-full text-xs font-bold transition" style={pill(kind === k)}>{t}</button>
+          ))}
+        </div>
+        <span className="text-[11px]" style={{ color: C.mute }}>
+          {kind === "month"
+            ? "한 달이 이미 네 주의 평균이라 선이 고릅니다. 대신 \"8월부터\"까지만 말할 수 있어요."
+            : "꺾인 때를 \"11월 1째주\"까지 집어냅니다. 대신 주마다 들쭉날쭉합니다."}
+          {partials.length > 0 && (
+            <span> · <b>{partials.map((b) => b.text).join(", ")}</b>은(는) {partials.map((b) => b.days).join("/")}일치만 수집돼 점선으로 그립니다.</span>
+          )}
+        </span>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
         <div className="rounded-2xl p-5" style={card}>
           <p className="text-xs font-bold tracking-wider mb-2" style={{ color: C.mute }}>빠지는 품목</p>
           {down.length === 0 ? <p className="text-xs" style={{ color: C.mute }}>뚜렷하게 빠지는 품목이 없어요.</p>
-            : down.map((c) => <TurnRow key={c} cat={c} info={data.categories[c]} weeks={data.weeks} onPick={setPick} active={pick === c} />)}
+            : down.map((c) => <TurnRow key={c} cat={c} info={d.categories[c]} buckets={buckets} onPick={setPick} active={pick === c} />)}
         </div>
         <div className="rounded-2xl p-5" style={card}>
           <p className="text-xs font-bold tracking-wider mb-2" style={{ color: C.mute }}>올라오는 품목</p>
           {up.length === 0 ? <p className="text-xs" style={{ color: C.mute }}>뚜렷하게 올라오는 품목이 없어요.</p>
-            : up.map((c) => <TurnRow key={c} cat={c} info={data.categories[c]} weeks={data.weeks} onPick={setPick} active={pick === c} />)}
+            : up.map((c) => <TurnRow key={c} cat={c} info={d.categories[c]} buckets={buckets} onPick={setPick} active={pick === c} />)}
         </div>
       </div>
 
@@ -4856,16 +4902,16 @@ function CategoryTimelinePanel() {
             <select value={pick} onChange={(e) => setPick(e.target.value)}
               className="text-[13px] font-semibold rounded-lg px-3 py-2 outline-none"
               style={{ background: C.paper, border: `1px solid ${C.line}`, color: C.ink, minWidth: 220 }}>
-              {data.order.map((c) => <option key={c} value={c}>{c}</option>)}
+              {d.order.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
-          <Spark series={cur.series} weeks={data.weeks} dir={cur.turn.dir} />
+          <Spark series={cur.series} buckets={buckets} dir={cur.turn.dir} />
           <div className="flex flex-wrap gap-x-8 gap-y-2 mt-4">
             {[
-              ["가장 많던 주", Math.max(...cur.series.map((s) => s.pct)) + "%"],
-              ["최근 3주 평균", cur.turn.now + "%"],
-              ["주당 상품 수(최근)", Math.round(cur.nowN) + "종"],
-              ["가장 많던 주 상품 수", cur.peakN + "종"],
+              [`가장 많던 ${unit}`, Math.max(...cur.series.map((s) => s.pct)) + "%"],
+              [d.recent > 1 ? `최근 ${d.recent}${unit} 평균` : `최근 한 ${unit}`, cur.turn.now + "%"],
+              [`${unit}당 상품 수(최근)`, Math.round(cur.nowN) + "종"],
+              [`가장 많던 ${unit} 상품 수`, cur.peakN + "종"],
             ].map(([t, v]) => (
               <div key={t}>
                 <p className="text-[11px] font-semibold" style={{ color: C.mute }}>{t}</p>
@@ -4874,7 +4920,8 @@ function CategoryTimelinePanel() {
             ))}
           </div>
           <p className="text-[11px] mt-3" style={{ color: C.mute }}>
-            막대 하나가 한 주입니다. 주마다 랭킹에 오른 서로 다른 상품을 세고, 그 주 전체에서 차지한 비중을 그립니다.
+            막대 하나가 한 {unit}입니다. {unit}마다 랭킹에 오른 서로 다른 상품을 세고, 그 {unit} 전체에서 차지한 비중을 그립니다.
+            같은 상품이 여러 날 올라와도 한 번만 셉니다.
           </p>
         </div>
       )}

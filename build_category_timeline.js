@@ -1,8 +1,13 @@
 /*
- * 품목(cat2)이 랭킹에서 언제부터 늘고 언제부터 줄었는지를 주 단위로 추적한다.
+ * 품목(cat2)이 랭킹에서 언제부터 늘고 언제부터 줄었는지를 추적한다.
  *
  * "후드집업이 줄기 시작했다"를 말하려면 지금 비중만으로는 안 되고 시간축이 있어야 한다.
- * 주마다 그 품목이 랭킹에 몇 개 올라왔는지를 이어 붙이고, 꺾인 지점을 찾는다.
+ * 한 칸마다 그 품목이 랭킹에 몇 종 올라왔는지를 이어 붙이고, 꺾인 지점을 찾는다.
+ *
+ * 칸은 주와 달 두 가지로 만든다.
+ *  - 주: 꺾인 때를 "11월 1째주"까지 집어낼 수 있다. 대신 들쭉날쭉하다.
+ *  - 달: 한 달이 이미 네 주의 평균이라 잔떨림이 없다. 대신 "8월부터"까지만 말할 수 있다.
+ * 둘 다 미리 계산해 한 파일에 담고, 화면에서 골라 본다.
  *
  * 꼭 알아야 할 한계 두 가지 - 화면에도 같은 말을 적어둔다.
  *  1) 이건 판매량이 아니라 "랭킹에 올라온 상품 수"다. 무신사 랭킹이 판매 기반이긴 해도
@@ -20,11 +25,21 @@ const path = require("path");
 const DATA_DIR = path.join(__dirname, "data");
 const OUT_FILE = path.join(DATA_DIR, "category_timeline.json");
 
-const MIN_PEAK_ITEMS = 10;  // 주 최대치가 이보다 적은 품목은 흔들림이 커서 뺀다
-const MIN_WEEKS = 6;        // 추세를 말하려면 최소 이만큼은 있어야 한다
-const SMOOTH = 3;           // 이동평균 주 수
+const MIN_PEAK_ITEMS = 10;  // 한 칸 최대치가 이보다 적은 품목은 흔들림이 커서 뺀다
 const TURN_RATIO = 0.65;    // 정점의 65% 밑으로 내려오면 "줄기 시작했다"로 본다
 const RISE_RATIO = 1.5;     // 저점의 1.5배를 넘으면 "늘기 시작했다"
+
+/*
+ * 칸 종류마다 다른 건 세 가지뿐이다.
+ *  minBuckets - 추세를 말하려면 최소 몇 칸이 있어야 하는가.
+ *  smooth     - 이동평균 창. 달은 그 자체가 네 주의 평균이라 더 고르지 않는다.
+ *               다섯 칸짜리 선에 3칸 이동평균을 걸면 거의 직선이 되어버린다.
+ *  recent     - "지금"을 몇 칸으로 보는가.
+ */
+const KINDS = {
+  week: { minBuckets: 6, smooth: 3, recent: 3 },
+  month: { minBuckets: 3, smooth: 1, recent: 1 },
+};
 
 const idOf = (u) => (String(u || "").match(/products\/(\d+)/) || [])[1];
 const avg = (a) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0);
@@ -71,9 +86,21 @@ function weekLabel(isoKey) {
   };
 }
 
-/* 한 주에 올라온 서로 다른 상품을 품목별로 센다. 같은 상품이 여러 날/여러 카테고리에
-   걸쳐도 한 번만 센다 - 그래야 "그 주에 이 품목이 몇 종 올라왔나"가 된다. */
-function countWeek(days, index, meta) {
+/* "2026-08" -> "8월". 수집한 날이 며칠인지도 같이 남긴다 - 7월처럼 4일치뿐인 달을
+   31일치 달 옆에 아무 말 없이 놓으면 보는 사람이 속는다. */
+function monthLabel(key, days) {
+  const [year, month] = key.split("-").map(Number);
+  return {
+    year, month, nth: null,
+    text: `${month}월`,
+    range: days.length ? `${days[0].slice(5)} ~ ${days[days.length - 1].slice(5)}` : "",
+    days: days.length,
+  };
+}
+
+/* 한 칸에 올라온 서로 다른 상품을 품목별로 센다. 같은 상품이 여러 날/여러 카테고리에
+   걸쳐도 한 번만 센다 - 그래야 "그 기간에 이 품목이 몇 종 올라왔나"가 된다. */
+function countBucket(days, index, meta) {
   const seen = new Set();
   const byCat = new Map();
   let total = 0;
@@ -99,8 +126,9 @@ function countWeek(days, index, meta) {
   return { byCat, total };
 }
 
-/* 이동평균. 양 끝은 있는 만큼만 쓴다(처음 두 주를 버리지 않으려고). */
+/* 이동평균. 양 끝은 있는 만큼만 쓴다(처음 두 칸을 버리지 않으려고). */
 function smooth(arr, win) {
+  if (!(win > 1)) return arr.slice();
   return arr.map((_, i) => {
     const from = Math.max(0, i - Math.floor(win / 2));
     const to = Math.min(arr.length, from + win);
@@ -117,21 +145,22 @@ function smooth(arr, win) {
  * 벗어나는 지점이다.
  *
  * 그래서 정점(P)과 지금(N) 사이에 문턱을 하나 긋고(정점에서 25% 내려온 높이),
- * 그 문턱 위에 마지막으로 있었던 주를 "여기서부터 빠지기 시작했다"로 본다.
+ * 그 문턱 위에 마지막으로 있었던 칸을 "여기서부터 빠지기 시작했다"로 본다.
  * 늘어나는 쪽은 저점과 지금 사이에 같은 식으로 긋는다.
  */
 const TURN_BAND = 0.25;
 
 function departureIndex(sm, level, goingDown) {
-  // 문턱을 마지막으로 넘고 있던 주. 그 다음 주부터 추세가 시작된 것으로 읽는다.
+  // 문턱을 마지막으로 넘고 있던 칸. 그 다음 칸부터 추세가 시작된 것으로 읽는다.
   let at = 0;
   sm.forEach((v, i) => { if (goingDown ? v >= level : v <= level) at = i; });
   return at;
 }
 
-function findTurn(series) {
-  const sm = smooth(series.map((s) => s.pct), SMOOTH);
-  const now = avg(sm.slice(-Math.min(3, sm.length)));
+function findTurn(series, cfg) {
+  const c = cfg || KINDS.week;
+  const sm = smooth(series.map((s) => s.pct), c.smooth);
+  const now = avg(sm.slice(-Math.min(c.recent, sm.length)));
   const peak = Math.max(...sm);
   const trough = Math.min(...sm);
 
@@ -139,7 +168,7 @@ function findTurn(series) {
     const at = departureIndex(sm, peak - TURN_BAND * (peak - now), true);
     return {
       dir: "down", at: series[at].w, from: r1(peak), now: r1(now),
-      // 수집 첫 주부터 이미 빠지고 있었다면 "언제부터"를 말할 수 없다. 화면에서 다르게 쓴다.
+      // 수집 첫 칸부터 이미 빠지고 있었다면 "언제부터"를 말할 수 없다. 화면에서 다르게 쓴다.
       atStart: at === 0,
     };
   }
@@ -147,68 +176,85 @@ function findTurn(series) {
     const at = departureIndex(sm, trough + TURN_BAND * (now - trough), false);
     return { dir: "up", at: series[at].w, from: r1(trough), now: r1(now), atStart: at === 0 };
   }
-  return { dir: "flat", at: null, from: r1(avg(sm.slice(0, 3))), now: r1(now), atStart: false };
+  return { dir: "flat", at: null, from: r1(avg(sm.slice(0, Math.min(3, sm.length)))), now: r1(now), atStart: false };
 }
 
-function run() {
-  const index = JSON.parse(fs.readFileSync(path.join(DATA_DIR, "musinsa_index.json"), "utf8"));
-  const meta = JSON.parse(fs.readFileSync(path.join(DATA_DIR, "product_meta_slim.json"), "utf8"));
-
-  const byWeek = new Map();
-  for (const d of Object.keys(index).sort()) {
-    const k = isoWeekKey(d);
-    if (!byWeek.has(k)) byWeek.set(k, []);
-    byWeek.get(k).push(d);
+/* 날짜들을 칸으로 묶는다. */
+function bucketize(dates, kind) {
+  const m = new Map();
+  for (const d of dates) {
+    const k = kind === "month" ? d.slice(0, 7) : isoWeekKey(d);
+    if (!m.has(k)) m.set(k, []);
+    m.get(k).push(d);
   }
-  const weekKeys = [...byWeek.keys()].sort();
+  return m;
+}
 
-  const counts = weekKeys.map((wk) => countWeek(byWeek.get(wk), index, meta));
+function buildKind(kind, dates, index, meta) {
+  const cfg = KINDS[kind];
+  const buckets = bucketize(dates, kind);
+  const keys = [...buckets.keys()].sort();
+  const counts = keys.map((k) => countBucket(buckets.get(k), index, meta));
+
   const cats = new Set();
   counts.forEach((c) => c.byCat.forEach((_, k) => cats.add(k)));
 
   const categories = {};
   for (const cat of cats) {
-    const series = weekKeys.map((wk, i) => {
+    const series = keys.map((k, i) => {
       const n = counts[i].byCat.get(cat) || 0;
-      return { w: wk, n, pct: counts[i].total ? r1((n / counts[i].total) * 100) : 0 };
+      return { w: k, n, pct: counts[i].total ? r1((n / counts[i].total) * 100) : 0 };
     });
     const peakN = Math.max(...series.map((s) => s.n));
-    if (peakN < MIN_PEAK_ITEMS || series.length < MIN_WEEKS) continue;
+    if (peakN < MIN_PEAK_ITEMS || series.length < cfg.minBuckets) continue;
     const sample = meta[Object.keys(meta).find((id) => meta[id] && meta[id].cat2 === cat)];
     categories[cat] = {
       cat1: (sample && sample.cat1) || "",
       series,
-      turn: findTurn(series),
+      turn: findTurn(series, cfg),
       peakN,
-      nowN: avg(series.slice(-3).map((s) => s.n)),
+      nowN: avg(series.slice(-cfg.recent).map((s) => s.n)),
     };
   }
 
   // 변화가 큰 품목이 위로 오게 정렬한다 - 안 변한 품목은 볼 이유가 적다.
   const score = (c) => {
     const t = categories[c].turn;
-    if (t.dir === "flat") return 0;
-    return Math.abs(t.now - t.from);
+    return t.dir === "flat" ? 0 : Math.abs(t.now - t.from);
   };
   const order = Object.keys(categories).sort((a, b) => score(b) - score(a));
 
-  const out = {
-    updatedAt: new Date().toISOString().slice(0, 10),
-    weeks: weekKeys.map((wk) => ({ w: wk, ...weekLabel(wk) })),
+  return {
+    recent: cfg.recent,
+    buckets: keys.map((k) => ({ w: k, ...(kind === "month" ? monthLabel(k, buckets.get(k)) : weekLabel(k)) })),
     order,
     categories,
   };
+}
+
+function run() {
+  const index = JSON.parse(fs.readFileSync(path.join(DATA_DIR, "musinsa_index.json"), "utf8"));
+  const meta = JSON.parse(fs.readFileSync(path.join(DATA_DIR, "product_meta_slim.json"), "utf8"));
+  const dates = Object.keys(index).sort();
+
+  const out = { updatedAt: new Date().toISOString().slice(0, 10) };
+  for (const kind of ["week", "month"]) out[kind] = buildKind(kind, dates, index, meta);
+
   fs.writeFileSync(OUT_FILE, JSON.stringify(out));
 
   console.log(`category_timeline.json 저장 (${(fs.statSync(OUT_FILE).size / 1024).toFixed(0)}KB)`);
-  console.log(`  주차 ${weekKeys.length}개 (${weekLabel(weekKeys[0]).text} ~ ${weekLabel(weekKeys[weekKeys.length - 1]).text}) / 품목 ${order.length}개`);
-  for (const c of order.slice(0, 10)) {
-    const t = categories[c].turn;
-    const when = t.at ? weekLabel(t.at).text : "-";
-    const arrow = t.dir === "down" ? "줄기 시작" : t.dir === "up" ? "늘기 시작" : "유지";
-    console.log(`  ${c.padEnd(20)} ${arrow.padEnd(8)} ${when.padEnd(10)} ${t.from}% -> ${t.now}%`);
+  for (const kind of ["week", "month"]) {
+    const k = out[kind];
+    const b = k.buckets;
+    console.log(`\n[${kind === "month" ? "달" : "주"}] ${b.length}칸 (${b[0].text} ~ ${b[b.length - 1].text}) / 품목 ${k.order.length}개`);
+    for (const c of k.order.slice(0, 8)) {
+      const t = k.categories[c].turn;
+      const when = t.at ? (b.find((x) => x.w === t.at) || {}).text || "-" : "-";
+      const arrow = t.dir === "down" ? "줄기 시작" : t.dir === "up" ? "늘기 시작" : "유지";
+      console.log(`  ${c.padEnd(20)} ${arrow.padEnd(8)} ${when.padEnd(10)} ${t.from}% -> ${t.now}%`);
+    }
   }
 }
 
 if (require.main === module) run();
-module.exports = { weekLabel, isoWeekKey, findTurn, smooth };
+module.exports = { weekLabel, monthLabel, isoWeekKey, findTurn, smooth };
