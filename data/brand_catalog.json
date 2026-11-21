@@ -1,5 +1,5 @@
 {
-"vivalavida":{"brandName":"비바라비다","total":439,"snapshotDays":108,"updatedAt":"2026-11-20","items":[
+"vivalavida":{"brandName":"비바라비다","total":439,"snapshotDays":108,"updatedAt":"2026-11-21","items":[
   {"id":"7388978","name":"Wildness 헨리넥 롱 슬리브 티셔츠","price":45900,"normalPrice":61900,"discount":26,"reviews":10,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
   {"id":"7443151","name":"Skewer 헨리넥 롱 슬리브 티셔츠","price":45900,"normalPrice":61900,"discount":26,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7388981","name":"Spiral 배색 트리밍 롱 슬리브 티셔츠","price":54900,"normalPrice":73900,"discount":26,"reviews":9,"reviewScore":4.7,"soldOut":false,"gender":"공용","rankedDays":1},
@@ -19,7 +19,7 @@
   {"id":"7382794","name":"Certify 포켓 라이트 패딩 자켓","price":114030,"normalPrice":162900,"discount":30,"reviews":10,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
   {"id":"7382725","name":"Sticky 다이아 라이트 패딩 자켓","price":115430,"normalPrice":164900,"discount":30,"reviews":24,"reviewScore":4.8,"soldOut":false,"gender":"공용","bestRank":138,"rankedDays":1},
   {"id":"7399405","name":"[기모선택] Roam 헤비테리 후드 집업","price":67830,"normalPrice":96900,"discount":30,"reviews":9,"reviewScore":4.9,"soldOut":false,"gender":"공용"},
-  {"id":"5395574","name":"044 레글런 롱 슬리브 티셔츠","price":31430,"normalPrice":44900,"discount":30,"reviews":410,"reviewScore":4.7,"soldOut":false,"gender":"공용","rankedDays":36,"bestRank":78},
+  {"id":"5395574","name":"044 레글런 롱 슬리브 티셔츠","price":31430,"normalPrice":44900,"discount":30,"reviews":411,"reviewScore":4.7,"soldOut":false,"gender":"공용","rankedDays":36,"bestRank":78},
   {"id":"4517945","name":"[기모선택] Element 헤비테리 후드","price":48920,"normalPrice":78900,"discount":38,"reviews":39,"reviewScore":4.8,"soldOut":false,"gender":"공용"},
   {"id":"7382806","name":"Tish 포켓 라이트 패딩 자켓","price":114030,"normalPrice":162900,"discount":30,"reviews":2,"reviewScore":5,"soldOut":false,"gender":"공용"},
   {"id":"7399490","name":"[기모선택] Fossi 헤비테리 후드","price":56490,"normalPrice":86900,"discount":35,"reviews":1,"reviewScore":5,"soldOut":false,"gender":"공용"},
